@@ -1,31 +1,56 @@
-# Global Financial Conditions and Cryptocurrency Markets
-# Recommended Python version: 3.11
-# Install: python -m pip install -r requirements.txt
 
-# Data acquisition and processing (TV2)
+# ============================================================
+# MACRO-CRYPTO SHOCK TRANSMISSION
+# Research Blueprint 09
+# Python recommended: 3.11
+# Install: python -m pip install -r requirements.txt
+# ============================================================
+
+# ------------------------------------------------------------
+# 1. DATA COLLECTION & PROCESSING - TV2
+# ------------------------------------------------------------
 numpy>=1.26,<3.0
 pandas>=2.2,<3.0
 yfinance>=0.2.40,<1.0
 requests>=2.31,<3.0
 openpyxl>=3.1,<4.0
 
-# Econometrics: VAR, IRF, local projections, regime analysis (TV3)
+# ------------------------------------------------------------
+# 2. ECONOMETRICS - TV3
+# VAR, IRF, Local Projection, Regime Analysis,
+# Subperiod Analysis, Rolling Regression, Robustness
+# ------------------------------------------------------------
 scipy>=1.12,<2.0
 statsmodels>=0.14.2,<0.16
 
-# Machine learning: Elastic Net, benchmarks, evaluation (TV4)
+# ------------------------------------------------------------
+# 3. MACHINE LEARNING - TV4
+# Elastic Net, Feature Engineering,
+# Out-of-Sample Forecasting, Model Evaluation
+# ------------------------------------------------------------
 scikit-learn>=1.4,<2.0
 joblib>=1.3,<2.0
 
-# Figures and dashboard (TV2, TV3, TV4, TV6)
+# ------------------------------------------------------------
+# 4. DATA VISUALIZATION - TV2, TV3, TV4, TV6
+# ------------------------------------------------------------
 matplotlib>=3.8,<4.0
 seaborn>=0.13,<0.14
 plotly>=5.22,<7.0
+
+# ------------------------------------------------------------
+# 5. STREAMLIT DASHBOARD - TV6
+# Overview, Econometrics, Regime, Forecast
+# ------------------------------------------------------------
 streamlit>=1.35,<2.0
 
-# Paper and supporting documents (TV1, TV5)
+# ------------------------------------------------------------
+# 6. RESEARCH PAPER & DOCUMENTS - TV1, TV5
+# ------------------------------------------------------------
 python-docx>=1.1,<2.0
 reportlab>=4.2,<5.0
 
-# Testing and reproducibility (TV6)
+# ------------------------------------------------------------
+# 7. TESTING & REPRODUCIBILITY - TV6
+# ------------------------------------------------------------
 pytest>=8.0,<10.0
