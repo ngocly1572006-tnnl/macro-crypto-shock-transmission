@@ -1,240 +1,258 @@
 
+# ============================================================
+# 02_download_data.py
+# Đề tài: Điều kiện tài chính toàn cầu và thị trường tiền mã hóa
+# Giai đoạn: 2018-01-01 đến 2025-12-31
+# Tần suất: Hằng ngày
+# Quy ước ngày crypto: UTC
+#
+# OUTPUT:
+# 1. crypto_macro_raw.csv  : dữ liệu thô ban đầu
+# 2. crypto_macro_full.csv : dữ liệu đã xử lý, ngày chung
+# 3. crypto_macro_miss.csv : BTC và ETH đủ 7 ngày/tuần
+# ============================================================
+
 from pathlib import Path
 from datetime import datetime, timezone
+
 import pandas as pd
 import yfinance as yf
 
-# ==================================================
-# 1. CAU HINH
-# ==================================================
-ROOT = Path(__file__).resolve().parents[2]
 
-RAW_DIR = ROOT / "data" / "raw"
-DOCS_DIR = ROOT / "docs"
-
-RAW_DIR.mkdir(parents=True, exist_ok=True)
-DOCS_DIR.mkdir(parents=True, exist_ok=True)
+# ------------------------------------------------------------
+# 1. CẤU HÌNH
+# ------------------------------------------------------------
 
 START_DATE = "2018-01-01"
-END_DATE = "2026-01-01"  # Yahoo: ngay ket thuc khong bao gom
+END_DATE = "2026-01-01"  # Ngày kết thúc không bao gồm trong yfinance
 
-# ==================================================
-# 2. CAC NGUON DU LIEU
-# ==================================================
-YAHOO_TICKERS = {
-    "BTC_close": "BTC-USD",
-    "ETH_close": "ETH-USD",
-    "VIX": "^VIX",
-    "USD_INDEX": "DX-Y.NYB",
-}
+ROOT = Path(__file__).resolve().parents[2]
+RAW_DIR = ROOT / "data" / "raw"
+RAW_DIR.mkdir(parents=True, exist_ok=True)
 
-FRED_URL = (
-    "https://fred.stlouisfed.org/graph/fredgraph.csv"
-    f"?id=DGS2&cosd={START_DATE}&coed=2025-12-31"
-)
+RAW_PATH = RAW_DIR / "crypto_macro_raw.csv"
+FULL_PATH = RAW_DIR / "crypto_macro_full.csv"
+MISS_PATH = RAW_DIR / "crypto_macro_miss.csv"
 
-source_log = []
-series_list = []
-
-retrieved_at = datetime.now(timezone.utc).isoformat()
+DOWNLOAD_TIME = datetime.now(timezone.utc).isoformat()
 
 
-def record_source(variable, source, url, unit, status, data=None):
-    """Ghi nhat ky nguon va tinh trang thu thap."""
+# ------------------------------------------------------------
+# 2. HÀM TẢI GIÁ ĐÓNG CỬA TỪ YAHOO FINANCE
+# ------------------------------------------------------------
 
-    if data is not None and not data.empty:
-        dates = pd.to_datetime(data["date"])
-        min_date = dates.min().date().isoformat()
-        max_date = dates.max().date().isoformat()
-        n_obs = len(data)
-        n_missing = int(data["value"].isna().sum())
-    else:
-        min_date = None
-        max_date = None
-        n_obs = 0
-        n_missing = None
+def download_close(ticker, variable):
+    print(f"Đang tải {variable} ({ticker})...")
 
-    source_log.append({
-        "variable": variable,
-        "source": source,
-        "url": url,
-        "frequency": "Daily",
-        "unit": unit,
-        "sample_start": START_DATE,
-        "sample_end": "2025-12-31",
-        "retrieved_at_utc": retrieved_at,
-        "actual_start": min_date,
-        "actual_end": max_date,
-        "n_observations": n_obs,
-        "n_missing": n_missing,
-        "status": status,
-    })
+    df = yf.download(
+        ticker,
+        start=START_DATE,
+        end=END_DATE,
+        interval="1d",
+        auto_adjust=False,
+        progress=False,
+        threads=False,
+    )
 
-
-# ==================================================
-# 3. TAI BTC, ETH, VIX, USD INDEX
-# ==================================================
-for variable, ticker in YAHOO_TICKERS.items():
-    url = f"https://finance.yahoo.com/quote/{ticker}/history/"
-
-    try:
-        df = yf.download(
-            ticker,
-            start=START_DATE,
-            end=END_DATE,
-            interval="1d",
-            auto_adjust=False,
-            progress=False,
-            threads=False,
+    if df.empty:
+        raise RuntimeError(
+            f"Không tải được {ticker}. "
+            "Kiểm tra kết nối mạng hoặc mã tài sản."
         )
 
-        if df.empty:
-            record_source(
-                variable, "Yahoo Finance", url, "See source",
-                "FAILED: empty response"
-            )
-            print(f"[ERROR] {variable}: khong co du lieu.")
-            continue
-
-        # Ho tro ca ten cot don va MultiIndex
+    # Hỗ trợ cả tên cột thông thường và MultiIndex
+    if isinstance(df.columns, pd.MultiIndex):
+        close_cols = [
+            col for col in df.columns
+            if str(col[0]).lower() == "close"
+        ]
+        if not close_cols:
+            raise ValueError(f"Không tìm thấy giá đóng cửa của {ticker}.")
+        close = df[close_cols[0]]
+    else:
+        if "Close" not in df.columns:
+            raise ValueError(f"Không tìm thấy giá đóng cửa của {ticker}.")
         close = df["Close"]
 
-        if isinstance(close, pd.DataFrame):
-            close = close.iloc[:, 0]
+    close = pd.to_numeric(close, errors="coerce")
 
-        result = pd.DataFrame({
-            "date": pd.to_datetime(df.index).tz_localize(None).date,
-            "value": pd.to_numeric(close, errors="coerce").to_numpy(),
-        })
+    # Ngày của giá crypto được quy ước theo UTC.
+    # Với các chỉ số Mỹ, đây là ngày giao dịch của nguồn;
+    # không được diễn giải nó thành thời điểm công bố chính xác.
+    idx = pd.to_datetime(df.index, utc=True)
+    close.index = idx.tz_convert(None).normalize()
+    close.index.name = "date"
+    close.name = variable
 
-        result["date"] = pd.to_datetime(result["date"])
-        result = result.dropna(subset=["date", "value"])
-        result = result.drop_duplicates("date").sort_values("date")
-        result = result.rename(columns={"value": variable})
+    close = close[~close.index.duplicated(keep="last")].sort_index()
+    close = close.loc[
+        (close.index >= pd.Timestamp(START_DATE))
+        & (close.index < pd.Timestamp(END_DATE))
+    ]
 
-        if result.empty:
-            record_source(
-                variable, "Yahoo Finance", url, "See source",
-                "FAILED: no valid observations"
-            )
-            continue
-
-        series_list.append(result)
-        log_data = result.rename(columns={variable: "value"})
-        record_source(
-            variable, "Yahoo Finance", url, "See source",
-            "OK", log_data
-        )
-
-        print(
-            f"[OK] {variable}: {len(result)} observations, "
-            f"{result['date'].min().date()} -> "
-            f"{result['date'].max().date()}"
-        )
-
-    except Exception as exc:
-        record_source(
-            variable, "Yahoo Finance", url, "See source",
-            f"FAILED: {exc}"
-        )
-        print(f"[ERROR] {variable}: {exc}")
+    return close
 
 
-# ==================================================
-# 4. TAI US2Y TU FRED
-# ==================================================
-try:
-    fred = pd.read_csv(FRED_URL)
+# ------------------------------------------------------------
+# 3. TẢI BTC, ETH, VIX VÀ DXY
+# ------------------------------------------------------------
 
-    # FRED CSV thuong co cot observation_date va DGS2
-    date_col = "observation_date" if "observation_date" in fred.columns else "DATE"
+btc = download_close("BTC-USD", "BTC")
+eth = download_close("ETH-USD", "ETH")
+vix = download_close("^VIX", "VIX")
+dxy = download_close("DX-Y.NYB", "DXY")
 
-    if date_col not in fred.columns or "DGS2" not in fred.columns:
-        raise ValueError(
-            f"Cau truc CSV FRED khong dung nhu mong doi: {list(fred.columns)}"
-        )
 
-    us2y = pd.DataFrame({
-        "date": pd.to_datetime(fred[date_col], errors="coerce"),
-        "US2Y": pd.to_numeric(fred["DGS2"], errors="coerce"),
-    })
+# ------------------------------------------------------------
+# 4. TẢI LỢI SUẤT TPCP MỸ 2 NĂM TỪ FRED
+# DGS2: đơn vị phần trăm (%)
+# ------------------------------------------------------------
 
-    # FRED dung dau cham de bieu thi quan sat thieu.
-    # Chua dien gia tri thieu o buoc tai du lieu tho.
-    us2y = us2y.dropna(subset=["date"])
-    us2y = us2y.drop_duplicates("date").sort_values("date")
+print("Đang tải US2Y (FRED DGS2)...")
 
-    series_list.append(us2y)
+fred_url = "https://fred.stlouisfed.org/graph/fredgraph.csv?id=DGS2"
+us2y_df = pd.read_csv(fred_url)
 
-    log_data = us2y.rename(columns={"US2Y": "value"})
-    record_source(
-        "US2Y",
-        "FRED - Federal Reserve Bank of St. Louis",
-        FRED_URL,
-        "% per annum",
-        "OK",
-        log_data,
+required_fred_cols = {"observation_date", "DGS2"}
+if not required_fred_cols.issubset(us2y_df.columns):
+    raise ValueError(
+        "Dữ liệu FRED không có cột observation_date và DGS2."
     )
 
-    print(f"[OK] US2Y: {len(us2y)} daily calendar observations")
+us2y_df["date"] = pd.to_datetime(
+    us2y_df["observation_date"], errors="coerce"
+).dt.normalize()
 
-except Exception as exc:
-    record_source(
-        "US2Y", "FRED", FRED_URL, "% per annum",
-        f"FAILED: {exc}"
-    )
-    print(f"[ERROR] US2Y: {exc}")
+us2y_df["US2Y"] = pd.to_numeric(
+    us2y_df["DGS2"], errors="coerce"
+)
+
+us2y = (
+    us2y_df.dropna(subset=["date"])
+    .set_index("date")["US2Y"]
+    .sort_index()
+)
+
+us2y = us2y.loc[
+    (us2y.index >= pd.Timestamp(START_DATE))
+    & (us2y.index < pd.Timestamp(END_DATE))
+]
+
+us2y.index.name = "date"
+us2y = us2y[~us2y.index.duplicated(keep="last")]
 
 
-# ==================================================
-# 5. KIEM TRA VA GHEP DU LIEU
-# ==================================================
-if len(series_list) != len(YAHOO_TICKERS) + 1:
+# ------------------------------------------------------------
+# 5. TẠO DỮ LIỆU THÔ BAN ĐẦU
+# Outer join để không loại ngày chỉ vì một biến bị thiếu.
+# Không forward-fill, backfill hoặc nội suy.
+# ------------------------------------------------------------
+
+raw = pd.concat([btc, eth, vix, dxy, us2y], axis=1, join="outer")
+raw.index.name = "date"
+raw = raw.sort_index()
+
+raw = raw.loc[
+    (raw.index >= pd.Timestamp(START_DATE))
+    & (raw.index < pd.Timestamp(END_DATE))
+]
+
+raw = raw.reset_index()
+raw["date"] = raw["date"].dt.strftime("%Y-%m-%d")
+
+raw = raw[["date", "BTC", "ETH", "VIX", "DXY", "US2Y"]]
+
+raw.to_csv(RAW_PATH, index=False, encoding="utf-8-sig")
+print(f"Đã lưu dữ liệu thô: {RAW_PATH}")
+
+
+# ------------------------------------------------------------
+# 6. TẠO crypto_macro_full.csv
+# Bộ truyền dẫn: ngày thứ Hai đến thứ Sáu, đủ 5 biến.
+#
+# Không tự điền dữ liệu vĩ mô còn thiếu.
+# Chỉ giữ ngày có quan sát hợp lệ cho tất cả biến.
+# ------------------------------------------------------------
+
+processed = raw.copy()
+processed["date"] = pd.to_datetime(processed["date"])
+
+# Chỉ giữ ngày thứ Hai đến thứ Sáu.
+# Sau đó yêu cầu đủ dữ liệu cho cả 5 biến.
+processed = processed[
+    processed["date"].dt.dayofweek < 5
+].copy()
+
+variables = ["BTC", "ETH", "VIX", "DXY", "US2Y"]
+
+missing_before_filter = processed[variables].isna().sum()
+print("\nSố giá trị thiếu trước khi lọc bộ truyền dẫn:")
+print(missing_before_filter.to_string())
+
+transmission = processed.dropna(subset=variables).copy()
+transmission = transmission.sort_values("date")
+
+# Không tính lợi suất tại bước tải dữ liệu.
+# Việc tạo sai phân/lợi suất cần kiểm tra khoảng cách ngày
+# trong chuỗi sau khi đã chọn mẫu phân tích.
+transmission["date"] = transmission["date"].dt.strftime("%Y-%m-%d")
+
+transmission.to_csv(FULL_PATH, index=False, encoding="utf-8-sig")
+print(f"\nĐã lưu dữ liệu đã xử lý: {FULL_PATH}")
+
+
+# ------------------------------------------------------------
+# 7. TẠO crypto_macro_miss.csv
+# Chỉ có date, BTC, ETH; giữ toàn bộ ngày UTC.
+# Không loại thứ Bảy, Chủ nhật và ngày lễ.
+# ------------------------------------------------------------
+
+crypto = pd.concat([btc, eth], axis=1, join="outer")
+crypto.index.name = "date"
+crypto = crypto.sort_index()
+
+# Tạo lịch ngày UTC liên tục trong toàn bộ giai đoạn.
+calendar = pd.date_range(
+    start=START_DATE,
+    end="2025-12-31",
+    freq="D",
+    name="date",
+)
+
+crypto = crypto.reindex(calendar)
+crypto = crypto.reset_index()
+crypto["date"] = crypto["date"].dt.strftime("%Y-%m-%d")
+crypto = crypto[["date", "BTC", "ETH"]]
+
+crypto.to_csv(MISS_PATH, index=False, encoding="utf-8-sig")
+print(f"Đã lưu dữ liệu BTC/ETH đủ ngày: {MISS_PATH}")
+
+
+# ------------------------------------------------------------
+# 8. NHẬT KÝ CHẤT LƯỢNG VÀ THỐNG KÊ TỔNG QUAN
+# ------------------------------------------------------------
+
+print("\n" + "=" * 55)
+print("KIỂM TRA BA FILE ĐẦU RA")
+print("=" * 55)
+
+print("\n1. crypto_macro_raw.csv")
+print(f"Số dòng: {len(raw):,}")
+print(f"Số giá trị thiếu:\n{raw[variables].isna().sum().to_string()}")
+
+print("\n2. crypto_macro_full.csv")
+print(f"Số dòng: {len(transmission):,}")
+if not transmission.empty:
     print(
-        "\nCANH BAO: Chua tai duoc tat ca 5 chuoi. "
-        "Kiem tra log va khong tu dien du lieu gia."
+        f"Khoảng ngày: {transmission['date'].min()} "
+        f"đến {transmission['date'].max()}"
     )
+print(f"Số giá trị thiếu: {transmission[variables].isna().sum().sum()}")
 
-if not series_list:
-    raise RuntimeError("Khong tai duoc chuoi du lieu nao.")
+print("\n3. crypto_macro_miss.csv")
+print(f"Số dòng: {len(crypto):,}")
+print(f"Số ngày BTC thiếu: {crypto['BTC'].isna().sum()}")
+print(f"Số ngày ETH thiếu: {crypto['ETH'].isna().sum()}")
 
-raw = series_list[0]
-
-for series in series_list[1:]:
-    raw = raw.merge(series, on="date", how="outer")
-
-raw["date"] = pd.to_datetime(raw["date"])
-raw = raw.sort_values("date").drop_duplicates("date")
-
-raw = raw[
-    (raw["date"] >= pd.Timestamp(START_DATE))
-    & (raw["date"] <= pd.Timestamp("2025-12-31"))
-]
-
-expected_cols = [
-    "date", "BTC_close", "ETH_close", "VIX",
-    "USD_INDEX", "US2Y"
-]
-
-for col in expected_cols:
-    if col not in raw.columns:
-        raw[col] = pd.NA
-
-raw = raw[expected_cols]
-
-# ==================================================
-# 6. XUAT FILE
-# ==================================================
-raw_path = RAW_DIR / "crypto_macro_raw.csv"
-log_path = DOCS_DIR / "data_source_log.xlsx"
-
-raw.to_csv(raw_path, index=False, date_format="%Y-%m-%d")
-pd.DataFrame(source_log).to_excel(log_path, index=False)
-
-print("\n===== KET QUA THU THAP =====")
-print("Raw data:", raw_path)
-print("Source log:", log_path)
-print("Date range:", raw["date"].min(), "->", raw["date"].max())
-print("\nMissing values:")
-print(raw.isna().sum())
-print("\nFile da duoc tao. Hay kiem tra log truoc khi su dung.")
+print("\nĐã hoàn thành tải và xuất dữ liệu.")
+print(f"Thời điểm chạy UTC: {DOWNLOAD_TIME}")
