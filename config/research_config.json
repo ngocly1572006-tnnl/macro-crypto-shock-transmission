@@ -1,1 +1,177 @@
 
+{
+  "de_tai": {
+    "ten": "Điều kiện tài chính toàn cầu và thị trường tiền mã hóa",
+    "ngay_bat_dau": "2018-01-01",
+    "ngay_ket_thuc": "2025-12-31",
+    "tan_suat_du_lieu": "hang_ngay",
+    "mui_gio": "UTC"
+  },
+  "tai_san_nghien_cuu": {
+    "ma_tien_ma_hoa": ["BTC", "ETH"],
+    "dong_tien_yet_gia": "USD",
+    "ma_gia": ["BTC-USD", "ETH-USD"],
+    "bien_gia": "gia_dong_cua",
+    "quy_uoc_thoi_gian": "Ngay UTC",
+    "thi_truong_tien_ma_hoa_giao_dich_247": true
+  },
+  "bien_nghien_cuu": {
+    "gia_tien_ma_hoa": {
+      "ma": ["BTC-USD", "ETH-USD"],
+      "vai_tro": "du_lieu_thi_truong",
+      "bien_gia_goc": "gia_dong_cua",
+      "bien_loi_suat": "loi_suat_logarit",
+      "cong_thuc_loi_suat": "100 * ln(P_t / P_t_1)"
+    },
+    "loi_suat_trai_phieu_2_nam_my": {
+      "ten": "Lợi suất trái phiếu Kho bạc Mỹ kỳ hạn 2 năm",
+      "ma": "US2Y",
+      "vai_tro": "dieu_kien_tai_chinh_toan_cau",
+      "cach_bien_doi": "sai_phan_bac_mot",
+      "don_vi_goc": "phan_tram",
+      "don_vi_sai_phan": "diem_phan_tram",
+      "luu_y": "Sai phân US2Y phản ánh thay đổi lợi suất, không mặc nhiên là cú sốc chính sách tiền tệ thuần túy."
+    },
+    "chi_so_dong_usd": {
+      "ten": "Chỉ số sức mạnh đồng USD",
+      "ma": "DXY",
+      "vai_tro": "dieu_kien_tai_chinh_toan_cau",
+      "cach_bien_doi": "sai_phan_logarit",
+      "cong_thuc": "100 * ln(DXY_t / DXY_t_1)"
+    },
+    "chi_so_bien_dong_vix": {
+      "ten": "Chỉ số biến động thị trường VIX",
+      "ma": "VIX",
+      "vai_tro": "rui_ro_toan_cau",
+      "cach_bien_doi": "sai_phan_bac_mot",
+      "don_vi_goc": "diem_chi_so",
+      "luu_y": "Sai phân VIX phản ánh thay đổi điểm chỉ số, không phải mức VIX tuyệt đối."
+    }
+  },
+  "cau_hoi_nghien_cuu": {
+    "RQ1": "Cú sốc lãi suất có tác động đến BTC và ETH không?",
+    "RQ2": "Cú sốc DXY và VIX truyền sang thị trường tiền mã hóa trong bao lâu?",
+    "RQ3": "Mức độ nhạy cảm của BTC và ETH với điều kiện tài chính toàn cầu có thay đổi sau năm 2020 không?",
+    "RQ4": "Tác động truyền dẫn có mạnh hơn trong giai đoạn căng thẳng hoặc biến động cao không?",
+    "RQ5": "Các biến tài chính toàn cầu có cải thiện khả năng dự báo rủi ro BTC và ETH ngoài mẫu không?"
+  },
+  "cau_hinh_du_lieu": {
+    "phuong_an": 3,
+    "mo_ta": "Xây dựng hai bộ dữ liệu theo hai mục tiêu nghiên cứu khác nhau.",
+    "bo_du_lieu_truyen_dan": {
+      "ten": "transmission_dataset",
+      "muc_dich": "Phân tích tác động truyền dẫn bằng VAR và Local Projections",
+      "tan_suat": "hang_ngay",
+      "lich_du_lieu": "ngay_giao_dich_chung",
+      "tai_san": ["BTC", "ETH", "US2Y", "DXY", "VIX"],
+      "quy_tac": [
+        "Chỉ giữ các ngày có dữ liệu quan sát hợp lệ cho những biến cần thiết trong mô hình.",
+        "BTC và ETH được ghép theo ngày UTC.",
+        "Đối chiếu ngày và múi giờ của US2Y, DXY và VIX trước khi ghép dữ liệu.",
+        "Không tự động điền dữ liệu vĩ mô bằng quan sát của ngày tương lai.",
+        "Không coi giá trị vĩ mô được giữ nguyên qua ngày nghỉ là một quan sát mới.",
+        "Tính sai phân sau khi sắp xếp và kiểm tra dữ liệu theo thời gian.",
+        "Không tính lợi suất crypto qua nhiều ngày rồi coi đó là lợi suất một ngày khi chuỗi có ngày bị loại.",
+        "Ghi nhận số quan sát bị loại và lý do loại."
+      ],
+      "luu_y": "Ngày giao dịch chung giúp các biến được so sánh trên cùng thời điểm, nhưng không phản ánh đầy đủ biến động BTC và ETH trong cuối tuần."
+    },
+    "bo_du_lieu_du_bao": {
+      "ten": "crypto_risk_dataset",
+      "muc_dich": "Dự báo rủi ro BTC và ETH bằng Elastic Net và XGBoost",
+      "tan_suat": "hang_ngay",
+      "lich_du_lieu": "tat_ca_cac_ngay_UTC",
+      "tai_san": ["BTC", "ETH"],
+      "quy_tac": [
+        "Giữ dữ liệu BTC và ETH cả thứ Bảy, Chủ nhật và ngày lễ.",
+        "Tính lợi suất crypto theo các ngày UTC liên tiếp.",
+        "Chỉ sử dụng biến đầu vào đã có sẵn tại thời điểm dự báo.",
+        "Không sử dụng dữ liệu tương lai để điền giá trị thiếu hoặc tạo đặc trưng.",
+        "Biến vĩ mô thiếu vào cuối tuần không được xem là thông tin mới.",
+        "Nếu sử dụng giá trị vĩ mô gần nhất đã biết, phải lưu thời điểm quan sát và thời điểm công bố hoặc sẵn có.",
+        "Có thể giữ giá trị vĩ mô gần nhất đã biết cho đặc trưng dự báo, nhưng phải đánh dấu dữ liệu được giữ nguyên và kiểm tra độ nhạy với phương án chỉ dùng thông tin tại ngày giao dịch gần nhất.",
+        "Không nội suy hai chiều hoặc dùng giá trị tương lai để lấp dữ liệu thiếu.",
+        "Tính biến mục tiêu rủi ro tương lai sau khi tạo đặc trưng và bảo đảm không đưa biến mục tiêu vào đầu vào."
+      ],
+      "luu_y": "Dữ liệu crypto có tần suất 7 ngày mỗi tuần; biến vĩ mô có thể chỉ cập nhật vào ngày làm việc. Hai loại lịch này không được coi là tương đương."
+    }
+  },
+  "trang_thai_thi_truong": {
+    "moc_thay_doi_co_cau": "2021-01-01",
+    "phan_tich_sau_2020": true,
+    "bien_dai_dien_cang_thang": "VIX",
+    "bien_dai_dien_bien_dong_tien_ma_hoa": "bien_dong_thuc_te",
+    "cach_xac_dinh_trang_thai": "nguong_phan_vi",
+    "phan_vi_de_xuat": 0.75,
+    "quy_tac": [
+      "Xác định trạng thái căng thẳng bằng ngưỡng phân vị của VIX hoặc biến động crypto.",
+      "Ngưỡng phải được ước lượng từ mẫu huấn luyện hoặc dữ liệu quá khứ tại thời điểm phân loại.",
+      "Không sử dụng toàn bộ mẫu, bao gồm dữ liệu tương lai, để xác định ngưỡng trong đánh giá dự báo ngoài mẫu.",
+      "Kiểm tra độ nhạy với các ngưỡng thay thế."
+    ],
+    "luu_y": "Mốc năm 2021 được dùng để phân chia giai đoạn sau năm 2020; cần giải thích cơ sở lựa chọn trong báo cáo."
+  },
+  "du_bao_rui_ro": {
+    "bien_muc_tieu": "bien_dong_thuc_te_tuong_lai",
+    "tai_san": ["BTC", "ETH"],
+    "chan_du_bao_ngay": [5, 10],
+    "cach_tinh": "do_lech_chuan_loi_suat_logarit_hang_ngay_trong_cua_so_tuong_lai",
+    "don_vi": "phan_tram",
+    "quy_tac": [
+      "Tính riêng biến động thực tế tương lai cho từng tài sản.",
+      "Chỉ tạo nhãn mục tiêu khi có đủ dữ liệu trong toàn bộ cửa sổ tương lai.",
+      "Không dùng các quan sát thuộc cửa sổ tương lai làm đặc trưng đầu vào tại thời điểm dự báo.",
+      "Kiểm tra khả năng chồng lấn giữa các cửa sổ mục tiêu khi chia tập dữ liệu."
+    ],
+    "luu_y": "Đây là định nghĩa mục tiêu dự báo được đề xuất. Cần thống nhất cách tính biến động và thời hạn dự báo trước khi huấn luyện mô hình."
+  },
+  "mo_hinh": {
+    "kinh_te_luong_co_so": "VAR",
+    "kinh_te_luong_mo_rong": "Local Projections",
+    "hoc_may_co_so": "Elastic Net",
+    "hoc_may_phi_tuyen": "XGBoost",
+    "phan_tach_muc_tieu": {
+      "VAR": "Phân tích động thái tương tác giữa lợi suất crypto và các biến tài chính toàn cầu.",
+      "Local Projections": "Ước lượng phản ứng của BTC và ETH tại các thời hạn sau cú sốc.",
+      "Elastic Net": "Mô hình dự báo cơ sở có điều chuẩn.",
+      "XGBoost": "Mô hình dự báo phi tuyến để kiểm tra khả năng cải thiện dự báo."
+    },
+    "luu_y": [
+      "Sai phân US2Y, DXY và VIX không tự động được diễn giải là cú sốc ngoại sinh.",
+      "Nếu muốn kết luận về cú sốc chính sách tiền tệ, cần xác định thước đo cú sốc phù hợp.",
+      "Kiểm tra tính dừng và lựa chọn độ trễ trước khi ước lượng VAR.",
+      "Định nghĩa biến cú sốc và trạng thái thị trường nhất quán giữa các mô hình truyền dẫn."
+    ]
+  },
+  "danh_gia": {
+    "chia_du_lieu_theo_thoi_gian": true,
+    "bat_buoc_kiem_dinh_ngoai_mau": true,
+    "tranh_ro_ri_du_lieu": true,
+    "phuong_phap_kiem_dinh": "rolling_origin",
+    "so_sanh_mo_hinh_co_so_va_mo_hinh_bo_sung_bien_vi_mo": true,
+    "mo_hinh_co_so": "chi_su_dung_dac_trung_thi_truong_crypto",
+    "mo_hinh_bo_sung": "dac_trung_thi_truong_crypto_va_bien_tai_chinh_toan_cau",
+    "thuo_c_do_du_bao": ["MAE", "RMSE"],
+    "quy_tac": [
+      "Chia tập huấn luyện, xác thực và kiểm tra theo thứ tự thời gian.",
+      "Không xáo trộn ngẫu nhiên các quan sát theo ngày.",
+      "Chỉ chuẩn hóa dữ liệu và chọn đặc trưng bằng dữ liệu huấn luyện.",
+      "Chọn siêu tham số mà không sử dụng tập kiểm tra cuối cùng.",
+      "So sánh các mô hình trên cùng thời hạn dự báo và cùng tập ngày đánh giá.",
+      "Báo cáo kết quả riêng cho BTC và ETH, cho từng thời hạn 5 và 10 ngày.",
+      "Dùng cùng định nghĩa biến mục tiêu cho mô hình cơ sở và mô hình bổ sung.",
+      "Lưu ngày dự báo, dữ liệu đầu vào và kết quả dự báo để có thể tái lập."
+    ],
+    "luu_y": "MAE và RMSE phù hợp với mục tiêu biến động thực tế liên tục. Nếu đổi mục tiêu sang xác suất xảy ra rủi ro đuôi, cần bổ sung thước đo đánh giá phù hợp."
+  },
+  "kiem_soat_chat_luong_du_lieu": {
+    "kiem_tra_trung_ngay": true,
+    "kiem_tra_gia_tri_thieu": true,
+    "kiem_tra_gia_tri_khong_hop_le": true,
+    "kiem_tra_mui_gio": true,
+    "kiem_tra_thu_tu_thoi_gian": true,
+    "khong_dien_du_lieu_tuong_lai": true,
+    "ghi_nhan_so_quan_sat_bi_loai": true,
+    "ghi_nhan_nguon_va_thoi_diem_tai_du_lieu": true
+  }
+}
