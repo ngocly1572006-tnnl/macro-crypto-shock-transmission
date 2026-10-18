@@ -49,7 +49,7 @@
     }
   },
   "cau_hoi_nghien_cuu": {
-    "RQ1":"Sự thay đổi lợi suất trái phiếu Kho bạc Mỹ kỳ hạn 2 năm có liên hệ như thế nào với lợi suất BTC và ETH?",
+    "RQ1": "Sự thay đổi lợi suất trái phiếu Kho bạc Mỹ kỳ hạn 2 năm có liên hệ như thế nào với lợi suất BTC và ETH?",
     "RQ2": "Sự thay đổi DXY và VIX truyền sang thị trường tiền mã hóa trong bao lâu?",
     "RQ3": "Mức độ nhạy cảm của BTC và ETH với điều kiện tài chính toàn cầu có thay đổi sau năm 2020 không?",
     "RQ4": "Tác động truyền dẫn có mạnh hơn trong giai đoạn căng thẳng hoặc biến động cao không?",
@@ -57,28 +57,59 @@
   },
   "cau_hinh_du_lieu": {
     "phuong_an": 3,
-    "mo_ta": "Xây dựng hai bộ dữ liệu theo hai mục tiêu nghiên cứu khác nhau.",
+    "mo_ta": "Sử dụng hai bộ dữ liệu: model_dataset do TV2 xây dựng làm dữ liệu chuẩn dùng chung cho TV3 và TV4; ml_dataset do TV4 tạo từ model_dataset để phục vụ dự báo rủi ro.",
     "bo_du_lieu_truyen_dan": {
       "ten": "model_dataset",
-      "muc_dich": "Phân tích tác động truyền dẫn bằng VAR và Local Projections",
+      "duong_dan": "data/processed/model_dataset.csv",
+      "muc_dich": "Cung cấp dữ liệu chuẩn chung cho phân tích truyền dẫn, mô hình kinh tế lượng và dự báo rủi ro bằng học máy.",
       "tan_suat": "hang_ngay",
-      "lich_du_lieu": "ngay_giao_dich_chung",
+      "lich_du_lieu": "tat_ca_cac_ngay_UTC",
       "tai_san": ["BTC", "ETH", "US2Y", "DXY", "VIX"],
       "quy_tac": [
-        "Chỉ giữ các ngày có dữ liệu quan sát hợp lệ cho những biến cần thiết trong mô hình.",
-        "BTC và ETH được ghép theo ngày UTC.",
-        "Đối chiếu ngày và múi giờ của US2Y, DXY và VIX trước khi ghép dữ liệu.",
-        "Không tự động điền dữ liệu vĩ mô bằng quan sát của ngày tương lai.",
-        "Không coi giá trị vĩ mô được giữ nguyên qua ngày nghỉ là một quan sát mới.",
-        "Tính sai phân sau khi sắp xếp và kiểm tra dữ liệu theo thời gian.",
-        "Không tính lợi suất crypto qua nhiều ngày rồi coi đó là lợi suất một ngày khi chuỗi có ngày bị loại.",
-        "Ghi nhận số quan sát bị loại và lý do loại."
+        "Chỉ xuất một bộ dữ liệu chuẩn duy nhất tại data/processed/model_dataset.csv.",
+        "Sử dụng lịch ngày UTC liên tục theo BTC và ETH, bao gồm thứ Bảy, Chủ nhật và ngày lễ.",
+        "Giữ lại các dòng có dữ liệu BTC và ETH hợp lệ ngay cả khi một hoặc nhiều biến vĩ mô bị thiếu.",
+        "Không tự động xóa dòng chỉ vì US2Y, DXY hoặc VIX thiếu dữ liệu.",
+        "Ghép dữ liệu vĩ mô theo ngày và múi giờ phù hợp, đồng thời kiểm tra thời điểm quan sát và thời điểm dữ liệu thực sự sẵn có.",
+        "Không dùng dữ liệu vĩ mô tương lai để điền dữ liệu thiếu hoặc tạo đặc trưng.",
+        "Không mặc định giá trị vĩ mô được giữ nguyên qua ngày nghỉ là một quan sát mới.",
+        "Nếu giữ giá trị vĩ mô gần nhất đã biết, phải phân biệt rõ giá trị quan sát mới với giá trị được giữ nguyên và lưu thông tin thời điểm liên quan.",
+        "Tính lợi suất log BTC và ETH trên chuỗi ngày crypto liên tiếp trước khi lọc mẫu.",
+        "Tính lợi suất BTC và ETH trên các ngày UTC liên tiếp theo đúng thứ tự thời gian.",
+        "Không nội suy hai chiều hoặc dùng thông tin tương lai để xử lý dữ liệu thiếu.",
+        "Ghi nhận số dòng thiếu dữ liệu và tình trạng dữ liệu của từng biến để các thành viên có thể kiểm tra.",
+        "Không thực hiện lọc mẫu riêng cho VAR, Local Projections, Elastic Net hoặc XGBoost tại bước tạo bộ dữ liệu chuẩn.",
+        "TV3 và TV4 tự quyết định cách lọc mẫu, xử lý dữ liệu thiếu, tạo đặc trưng và biến mục tiêu phù hợp với mục tiêu nghiên cứu của mình."
       ],
-      "luu_y": "Ngày giao dịch chung giúp các biến được so sánh trên cùng thời điểm, nhưng không phản ánh đầy đủ biến động BTC và ETH trong cuối tuần."
+      "luu_y": "Bộ dữ liệu chuẩn giữ lịch crypto liên tục 7 ngày mỗi tuần. Do dữ liệu vĩ mô có thể không được cập nhật vào cuối tuần, cần phân biệt ngày quan sát mới với giá trị được giữ nguyên từ lần công bố gần nhất."
+    },
+    "thanh_vien_su_dung": {
+      "TV3 - Hải Bình": {
+        "file_dau_vao": "data/processed/model_dataset.csv",
+        "muc_dich": "Phân tích RQ1-RQ4 bằng VAR, IRF và Local Projections.",
+        "quy_tac": [
+          "Đọc trực tiếp model_dataset.csv của TV2.",
+          "Tự lọc các quan sát hợp lệ theo yêu cầu của từng mô hình.",
+          "Sử dụng lợi suất crypto đã tính sẵn, không tính lại sau khi loại ngày cuối tuần.",
+          "Không bắt buộc tạo hoặc xuất thêm file dữ liệu truyền dẫn riêng.",
+          "Không chỉnh sửa hoặc ghi đè model_dataset.csv."
+        ]
+      },
+      "TV4 - Mai Phương": {
+        "file_dau_vao": "data/processed/model_dataset.csv",
+        "muc_dich": "Sử dụng dữ liệu chuẩn làm đầu vào để xây dựng ml_dataset.",
+        "quy_tac": [
+          "Đọc model_dataset.csv của TV2.",
+          "Giữ lịch BTC và ETH 7 ngày mỗi tuần.",
+          "Tạo đặc trưng và biến mục tiêu phục vụ mô hình dự báo.",
+          "Không chỉnh sửa hoặc ghi đè model_dataset.csv."
+        ]
+      }
     },
     "bo_du_lieu_hoc_may": {
       "ten": "ml_dataset",
-      "muc_dich": "Dự báo rủi ro BTC và ETH bằng Elastic Net và XGBoost",
+      "duong_dan": "data/processed/ml_dataset.csv",
+      "muc_dich": "Dự báo rủi ro BTC và ETH bằng Elastic Net và XGBoost.",
       "tan_suat": "hang_ngay",
       "lich_du_lieu": "tat_ca_cac_ngay_UTC",
       "tai_san": ["BTC", "ETH"],
@@ -114,7 +145,7 @@
   "du_bao_rui_ro": {
     "bien_muc_tieu": "bien_dong_thuc_te_tuong_lai",
     "tai_san": ["BTC", "ETH"],
-    "chan_du_bao_ngay": [5, 10],
+    "chan_du_bao_ngay": [1],
     "cach_tinh": "do_lech_chuan_loi_suat_logarit_hang_ngay_trong_cua_so_tuong_lai",
     "don_vi": "phan_tram",
     "quy_tac": [
@@ -158,7 +189,7 @@
       "Chỉ chuẩn hóa dữ liệu và chọn đặc trưng bằng dữ liệu huấn luyện.",
       "Chọn siêu tham số mà không sử dụng tập kiểm tra cuối cùng.",
       "So sánh các mô hình trên cùng thời hạn dự báo và cùng tập ngày đánh giá.",
-      "Báo cáo kết quả riêng cho BTC và ETH, cho từng thời hạn 5 và 10 ngày.",
+      "Báo cáo kết quả riêng cho BTC và ETH, cho từng thời hạn 1 ngày.",
       "Dùng cùng định nghĩa biến mục tiêu cho mô hình cơ sở và mô hình bổ sung.",
       "Lưu ngày dự báo, dữ liệu đầu vào và kết quả dự báo để có thể tái lập."
     ],
