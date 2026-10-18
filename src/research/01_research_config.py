@@ -74,6 +74,13 @@ def kiem_tra_cau_hinh(cau_hinh):
 
     if ngay_bat_dau >= ngay_ket_thuc:
         raise ValueError("Ngày bắt đầu phải trước ngày kết thúc.")
+        
+    if de_tai["ngay_bat_dau"] != "2018-01-01":
+        raise ValueError("Ngày bắt đầu phải là 2018-01-01.")
+
+    if de_tai["ngay_ket_thuc"] != "2025-12-31":
+        raise ValueError("Ngày kết thúc phải là 2025-12-31.")
+
 
     # 3. Kiểm tra tài sản nghiên cứu
     tai_san = cau_hinh["tai_san_nghien_cuu"]
@@ -148,7 +155,7 @@ def kiem_tra_cau_hinh(cau_hinh):
 
     if bo_hoc_may.get("duong_dan") != "data/processed/ml_dataset.csv":
         raise ValueError(
-        "Đường dẫn ML dataset phải là data/processed/ml_dataset.csv."
+            "Đường dẫn ML dataset phải là data/processed/ml_dataset.csv."
         )
 
 
@@ -203,7 +210,15 @@ def kiem_tra_cau_hinh(cau_hinh):
         raise ValueError(
             "Cấu hình hiện tại yêu cầu chân trời dự báo một ngày: [1]."
         )
+    if du_bao.get("bien_muc_tieu") != (
+        "gia_tri_tuyet_doi_loi_suat_log_ngay_tiep_theo"
+    ):
+        raise ValueError("Biến mục tiêu dự báo không đúng cấu hình.")
 
+    if du_bao.get("cach_tinh") != (
+        "abs(100 * ln(P_t_cong_1 / P_t))"
+    ):
+        raise ValueError("Công thức dự báo rủi ro không đúng cấu hình.")
     # 10. Kiểm tra phương pháp đánh giá
     danh_gia = cau_hinh["danh_gia"]
 
