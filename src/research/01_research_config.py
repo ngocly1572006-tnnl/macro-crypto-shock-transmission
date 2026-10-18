@@ -7,7 +7,7 @@ from datetime import datetime
 # Xác định thư mục gốc của dự án
 THU_MUC_DU_AN = Path(__file__).resolve().parents[2]
 
-# Đường dẫn đến file cấu hình nghiên cứu
+# Đường dẫn file cấu hình nghiên cứu
 DUONG_DAN_CAU_HINH = (
     THU_MUC_DU_AN / "config" / "research_config.json"
 )
@@ -36,9 +36,9 @@ def doc_cau_hinh():
 
 
 def kiem_tra_cau_hinh(cau_hinh):
-    """Kiểm tra cấu trúc và các thông tin quan trọng của nghiên cứu."""
+    """Kiểm tra cấu trúc và tính nhất quán của cấu hình nghiên cứu."""
 
-    # 1. Kiểm tra các mục chính
+    # 1. Kiểm tra các mục bắt buộc
     cac_muc_bat_buoc = [
         "de_tai",
         "tai_san_nghien_cuu",
@@ -54,9 +54,7 @@ def kiem_tra_cau_hinh(cau_hinh):
 
     for muc in cac_muc_bat_buoc:
         if muc not in cau_hinh:
-            raise ValueError(
-                f"Cấu hình còn thiếu mục: {muc}"
-            )
+            raise ValueError(f"Cấu hình còn thiếu mục: {muc}")
 
     # 2. Kiểm tra thời gian nghiên cứu
     de_tai = cau_hinh["de_tai"]
@@ -68,7 +66,6 @@ def kiem_tra_cau_hinh(cau_hinh):
         ngay_ket_thuc = datetime.strptime(
             de_tai["ngay_ket_thuc"], "%Y-%m-%d"
         )
-
     except (KeyError, TypeError, ValueError) as loi:
         raise ValueError(
             "Ngày nghiên cứu phải đúng định dạng YYYY-MM-DD "
@@ -76,9 +73,7 @@ def kiem_tra_cau_hinh(cau_hinh):
         ) from loi
 
     if ngay_bat_dau >= ngay_ket_thuc:
-        raise ValueError(
-            "Ngày bắt đầu phải trước ngày kết thúc."
-        )
+        raise ValueError("Ngày bắt đầu phải trước ngày kết thúc.")
 
     # 3. Kiểm tra tài sản nghiên cứu
     tai_san = cau_hinh["tai_san_nghien_cuu"]
@@ -87,11 +82,9 @@ def kiem_tra_cau_hinh(cau_hinh):
         ma in tai_san.get("ma_tien_ma_hoa", [])
         for ma in ["BTC", "ETH"]
     ):
-        raise ValueError(
-            "Nghiên cứu phải có cả BTC và ETH."
-        )
+        raise ValueError("Nghiên cứu phải có cả BTC và ETH.")
 
-    # 4. Kiểm tra đủ 5 câu hỏi nghiên cứu
+    # 4. Kiểm tra câu hỏi nghiên cứu
     cau_hoi = cau_hinh["cau_hoi_nghien_cuu"]
 
     for ma_cau_hoi in ["RQ1", "RQ2", "RQ3", "RQ4", "RQ5"]:
@@ -100,7 +93,7 @@ def kiem_tra_cau_hinh(cau_hinh):
                 f"Cấu hình còn thiếu câu hỏi: {ma_cau_hoi}"
             )
 
-    # 5. Kiểm tra hai bộ dữ liệu
+    # 5. Kiểm tra các bộ dữ liệu theo JSON mới nhất
     cau_hinh_du_lieu = cau_hinh["cau_hinh_du_lieu"]
 
     cac_bo_du_lieu = [
@@ -129,7 +122,45 @@ def kiem_tra_cau_hinh(cau_hinh):
                     f"Bộ dữ liệu {ten_bo} còn thiếu: {truong}"
                 )
 
-    # 6. Kiểm tra mô hình nghiên cứu
+    # 6. Kiểm tra đường dẫn và lịch của model_dataset
+    bo_truyen_dan = cau_hinh_du_lieu["bo_du_lieu_truyen_dan"]
+
+    if bo_truyen_dan.get("ten") != "model_dataset":
+        raise ValueError("Tên bộ dữ liệu chuẩn phải là model_dataset.")
+
+    if bo_truyen_dan.get("duong_dan") != (
+        "data/processed/model_dataset.csv"
+    ):
+        raise ValueError(
+            "Đường dẫn model_dataset phải là "
+            "data/processed/model_dataset.csv."
+        )
+
+    if bo_truyen_dan.get("lich_du_lieu") != "tat_ca_cac_ngay_UTC":
+        raise ValueError(
+            "model_dataset phải giữ lịch BTC/ETH tất cả các ngày UTC."
+        )
+
+    # 7. Kiểm tra phân công thành viên nếu được khai báo
+    thanh_vien = cau_hinh_du_lieu.get("thanh_vien_su_dung", {})
+
+    for ten_tv, thong_tin in thanh_vien.items():
+        if not isinstance(thong_tin, dict):
+            raise ValueError(
+                f"Thông tin phân công của {ten_tv} không hợp lệ."
+            )
+
+        if not thong_tin.get("file_dau_vao"):
+            raise ValueError(
+                f"Phân công của {ten_tv} chưa có file đầu vào."
+            )
+
+        if "quy_tac" not in thong_tin:
+            raise ValueError(
+                f"Phân công của {ten_tv} chưa có quy tắc."
+            )
+
+    # 8. Kiểm tra mô hình nghiên cứu
     mo_hinh = cau_hinh["mo_hinh"]
 
     cac_mo_hinh_bat_buoc = [
@@ -145,19 +176,24 @@ def kiem_tra_cau_hinh(cau_hinh):
                 f"Cấu hình còn thiếu mô hình: {ten_mo_hinh}"
             )
 
-    # 7. Kiểm tra thời hạn dự báo rủi ro
+    # 9. Kiểm tra chân trời dự báo
     du_bao = cau_hinh["du_bao_rui_ro"]
     chan_du_bao = du_bao.get("chan_du_bao_ngay", [])
 
     if not chan_du_bao or any(
-        not isinstance(ngay, int) or ngay <= 0
+        type(ngay) is not int or ngay <= 0
         for ngay in chan_du_bao
     ):
         raise ValueError(
             "Các chân trời dự báo phải là số nguyên dương."
         )
 
-    # 8. Kiểm tra phương pháp đánh giá
+    if chan_du_bao != [1]:
+        raise ValueError(
+            "Cấu hình hiện tại yêu cầu chân trời dự báo một ngày: [1]."
+        )
+
+    # 10. Kiểm tra phương pháp đánh giá
     danh_gia = cau_hinh["danh_gia"]
 
     if danh_gia.get("phuong_phap_kiem_dinh") != "rolling_origin":
@@ -197,15 +233,20 @@ def main():
     )
 
     print(
-        "Câu hỏi nghiên cứu:",
+        "Số câu hỏi nghiên cứu:",
         len(cau_hinh["cau_hoi_nghien_cuu"]),
     )
 
     cau_hinh_du_lieu = cau_hinh["cau_hinh_du_lieu"]
 
     print(
-        "Bộ dữ liệu truyền dẫn:",
+        "Bộ dữ liệu chuẩn:",
         cau_hinh_du_lieu["bo_du_lieu_truyen_dan"]["ten"],
+    )
+
+    print(
+        "Đường dẫn dữ liệu chuẩn:",
+        cau_hinh_du_lieu["bo_du_lieu_truyen_dan"]["duong_dan"],
     )
 
     print(
@@ -225,6 +266,14 @@ def main():
         cau_hinh["mo_hinh"]["hoc_may_co_so"],
         "và",
         cau_hinh["mo_hinh"]["hoc_may_phi_tuyen"],
+    )
+
+    print(
+        "Chân trời dự báo:",
+        ", ".join(
+            f"{ngay} ngày"
+            for ngay in cau_hinh["du_bao_rui_ro"]["chan_du_bao_ngay"]
+        ),
     )
 
 
