@@ -1,0 +1,17 @@
+﻿variable,total_rows,non_missing,missing,missing_rate_percent
+BTC,2922,2922,0,0.0
+ETH,2922,2922,0,0.0
+US2Y,2922,1999,923,31.59
+DXY,2922,2013,909,31.11
+VIX,2922,2011,911,31.18
+BTC_log_return_pct,2922,2921,1,0.03
+ETH_log_return_pct,2922,2921,1,0.03
+US2Y_change_pp,2922,1998,924,31.62
+US2Y_observation_gap_days,2922,1998,924,31.62
+US2Y_observed,2922,2922,0,0.0
+DXY_log_return_pct,2922,2012,910,31.14
+DXY_observation_gap_days,2922,2012,910,31.14
+DXY_observed,2922,2922,0,0.0
+VIX_change_points,2922,2010,912,31.21
+VIX_observation_gap_days,2922,2010,912,31.21
+VIX_observed,2922,2922,0,0.0
