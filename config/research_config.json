@@ -143,18 +143,19 @@
     "luu_y": "Mốc năm 2021 được dùng để phân chia giai đoạn sau năm 2020; cần giải thích cơ sở lựa chọn trong báo cáo."
   },
   "du_bao_rui_ro": {
-    "bien_muc_tieu": "bien_dong_thuc_te_tuong_lai",
+    "bien_muc_tieu": "gia_tri_tuyet_doi_loi_suat_log_ngay_tiep_theo",
     "tai_san": ["BTC", "ETH"],
     "chan_du_bao_ngay": [1],
-    "cach_tinh": "do_lech_chuan_loi_suat_logarit_hang_ngay_trong_cua_so_tuong_lai",
+    "cach_tinh": "abs(100 * ln(P_t_cong_1 / P_t))",
     "don_vi": "phan_tram",
     "quy_tac": [
-      "Tính riêng biến động thực tế tương lai cho từng tài sản.",
-      "Chỉ tạo nhãn mục tiêu khi có đủ dữ liệu trong toàn bộ cửa sổ tương lai.",
-      "Không dùng các quan sát thuộc cửa sổ tương lai làm đặc trưng đầu vào tại thời điểm dự báo.",
-      "Kiểm tra khả năng chồng lấn giữa các cửa sổ mục tiêu khi chia tập dữ liệu."
+      "Tính riêng giá trị tuyệt đối lợi suất log ngày kế tiếp cho BTC và ETH.",
+      "Chỉ tạo nhãn mục tiêu khi có đủ giá đóng cửa của ngày hiện tại và ngày kế tiếp.",
+      "Không sử dụng lợi suất hoặc giá của ngày kế tiếp làm đặc trưng đầu vào tại thời điểm dự báo.",
+      "Đảm bảo đặc trưng và biến mục tiêu được căn chỉnh đúng theo thời gian.",
+      "Giữ năm 2025 làm tập kiểm tra cuối cùng; sử dụng giai đoạn 2018-2024 để huấn luyện và xác thực."
     ],
-    "luu_y": "Đây là định nghĩa mục tiêu dự báo được đề xuất. Cần thống nhất cách tính biến động và thời hạn dự báo trước khi huấn luyện mô hình."
+    "luu_y": "Giá trị tuyệt đối của lợi suất log ngày kế tiếp là thước đo đại diện cho độ lớn biến động giá trong một ngày, không phải độ lệch chuẩn hay biến động thực tế nhiều ngày."
   },
   "mo_hinh": {
     "kinh_te_luong_co_so": "VAR",
