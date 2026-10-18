@@ -140,6 +140,17 @@ def kiem_tra_cau_hinh(cau_hinh):
         raise ValueError(
             "model_dataset phải giữ lịch BTC/ETH tất cả các ngày UTC."
         )
+    
+    bo_hoc_may = cau_hinh_du_lieu["bo_du_lieu_hoc_may"]
+
+    if bo_hoc_may.get("ten") != "ml_dataset":
+        raise ValueError("Tên bộ dữ liệu học máy phải là ml_dataset.")
+
+    if bo_hoc_may.get("duong_dan") != "data/processed/ml_dataset.csv":
+        raise ValueError(
+        "Đường dẫn ML dataset phải là data/processed/ml_dataset.csv."
+        )
+
 
     # 7. Kiểm tra phân công thành viên nếu được khai báo
     thanh_vien = cau_hinh_du_lieu.get("thanh_vien_su_dung", {})
