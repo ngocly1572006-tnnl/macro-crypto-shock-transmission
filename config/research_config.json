@@ -49,8 +49,8 @@
     }
   },
   "cau_hoi_nghien_cuu": {
-    "RQ1": "Cú sốc lãi suất có tác động đến BTC và ETH không?",
-    "RQ2": "Cú sốc DXY và VIX truyền sang thị trường tiền mã hóa trong bao lâu?",
+    "RQ1":"Sự thay đổi lợi suất trái phiếu Kho bạc Mỹ kỳ hạn 2 năm có liên hệ như thế nào với lợi suất BTC và ETH?",
+    "RQ2": "Sự thay đổi DXY và VIX truyền sang thị trường tiền mã hóa trong bao lâu?",
     "RQ3": "Mức độ nhạy cảm của BTC và ETH với điều kiện tài chính toàn cầu có thay đổi sau năm 2020 không?",
     "RQ4": "Tác động truyền dẫn có mạnh hơn trong giai đoạn căng thẳng hoặc biến động cao không?",
     "RQ5": "Các biến tài chính toàn cầu có cải thiện khả năng dự báo rủi ro BTC và ETH ngoài mẫu không?"
@@ -59,7 +59,7 @@
     "phuong_an": 3,
     "mo_ta": "Xây dựng hai bộ dữ liệu theo hai mục tiêu nghiên cứu khác nhau.",
     "bo_du_lieu_truyen_dan": {
-      "ten": "transmission_dataset",
+      "ten": "model_dataset",
       "muc_dich": "Phân tích tác động truyền dẫn bằng VAR và Local Projections",
       "tan_suat": "hang_ngay",
       "lich_du_lieu": "ngay_giao_dich_chung",
@@ -76,8 +76,8 @@
       ],
       "luu_y": "Ngày giao dịch chung giúp các biến được so sánh trên cùng thời điểm, nhưng không phản ánh đầy đủ biến động BTC và ETH trong cuối tuần."
     },
-    "bo_du_lieu_du_bao": {
-      "ten": "crypto_risk_dataset",
+    "bo_du_lieu_hoc_may": {
+      "ten": "ml_dataset",
       "muc_dich": "Dự báo rủi ro BTC và ETH bằng Elastic Net và XGBoost",
       "tan_suat": "hang_ngay",
       "lich_du_lieu": "tat_ca_cac_ngay_UTC",
