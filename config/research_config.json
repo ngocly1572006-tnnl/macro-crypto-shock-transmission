@@ -128,7 +128,7 @@
     }
   },
   "trang_thai_thi_truong": {
-    "moc_thay_doi_co_cau": "2021-01-01",
+    "moc_thay_doi_co_cau": "2020-01-01",
     "phan_tich_sau_2020": true,
     "bien_dai_dien_cang_thang": "VIX",
     "bien_dai_dien_bien_dong_tien_ma_hoa": "bien_dong_thuc_te",
@@ -140,7 +140,7 @@
       "Không sử dụng toàn bộ mẫu, bao gồm dữ liệu tương lai, để xác định ngưỡng trong đánh giá dự báo ngoài mẫu.",
       "Kiểm tra độ nhạy với các ngưỡng thay thế."
     ],
-    "luu_y": "Mốc năm 2021 được dùng để phân chia giai đoạn sau năm 2020; cần giải thích cơ sở lựa chọn trong báo cáo."
+    "luu_y": "Chia mẫu thành hai giai đoạn: trước năm 2020 (2018–2019) và từ năm 2020 trở đi (2020–2025). Mốc phân chia được xác định trước theo thiết kế nghiên cứu RQ3."
   },
   "du_bao_rui_ro": {
     "bien_muc_tieu": "gia_tri_tuyet_doi_loi_suat_log_ngay_tiep_theo",
