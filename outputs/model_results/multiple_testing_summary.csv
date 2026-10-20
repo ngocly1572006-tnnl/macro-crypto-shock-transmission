@@ -1,0 +1,5 @@
+﻿family,n_tests,raw_significant_5pct,fdr_significant_5pct,min_p_raw,min_p_fdr
+subperiod_difference_RQ3,186,20,0,0.0002948191085003,0.05483635418105579
+regime_difference_RQ4,186,13,0,0.0050756570833498,0.640041130905155
+stress_threshold_robustness,108,1,0,0.0172531925230233,0.9557840118388395
+lp_baseline_coefficients,186,15,8,2.214157279056105e-14,4.118332539044355e-12

@@ -1,0 +1,7 @@
+﻿response,shock,lp_h0_per_unit,shock_sd,lp_h0_per_1sd,var_orth_irf_h0,note
+BTC,DXY,-0.8489449864091028,0.4206283654873567,-0.35709034202194717,-0.4146406636576971,VAR IRF is per 1 s.d. of the orthogonalised innovation; approximate comparison only
+BTC,US2Y,-2.3638698510036145,0.05791829894315293,-0.13691132069313372,-0.11391855195684784,VAR IRF is per 1 s.d. of the orthogonalised innovation; approximate comparison only
+BTC,VIX,-0.5724843782086517,2.130406019655004,-1.2196241654941637,-1.1928925289334862,VAR IRF is per 1 s.d. of the orthogonalised innovation; approximate comparison only
+ETH,DXY,-0.9866413029422558,0.4206283654873567,-0.41500931857891704,-0.4706811971613526,VAR IRF is per 1 s.d. of the orthogonalised innovation; approximate comparison only
+ETH,US2Y,-2.7575378100473507,0.05791829894315293,-0.1597118992293697,-0.13890063100949662,VAR IRF is per 1 s.d. of the orthogonalised innovation; approximate comparison only
+ETH,VIX,-0.7823811935879418,2.130406019655004,-1.6667896044846182,-1.6294962950895977,VAR IRF is per 1 s.d. of the orthogonalised innovation; approximate comparison only
