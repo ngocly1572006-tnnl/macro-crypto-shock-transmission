@@ -1,1 +1,369 @@
-
+asset,model,feature_set,feature,importance,signed_coefficient,importance_definition
+BTC,ElasticNet,crypto_only,BTC_abs_lag_0,0.0,0.0,absolute standardized coefficient
+BTC,ElasticNet,crypto_only,BTC_abs_lag_1,0.00011096286599595108,-0.00011096286599595108,absolute standardized coefficient
+BTC,ElasticNet,crypto_only,BTC_abs_lag_14,0.0,0.0,absolute standardized coefficient
+BTC,ElasticNet,crypto_only,BTC_abs_lag_2,0.15747867762978046,0.15747867762978046,absolute standardized coefficient
+BTC,ElasticNet,crypto_only,BTC_abs_lag_3,0.10498873135159291,0.10498873135159291,absolute standardized coefficient
+BTC,ElasticNet,crypto_only,BTC_abs_lag_7,0.09748017717133065,0.09748017717133065,absolute standardized coefficient
+BTC,ElasticNet,crypto_only,BTC_abs_mean_14,0.17239172201287606,0.17239172201287606,absolute standardized coefficient
+BTC,ElasticNet,crypto_only,BTC_abs_mean_3,0.30370310756167707,-0.30370310756167707,absolute standardized coefficient
+BTC,ElasticNet,crypto_only,BTC_abs_mean_30,0.25105733289829135,0.25105733289829135,absolute standardized coefficient
+BTC,ElasticNet,crypto_only,BTC_abs_mean_7,0.09410634057186738,0.09410634057186738,absolute standardized coefficient
+BTC,ElasticNet,crypto_only,BTC_abs_std_14,0.10566930030386446,0.10566930030386446,absolute standardized coefficient
+BTC,ElasticNet,crypto_only,BTC_abs_std_3,0.0712279683531761,0.0712279683531761,absolute standardized coefficient
+BTC,ElasticNet,crypto_only,BTC_abs_std_30,0.0724760886155783,0.0724760886155783,absolute standardized coefficient
+BTC,ElasticNet,crypto_only,BTC_abs_std_7,0.045139737526661776,0.045139737526661776,absolute standardized coefficient
+BTC,ElasticNet,crypto_only,BTC_ret_lag_0,0.046343773071423955,0.046343773071423955,absolute standardized coefficient
+BTC,ElasticNet,crypto_only,BTC_ret_lag_1,0.0,-0.0,absolute standardized coefficient
+BTC,ElasticNet,crypto_only,BTC_ret_lag_2,0.12337938119172809,-0.12337938119172809,absolute standardized coefficient
+BTC,ElasticNet,crypto_only,BTC_ret_lag_3,0.023478819291165787,-0.023478819291165787,absolute standardized coefficient
+BTC,ElasticNet,crypto_only,BTC_ret_lag_7,0.07323579973335828,0.07323579973335828,absolute standardized coefficient
+BTC,ElasticNet,crypto_only,ETH_abs_lag_0,0.20006444279043814,0.20006444279043814,absolute standardized coefficient
+BTC,ElasticNet,crypto_only,ETH_abs_lag_1,0.15651938189793116,0.15651938189793116,absolute standardized coefficient
+BTC,ElasticNet,crypto_only,ETH_abs_lag_14,0.00790083947753133,0.00790083947753133,absolute standardized coefficient
+BTC,ElasticNet,crypto_only,ETH_abs_lag_2,0.0,0.0,absolute standardized coefficient
+BTC,ElasticNet,crypto_only,ETH_abs_lag_3,0.12549288633671105,0.12549288633671105,absolute standardized coefficient
+BTC,ElasticNet,crypto_only,ETH_abs_lag_7,0.13501628688585757,-0.13501628688585757,absolute standardized coefficient
+BTC,ElasticNet,crypto_only,ETH_abs_mean_14,0.15952104762360142,-0.15952104762360142,absolute standardized coefficient
+BTC,ElasticNet,crypto_only,ETH_abs_mean_3,0.1887079100254615,-0.1887079100254615,absolute standardized coefficient
+BTC,ElasticNet,crypto_only,ETH_abs_mean_30,0.3321671365703239,0.3321671365703239,absolute standardized coefficient
+BTC,ElasticNet,crypto_only,ETH_abs_mean_7,0.11536749803941122,0.11536749803941122,absolute standardized coefficient
+BTC,ElasticNet,crypto_only,ETH_abs_std_14,0.0081900628088215,0.0081900628088215,absolute standardized coefficient
+BTC,ElasticNet,crypto_only,ETH_abs_std_3,0.07698215788284879,0.07698215788284879,absolute standardized coefficient
+BTC,ElasticNet,crypto_only,ETH_abs_std_30,0.33761523747536387,-0.33761523747536387,absolute standardized coefficient
+BTC,ElasticNet,crypto_only,ETH_abs_std_7,0.07252300610620993,0.07252300610620993,absolute standardized coefficient
+BTC,ElasticNet,crypto_only,ETH_ret_lag_0,0.23013213959020834,-0.23013213959020834,absolute standardized coefficient
+BTC,ElasticNet,crypto_only,ETH_ret_lag_1,0.11210597411248259,-0.11210597411248259,absolute standardized coefficient
+BTC,ElasticNet,crypto_only,ETH_ret_lag_2,0.053854123097922646,0.053854123097922646,absolute standardized coefficient
+BTC,ElasticNet,crypto_only,ETH_ret_lag_3,0.043139647886870615,0.043139647886870615,absolute standardized coefficient
+BTC,ElasticNet,crypto_only,ETH_ret_lag_7,0.035755374234558504,0.035755374234558504,absolute standardized coefficient
+BTC,ElasticNet,crypto_only,weekday_cos,0.307266563149604,0.307266563149604,absolute standardized coefficient
+BTC,ElasticNet,crypto_only,weekday_sin,0.2265102860076942,0.2265102860076942,absolute standardized coefficient
+BTC,XGBoost,crypto_only,BTC_abs_lag_0,0.02013317495584488,,normalized feature importance (XGBoost gain)
+BTC,XGBoost,crypto_only,BTC_abs_lag_1,0.011325954459607601,,normalized feature importance (XGBoost gain)
+BTC,XGBoost,crypto_only,BTC_abs_lag_14,0.03779768943786621,,normalized feature importance (XGBoost gain)
+BTC,XGBoost,crypto_only,BTC_abs_lag_2,0.023251056671142578,,normalized feature importance (XGBoost gain)
+BTC,XGBoost,crypto_only,BTC_abs_lag_3,0.019843656569719315,,normalized feature importance (XGBoost gain)
+BTC,XGBoost,crypto_only,BTC_abs_lag_7,0.015245350077748299,,normalized feature importance (XGBoost gain)
+BTC,XGBoost,crypto_only,BTC_abs_mean_14,0.08596137166023254,,normalized feature importance (XGBoost gain)
+BTC,XGBoost,crypto_only,BTC_abs_mean_3,0.019673477858304977,,normalized feature importance (XGBoost gain)
+BTC,XGBoost,crypto_only,BTC_abs_mean_30,0.059885423630476,,normalized feature importance (XGBoost gain)
+BTC,XGBoost,crypto_only,BTC_abs_mean_7,0.08567728102207184,,normalized feature importance (XGBoost gain)
+BTC,XGBoost,crypto_only,BTC_abs_std_14,0.03134063631296158,,normalized feature importance (XGBoost gain)
+BTC,XGBoost,crypto_only,BTC_abs_std_3,0.021019797772169113,,normalized feature importance (XGBoost gain)
+BTC,XGBoost,crypto_only,BTC_abs_std_30,0.01258316170424223,,normalized feature importance (XGBoost gain)
+BTC,XGBoost,crypto_only,BTC_abs_std_7,0.029744483530521393,,normalized feature importance (XGBoost gain)
+BTC,XGBoost,crypto_only,BTC_ret_lag_0,0.0244856309145689,,normalized feature importance (XGBoost gain)
+BTC,XGBoost,crypto_only,BTC_ret_lag_1,0.014371792785823345,,normalized feature importance (XGBoost gain)
+BTC,XGBoost,crypto_only,BTC_ret_lag_2,0.015992119908332825,,normalized feature importance (XGBoost gain)
+BTC,XGBoost,crypto_only,BTC_ret_lag_3,0.020985038951039314,,normalized feature importance (XGBoost gain)
+BTC,XGBoost,crypto_only,BTC_ret_lag_7,0.016975359991192818,,normalized feature importance (XGBoost gain)
+BTC,XGBoost,crypto_only,ETH_abs_lag_0,0.013401932083070278,,normalized feature importance (XGBoost gain)
+BTC,XGBoost,crypto_only,ETH_abs_lag_1,0.018793554976582527,,normalized feature importance (XGBoost gain)
+BTC,XGBoost,crypto_only,ETH_abs_lag_14,0.01675301417708397,,normalized feature importance (XGBoost gain)
+BTC,XGBoost,crypto_only,ETH_abs_lag_2,0.0,,normalized feature importance (XGBoost gain)
+BTC,XGBoost,crypto_only,ETH_abs_lag_3,0.030495503917336464,,normalized feature importance (XGBoost gain)
+BTC,XGBoost,crypto_only,ETH_abs_lag_7,0.014079869724810123,,normalized feature importance (XGBoost gain)
+BTC,XGBoost,crypto_only,ETH_abs_mean_14,0.01814677193760872,,normalized feature importance (XGBoost gain)
+BTC,XGBoost,crypto_only,ETH_abs_mean_3,0.022453639656305313,,normalized feature importance (XGBoost gain)
+BTC,XGBoost,crypto_only,ETH_abs_mean_30,0.030525073409080505,,normalized feature importance (XGBoost gain)
+BTC,XGBoost,crypto_only,ETH_abs_mean_7,0.04339224472641945,,normalized feature importance (XGBoost gain)
+BTC,XGBoost,crypto_only,ETH_abs_std_14,0.016821078956127167,,normalized feature importance (XGBoost gain)
+BTC,XGBoost,crypto_only,ETH_abs_std_3,0.012373797595500946,,normalized feature importance (XGBoost gain)
+BTC,XGBoost,crypto_only,ETH_abs_std_30,0.025124777108430862,,normalized feature importance (XGBoost gain)
+BTC,XGBoost,crypto_only,ETH_abs_std_7,0.021067405119538307,,normalized feature importance (XGBoost gain)
+BTC,XGBoost,crypto_only,ETH_ret_lag_0,0.023516958579421043,,normalized feature importance (XGBoost gain)
+BTC,XGBoost,crypto_only,ETH_ret_lag_1,0.017178205773234367,,normalized feature importance (XGBoost gain)
+BTC,XGBoost,crypto_only,ETH_ret_lag_2,0.009394013322889805,,normalized feature importance (XGBoost gain)
+BTC,XGBoost,crypto_only,ETH_ret_lag_3,0.016898412257432938,,normalized feature importance (XGBoost gain)
+BTC,XGBoost,crypto_only,ETH_ret_lag_7,0.028322039172053337,,normalized feature importance (XGBoost gain)
+BTC,XGBoost,crypto_only,weekday_cos,0.030209288001060486,,normalized feature importance (XGBoost gain)
+BTC,XGBoost,crypto_only,weekday_sin,0.024760020896792412,,normalized feature importance (XGBoost gain)
+BTC,ElasticNet,crypto_macro,BTC_abs_lag_0,0.0,-0.0,absolute standardized coefficient
+BTC,ElasticNet,crypto_macro,BTC_abs_lag_1,0.0,-0.0,absolute standardized coefficient
+BTC,ElasticNet,crypto_macro,BTC_abs_lag_14,0.0018848752888468274,0.0018848752888468274,absolute standardized coefficient
+BTC,ElasticNet,crypto_macro,BTC_abs_lag_2,0.0,-0.0,absolute standardized coefficient
+BTC,ElasticNet,crypto_macro,BTC_abs_lag_3,0.09819942587769949,0.09819942587769949,absolute standardized coefficient
+BTC,ElasticNet,crypto_macro,BTC_abs_lag_7,0.03603993228204304,0.03603993228204304,absolute standardized coefficient
+BTC,ElasticNet,crypto_macro,BTC_abs_mean_14,0.14660085258682015,0.14660085258682015,absolute standardized coefficient
+BTC,ElasticNet,crypto_macro,BTC_abs_mean_3,0.0,-0.0,absolute standardized coefficient
+BTC,ElasticNet,crypto_macro,BTC_abs_mean_30,0.2557734016162749,0.2557734016162749,absolute standardized coefficient
+BTC,ElasticNet,crypto_macro,BTC_abs_mean_7,0.05726038242958931,0.05726038242958931,absolute standardized coefficient
+BTC,ElasticNet,crypto_macro,BTC_abs_std_14,0.017254471839810548,0.017254471839810548,absolute standardized coefficient
+BTC,ElasticNet,crypto_macro,BTC_abs_std_3,0.00014313166110169686,0.00014313166110169686,absolute standardized coefficient
+BTC,ElasticNet,crypto_macro,BTC_abs_std_30,0.0,0.0,absolute standardized coefficient
+BTC,ElasticNet,crypto_macro,BTC_abs_std_7,0.09318393305903096,0.09318393305903096,absolute standardized coefficient
+BTC,ElasticNet,crypto_macro,BTC_ret_lag_0,0.0,-0.0,absolute standardized coefficient
+BTC,ElasticNet,crypto_macro,BTC_ret_lag_1,0.038420647924428654,-0.038420647924428654,absolute standardized coefficient
+BTC,ElasticNet,crypto_macro,BTC_ret_lag_2,0.048231520538408436,-0.048231520538408436,absolute standardized coefficient
+BTC,ElasticNet,crypto_macro,BTC_ret_lag_3,0.0,0.0,absolute standardized coefficient
+BTC,ElasticNet,crypto_macro,BTC_ret_lag_7,0.07299348145570304,0.07299348145570304,absolute standardized coefficient
+BTC,ElasticNet,crypto_macro,DXY_asof_change_on_release,0.07687714273661016,0.07687714273661016,absolute standardized coefficient
+BTC,ElasticNet,crypto_macro,DXY_asof_days_since_observation,0.06506184441270944,-0.06506184441270944,absolute standardized coefficient
+BTC,ElasticNet,crypto_macro,DXY_asof_level,0.1639595859857438,-0.1639595859857438,absolute standardized coefficient
+BTC,ElasticNet,crypto_macro,DXY_asof_release_today,0.10163735065345121,-0.10163735065345121,absolute standardized coefficient
+BTC,ElasticNet,crypto_macro,ETH_abs_lag_0,0.04070618484958206,0.04070618484958206,absolute standardized coefficient
+BTC,ElasticNet,crypto_macro,ETH_abs_lag_1,0.0019460258106806338,0.0019460258106806338,absolute standardized coefficient
+BTC,ElasticNet,crypto_macro,ETH_abs_lag_14,0.0,0.0,absolute standardized coefficient
+BTC,ElasticNet,crypto_macro,ETH_abs_lag_2,0.03792903958748932,-0.03792903958748932,absolute standardized coefficient
+BTC,ElasticNet,crypto_macro,ETH_abs_lag_3,0.10599818567939623,0.10599818567939623,absolute standardized coefficient
+BTC,ElasticNet,crypto_macro,ETH_abs_lag_7,0.07312077912627016,-0.07312077912627016,absolute standardized coefficient
+BTC,ElasticNet,crypto_macro,ETH_abs_mean_14,0.0,0.0,absolute standardized coefficient
+BTC,ElasticNet,crypto_macro,ETH_abs_mean_3,0.0,0.0,absolute standardized coefficient
+BTC,ElasticNet,crypto_macro,ETH_abs_mean_30,0.01561613361598759,0.01561613361598759,absolute standardized coefficient
+BTC,ElasticNet,crypto_macro,ETH_abs_mean_7,0.06252694482355821,0.06252694482355821,absolute standardized coefficient
+BTC,ElasticNet,crypto_macro,ETH_abs_std_14,0.0,-0.0,absolute standardized coefficient
+BTC,ElasticNet,crypto_macro,ETH_abs_std_3,0.043696435956651236,0.043696435956651236,absolute standardized coefficient
+BTC,ElasticNet,crypto_macro,ETH_abs_std_30,0.08169956628368383,-0.08169956628368383,absolute standardized coefficient
+BTC,ElasticNet,crypto_macro,ETH_abs_std_7,0.03315403802858632,0.03315403802858632,absolute standardized coefficient
+BTC,ElasticNet,crypto_macro,ETH_ret_lag_0,0.1678781526855668,-0.1678781526855668,absolute standardized coefficient
+BTC,ElasticNet,crypto_macro,ETH_ret_lag_1,0.07713034772049651,-0.07713034772049651,absolute standardized coefficient
+BTC,ElasticNet,crypto_macro,ETH_ret_lag_2,0.0,0.0,absolute standardized coefficient
+BTC,ElasticNet,crypto_macro,ETH_ret_lag_3,0.003038617958495335,0.003038617958495335,absolute standardized coefficient
+BTC,ElasticNet,crypto_macro,ETH_ret_lag_7,0.009213788538687045,0.009213788538687045,absolute standardized coefficient
+BTC,ElasticNet,crypto_macro,US2Y_asof_change_on_release,0.0,0.0,absolute standardized coefficient
+BTC,ElasticNet,crypto_macro,US2Y_asof_days_since_observation,0.08541081500795672,-0.08541081500795672,absolute standardized coefficient
+BTC,ElasticNet,crypto_macro,US2Y_asof_level,0.0,-0.0,absolute standardized coefficient
+BTC,ElasticNet,crypto_macro,US2Y_asof_release_today,0.07205936277491193,-0.07205936277491193,absolute standardized coefficient
+BTC,ElasticNet,crypto_macro,VIX_asof_change_on_release,0.14658786571431154,-0.14658786571431154,absolute standardized coefficient
+BTC,ElasticNet,crypto_macro,VIX_asof_days_since_observation,0.06457940194292693,-0.06457940194292693,absolute standardized coefficient
+BTC,ElasticNet,crypto_macro,VIX_asof_level,0.07985768552851182,0.07985768552851182,absolute standardized coefficient
+BTC,ElasticNet,crypto_macro,VIX_asof_release_today,0.10163688150244095,-0.10163688150244095,absolute standardized coefficient
+BTC,ElasticNet,crypto_macro,weekday_cos,0.24229085888167579,0.24229085888167579,absolute standardized coefficient
+BTC,ElasticNet,crypto_macro,weekday_sin,0.24047678482591084,0.24047678482591084,absolute standardized coefficient
+BTC,XGBoost,crypto_macro,BTC_abs_lag_0,0.011610151268541813,,normalized feature importance (XGBoost gain)
+BTC,XGBoost,crypto_macro,BTC_abs_lag_1,0.013476843014359474,,normalized feature importance (XGBoost gain)
+BTC,XGBoost,crypto_macro,BTC_abs_lag_14,0.042011458426713943,,normalized feature importance (XGBoost gain)
+BTC,XGBoost,crypto_macro,BTC_abs_lag_2,0.015698736533522606,,normalized feature importance (XGBoost gain)
+BTC,XGBoost,crypto_macro,BTC_abs_lag_3,0.015551235526800156,,normalized feature importance (XGBoost gain)
+BTC,XGBoost,crypto_macro,BTC_abs_lag_7,0.013509705662727356,,normalized feature importance (XGBoost gain)
+BTC,XGBoost,crypto_macro,BTC_abs_mean_14,0.061102621257305145,,normalized feature importance (XGBoost gain)
+BTC,XGBoost,crypto_macro,BTC_abs_mean_3,0.014004889875650406,,normalized feature importance (XGBoost gain)
+BTC,XGBoost,crypto_macro,BTC_abs_mean_30,0.05698191002011299,,normalized feature importance (XGBoost gain)
+BTC,XGBoost,crypto_macro,BTC_abs_mean_7,0.056063227355480194,,normalized feature importance (XGBoost gain)
+BTC,XGBoost,crypto_macro,BTC_abs_std_14,0.01980607397854328,,normalized feature importance (XGBoost gain)
+BTC,XGBoost,crypto_macro,BTC_abs_std_3,0.016260968521237373,,normalized feature importance (XGBoost gain)
+BTC,XGBoost,crypto_macro,BTC_abs_std_30,0.008433973416686058,,normalized feature importance (XGBoost gain)
+BTC,XGBoost,crypto_macro,BTC_abs_std_7,0.03156455233693123,,normalized feature importance (XGBoost gain)
+BTC,XGBoost,crypto_macro,BTC_ret_lag_0,0.015214266255497932,,normalized feature importance (XGBoost gain)
+BTC,XGBoost,crypto_macro,BTC_ret_lag_1,0.011535379104316235,,normalized feature importance (XGBoost gain)
+BTC,XGBoost,crypto_macro,BTC_ret_lag_2,0.01061166636645794,,normalized feature importance (XGBoost gain)
+BTC,XGBoost,crypto_macro,BTC_ret_lag_3,0.010265976190567017,,normalized feature importance (XGBoost gain)
+BTC,XGBoost,crypto_macro,BTC_ret_lag_7,0.012708744965493679,,normalized feature importance (XGBoost gain)
+BTC,XGBoost,crypto_macro,DXY_asof_change_on_release,0.02118426375091076,,normalized feature importance (XGBoost gain)
+BTC,XGBoost,crypto_macro,DXY_asof_days_since_observation,0.025114525109529495,,normalized feature importance (XGBoost gain)
+BTC,XGBoost,crypto_macro,DXY_asof_level,0.030537428334355354,,normalized feature importance (XGBoost gain)
+BTC,XGBoost,crypto_macro,DXY_asof_release_today,0.0,,normalized feature importance (XGBoost gain)
+BTC,XGBoost,crypto_macro,ETH_abs_lag_0,0.015206179581582546,,normalized feature importance (XGBoost gain)
+BTC,XGBoost,crypto_macro,ETH_abs_lag_1,0.0203067846596241,,normalized feature importance (XGBoost gain)
+BTC,XGBoost,crypto_macro,ETH_abs_lag_14,0.010071220807731152,,normalized feature importance (XGBoost gain)
+BTC,XGBoost,crypto_macro,ETH_abs_lag_2,0.016715455800294876,,normalized feature importance (XGBoost gain)
+BTC,XGBoost,crypto_macro,ETH_abs_lag_3,0.02327418141067028,,normalized feature importance (XGBoost gain)
+BTC,XGBoost,crypto_macro,ETH_abs_lag_7,0.011414598673582077,,normalized feature importance (XGBoost gain)
+BTC,XGBoost,crypto_macro,ETH_abs_mean_14,0.0158945731818676,,normalized feature importance (XGBoost gain)
+BTC,XGBoost,crypto_macro,ETH_abs_mean_3,0.024294117465615273,,normalized feature importance (XGBoost gain)
+BTC,XGBoost,crypto_macro,ETH_abs_mean_30,0.029965249821543694,,normalized feature importance (XGBoost gain)
+BTC,XGBoost,crypto_macro,ETH_abs_mean_7,0.055743589997291565,,normalized feature importance (XGBoost gain)
+BTC,XGBoost,crypto_macro,ETH_abs_std_14,0.022059502080082893,,normalized feature importance (XGBoost gain)
+BTC,XGBoost,crypto_macro,ETH_abs_std_3,0.013735120184719563,,normalized feature importance (XGBoost gain)
+BTC,XGBoost,crypto_macro,ETH_abs_std_30,0.011273224838078022,,normalized feature importance (XGBoost gain)
+BTC,XGBoost,crypto_macro,ETH_abs_std_7,0.013324686326086521,,normalized feature importance (XGBoost gain)
+BTC,XGBoost,crypto_macro,ETH_ret_lag_0,0.020781731233000755,,normalized feature importance (XGBoost gain)
+BTC,XGBoost,crypto_macro,ETH_ret_lag_1,0.013224323280155659,,normalized feature importance (XGBoost gain)
+BTC,XGBoost,crypto_macro,ETH_ret_lag_2,0.007549284491688013,,normalized feature importance (XGBoost gain)
+BTC,XGBoost,crypto_macro,ETH_ret_lag_3,0.012331174686551094,,normalized feature importance (XGBoost gain)
+BTC,XGBoost,crypto_macro,ETH_ret_lag_7,0.01854151301085949,,normalized feature importance (XGBoost gain)
+BTC,XGBoost,crypto_macro,US2Y_asof_change_on_release,0.022802036255598068,,normalized feature importance (XGBoost gain)
+BTC,XGBoost,crypto_macro,US2Y_asof_days_since_observation,0.0,,normalized feature importance (XGBoost gain)
+BTC,XGBoost,crypto_macro,US2Y_asof_level,0.022134730592370033,,normalized feature importance (XGBoost gain)
+BTC,XGBoost,crypto_macro,US2Y_asof_release_today,0.0,,normalized feature importance (XGBoost gain)
+BTC,XGBoost,crypto_macro,VIX_asof_change_on_release,0.025647925212979317,,normalized feature importance (XGBoost gain)
+BTC,XGBoost,crypto_macro,VIX_asof_days_since_observation,0.0,,normalized feature importance (XGBoost gain)
+BTC,XGBoost,crypto_macro,VIX_asof_level,0.017938170582056046,,normalized feature importance (XGBoost gain)
+BTC,XGBoost,crypto_macro,VIX_asof_release_today,0.0,,normalized feature importance (XGBoost gain)
+BTC,XGBoost,crypto_macro,weekday_cos,0.022156717255711555,,normalized feature importance (XGBoost gain)
+BTC,XGBoost,crypto_macro,weekday_sin,0.020365271717309952,,normalized feature importance (XGBoost gain)
+ETH,ElasticNet,crypto_only,BTC_abs_lag_0,0.017994623485466526,0.017994623485466526,absolute standardized coefficient
+ETH,ElasticNet,crypto_only,BTC_abs_lag_1,0.16225802675335668,-0.16225802675335668,absolute standardized coefficient
+ETH,ElasticNet,crypto_only,BTC_abs_lag_14,0.0425159274112702,0.0425159274112702,absolute standardized coefficient
+ETH,ElasticNet,crypto_only,BTC_abs_lag_2,0.0,0.0,absolute standardized coefficient
+ETH,ElasticNet,crypto_only,BTC_abs_lag_3,0.17814332156288426,0.17814332156288426,absolute standardized coefficient
+ETH,ElasticNet,crypto_only,BTC_abs_lag_7,0.07999504626414831,0.07999504626414831,absolute standardized coefficient
+ETH,ElasticNet,crypto_only,BTC_abs_mean_14,0.01662108305809707,-0.01662108305809707,absolute standardized coefficient
+ETH,ElasticNet,crypto_only,BTC_abs_mean_3,0.02427392289641512,-0.02427392289641512,absolute standardized coefficient
+ETH,ElasticNet,crypto_only,BTC_abs_mean_30,0.1937922680067166,0.1937922680067166,absolute standardized coefficient
+ETH,ElasticNet,crypto_only,BTC_abs_mean_7,0.11080412512243734,-0.11080412512243734,absolute standardized coefficient
+ETH,ElasticNet,crypto_only,BTC_abs_std_14,0.009504366440206627,0.009504366440206627,absolute standardized coefficient
+ETH,ElasticNet,crypto_only,BTC_abs_std_3,0.07345119380083649,0.07345119380083649,absolute standardized coefficient
+ETH,ElasticNet,crypto_only,BTC_abs_std_30,0.1236167269766089,-0.1236167269766089,absolute standardized coefficient
+ETH,ElasticNet,crypto_only,BTC_abs_std_7,0.09309308176805896,0.09309308176805896,absolute standardized coefficient
+ETH,ElasticNet,crypto_only,BTC_ret_lag_0,0.07334725954061466,-0.07334725954061466,absolute standardized coefficient
+ETH,ElasticNet,crypto_only,BTC_ret_lag_1,0.21166877453873056,-0.21166877453873056,absolute standardized coefficient
+ETH,ElasticNet,crypto_only,BTC_ret_lag_2,0.11815580348286034,-0.11815580348286034,absolute standardized coefficient
+ETH,ElasticNet,crypto_only,BTC_ret_lag_3,0.060173509395204834,0.060173509395204834,absolute standardized coefficient
+ETH,ElasticNet,crypto_only,BTC_ret_lag_7,0.17769598818813057,0.17769598818813057,absolute standardized coefficient
+ETH,ElasticNet,crypto_only,ETH_abs_lag_0,0.07042969793569197,-0.07042969793569197,absolute standardized coefficient
+ETH,ElasticNet,crypto_only,ETH_abs_lag_1,0.026429375672982956,0.026429375672982956,absolute standardized coefficient
+ETH,ElasticNet,crypto_only,ETH_abs_lag_14,0.10312744923347487,-0.10312744923347487,absolute standardized coefficient
+ETH,ElasticNet,crypto_only,ETH_abs_lag_2,0.005023884600222124,0.005023884600222124,absolute standardized coefficient
+ETH,ElasticNet,crypto_only,ETH_abs_lag_3,0.04665938785373163,0.04665938785373163,absolute standardized coefficient
+ETH,ElasticNet,crypto_only,ETH_abs_lag_7,0.05505691072772629,-0.05505691072772629,absolute standardized coefficient
+ETH,ElasticNet,crypto_only,ETH_abs_mean_14,0.03623598276327621,-0.03623598276327621,absolute standardized coefficient
+ETH,ElasticNet,crypto_only,ETH_abs_mean_3,0.11317629915179112,-0.11317629915179112,absolute standardized coefficient
+ETH,ElasticNet,crypto_only,ETH_abs_mean_30,0.5180223753557934,0.5180223753557934,absolute standardized coefficient
+ETH,ElasticNet,crypto_only,ETH_abs_mean_7,0.4569521429865208,0.4569521429865208,absolute standardized coefficient
+ETH,ElasticNet,crypto_only,ETH_abs_std_14,0.06866950224325673,0.06866950224325673,absolute standardized coefficient
+ETH,ElasticNet,crypto_only,ETH_abs_std_3,0.20444133367060552,0.20444133367060552,absolute standardized coefficient
+ETH,ElasticNet,crypto_only,ETH_abs_std_30,0.17118255641075095,-0.17118255641075095,absolute standardized coefficient
+ETH,ElasticNet,crypto_only,ETH_abs_std_7,0.10235815821137315,0.10235815821137315,absolute standardized coefficient
+ETH,ElasticNet,crypto_only,ETH_ret_lag_0,0.1802358405278935,-0.1802358405278935,absolute standardized coefficient
+ETH,ElasticNet,crypto_only,ETH_ret_lag_1,0.023713241660631927,-0.023713241660631927,absolute standardized coefficient
+ETH,ElasticNet,crypto_only,ETH_ret_lag_2,0.025353189101035106,-0.025353189101035106,absolute standardized coefficient
+ETH,ElasticNet,crypto_only,ETH_ret_lag_3,0.04381839745532424,-0.04381839745532424,absolute standardized coefficient
+ETH,ElasticNet,crypto_only,ETH_ret_lag_7,0.02582854370011365,-0.02582854370011365,absolute standardized coefficient
+ETH,ElasticNet,crypto_only,weekday_cos,0.29521003459817724,0.29521003459817724,absolute standardized coefficient
+ETH,ElasticNet,crypto_only,weekday_sin,0.26435415220165426,0.26435415220165426,absolute standardized coefficient
+ETH,XGBoost,crypto_only,BTC_abs_lag_0,0.015126579441130161,,normalized feature importance (XGBoost gain)
+ETH,XGBoost,crypto_only,BTC_abs_lag_1,0.02947617694735527,,normalized feature importance (XGBoost gain)
+ETH,XGBoost,crypto_only,BTC_abs_lag_14,0.027228696271777153,,normalized feature importance (XGBoost gain)
+ETH,XGBoost,crypto_only,BTC_abs_lag_2,0.01712409220635891,,normalized feature importance (XGBoost gain)
+ETH,XGBoost,crypto_only,BTC_abs_lag_3,0.019338052719831467,,normalized feature importance (XGBoost gain)
+ETH,XGBoost,crypto_only,BTC_abs_lag_7,0.0176737979054451,,normalized feature importance (XGBoost gain)
+ETH,XGBoost,crypto_only,BTC_abs_mean_14,0.045697275549173355,,normalized feature importance (XGBoost gain)
+ETH,XGBoost,crypto_only,BTC_abs_mean_3,0.01787874475121498,,normalized feature importance (XGBoost gain)
+ETH,XGBoost,crypto_only,BTC_abs_mean_30,0.026738828048110008,,normalized feature importance (XGBoost gain)
+ETH,XGBoost,crypto_only,BTC_abs_mean_7,0.01558974664658308,,normalized feature importance (XGBoost gain)
+ETH,XGBoost,crypto_only,BTC_abs_std_14,0.033362504094839096,,normalized feature importance (XGBoost gain)
+ETH,XGBoost,crypto_only,BTC_abs_std_3,0.018585706129670143,,normalized feature importance (XGBoost gain)
+ETH,XGBoost,crypto_only,BTC_abs_std_30,0.016110654920339584,,normalized feature importance (XGBoost gain)
+ETH,XGBoost,crypto_only,BTC_abs_std_7,0.0508902482688427,,normalized feature importance (XGBoost gain)
+ETH,XGBoost,crypto_only,BTC_ret_lag_0,0.020133307203650475,,normalized feature importance (XGBoost gain)
+ETH,XGBoost,crypto_only,BTC_ret_lag_1,0.018335985019803047,,normalized feature importance (XGBoost gain)
+ETH,XGBoost,crypto_only,BTC_ret_lag_2,0.021125776693224907,,normalized feature importance (XGBoost gain)
+ETH,XGBoost,crypto_only,BTC_ret_lag_3,0.01964576356112957,,normalized feature importance (XGBoost gain)
+ETH,XGBoost,crypto_only,BTC_ret_lag_7,0.017099980264902115,,normalized feature importance (XGBoost gain)
+ETH,XGBoost,crypto_only,ETH_abs_lag_0,0.011682989075779915,,normalized feature importance (XGBoost gain)
+ETH,XGBoost,crypto_only,ETH_abs_lag_1,0.017786674201488495,,normalized feature importance (XGBoost gain)
+ETH,XGBoost,crypto_only,ETH_abs_lag_14,0.012579308822751045,,normalized feature importance (XGBoost gain)
+ETH,XGBoost,crypto_only,ETH_abs_lag_2,0.012966308742761612,,normalized feature importance (XGBoost gain)
+ETH,XGBoost,crypto_only,ETH_abs_lag_3,0.02715154178440571,,normalized feature importance (XGBoost gain)
+ETH,XGBoost,crypto_only,ETH_abs_lag_7,0.014994467608630657,,normalized feature importance (XGBoost gain)
+ETH,XGBoost,crypto_only,ETH_abs_mean_14,0.04511503130197525,,normalized feature importance (XGBoost gain)
+ETH,XGBoost,crypto_only,ETH_abs_mean_3,0.023559629917144775,,normalized feature importance (XGBoost gain)
+ETH,XGBoost,crypto_only,ETH_abs_mean_30,0.04258183017373085,,normalized feature importance (XGBoost gain)
+ETH,XGBoost,crypto_only,ETH_abs_mean_7,0.08060935884714127,,normalized feature importance (XGBoost gain)
+ETH,XGBoost,crypto_only,ETH_abs_std_14,0.02942560985684395,,normalized feature importance (XGBoost gain)
+ETH,XGBoost,crypto_only,ETH_abs_std_3,0.02399868331849575,,normalized feature importance (XGBoost gain)
+ETH,XGBoost,crypto_only,ETH_abs_std_30,0.029708974063396454,,normalized feature importance (XGBoost gain)
+ETH,XGBoost,crypto_only,ETH_abs_std_7,0.05092737823724747,,normalized feature importance (XGBoost gain)
+ETH,XGBoost,crypto_only,ETH_ret_lag_0,0.01506405882537365,,normalized feature importance (XGBoost gain)
+ETH,XGBoost,crypto_only,ETH_ret_lag_1,0.014557971619069576,,normalized feature importance (XGBoost gain)
+ETH,XGBoost,crypto_only,ETH_ret_lag_2,0.01938181184232235,,normalized feature importance (XGBoost gain)
+ETH,XGBoost,crypto_only,ETH_ret_lag_3,0.0189224760979414,,normalized feature importance (XGBoost gain)
+ETH,XGBoost,crypto_only,ETH_ret_lag_7,0.016311591491103172,,normalized feature importance (XGBoost gain)
+ETH,XGBoost,crypto_only,weekday_cos,0.02188071981072426,,normalized feature importance (XGBoost gain)
+ETH,XGBoost,crypto_only,weekday_sin,0.023631662130355835,,normalized feature importance (XGBoost gain)
+ETH,ElasticNet,crypto_macro,BTC_abs_lag_0,0.0,0.0,absolute standardized coefficient
+ETH,ElasticNet,crypto_macro,BTC_abs_lag_1,0.076298475440766,-0.076298475440766,absolute standardized coefficient
+ETH,ElasticNet,crypto_macro,BTC_abs_lag_14,0.0,0.0,absolute standardized coefficient
+ETH,ElasticNet,crypto_macro,BTC_abs_lag_2,0.0,-0.0,absolute standardized coefficient
+ETH,ElasticNet,crypto_macro,BTC_abs_lag_3,0.1371345044626817,0.1371345044626817,absolute standardized coefficient
+ETH,ElasticNet,crypto_macro,BTC_abs_lag_7,0.014381974474744954,0.014381974474744954,absolute standardized coefficient
+ETH,ElasticNet,crypto_macro,BTC_abs_mean_14,0.0,0.0,absolute standardized coefficient
+ETH,ElasticNet,crypto_macro,BTC_abs_mean_3,0.0,-0.0,absolute standardized coefficient
+ETH,ElasticNet,crypto_macro,BTC_abs_mean_30,0.1405450982059759,0.1405450982059759,absolute standardized coefficient
+ETH,ElasticNet,crypto_macro,BTC_abs_mean_7,0.0,0.0,absolute standardized coefficient
+ETH,ElasticNet,crypto_macro,BTC_abs_std_14,0.0,0.0,absolute standardized coefficient
+ETH,ElasticNet,crypto_macro,BTC_abs_std_3,0.004939344324989428,0.004939344324989428,absolute standardized coefficient
+ETH,ElasticNet,crypto_macro,BTC_abs_std_30,0.05883890907835697,-0.05883890907835697,absolute standardized coefficient
+ETH,ElasticNet,crypto_macro,BTC_abs_std_7,0.026773512506289565,0.026773512506289565,absolute standardized coefficient
+ETH,ElasticNet,crypto_macro,BTC_ret_lag_0,0.06665013933778699,-0.06665013933778699,absolute standardized coefficient
+ETH,ElasticNet,crypto_macro,BTC_ret_lag_1,0.19493648697137667,-0.19493648697137667,absolute standardized coefficient
+ETH,ElasticNet,crypto_macro,BTC_ret_lag_2,0.09358721020182341,-0.09358721020182341,absolute standardized coefficient
+ETH,ElasticNet,crypto_macro,BTC_ret_lag_3,0.0,0.0,absolute standardized coefficient
+ETH,ElasticNet,crypto_macro,BTC_ret_lag_7,0.12121753326206372,0.12121753326206372,absolute standardized coefficient
+ETH,ElasticNet,crypto_macro,DXY_asof_change_on_release,0.08701756712496793,0.08701756712496793,absolute standardized coefficient
+ETH,ElasticNet,crypto_macro,DXY_asof_days_since_observation,0.07161839988940374,-0.07161839988940374,absolute standardized coefficient
+ETH,ElasticNet,crypto_macro,DXY_asof_level,0.23555684179167954,-0.23555684179167954,absolute standardized coefficient
+ETH,ElasticNet,crypto_macro,DXY_asof_release_today,0.1017780846627168,-0.1017780846627168,absolute standardized coefficient
+ETH,ElasticNet,crypto_macro,ETH_abs_lag_0,0.0,-0.0,absolute standardized coefficient
+ETH,ElasticNet,crypto_macro,ETH_abs_lag_1,0.0,0.0,absolute standardized coefficient
+ETH,ElasticNet,crypto_macro,ETH_abs_lag_14,0.03724591182264554,-0.03724591182264554,absolute standardized coefficient
+ETH,ElasticNet,crypto_macro,ETH_abs_lag_2,0.0,0.0,absolute standardized coefficient
+ETH,ElasticNet,crypto_macro,ETH_abs_lag_3,0.06277057251345199,0.06277057251345199,absolute standardized coefficient
+ETH,ElasticNet,crypto_macro,ETH_abs_lag_7,0.0,-0.0,absolute standardized coefficient
+ETH,ElasticNet,crypto_macro,ETH_abs_mean_14,0.04440666980644087,0.04440666980644087,absolute standardized coefficient
+ETH,ElasticNet,crypto_macro,ETH_abs_mean_3,0.0,-0.0,absolute standardized coefficient
+ETH,ElasticNet,crypto_macro,ETH_abs_mean_30,0.1661531822142847,0.1661531822142847,absolute standardized coefficient
+ETH,ElasticNet,crypto_macro,ETH_abs_mean_7,0.25668309759057656,0.25668309759057656,absolute standardized coefficient
+ETH,ElasticNet,crypto_macro,ETH_abs_std_14,0.0,0.0,absolute standardized coefficient
+ETH,ElasticNet,crypto_macro,ETH_abs_std_3,0.12497165806056654,0.12497165806056654,absolute standardized coefficient
+ETH,ElasticNet,crypto_macro,ETH_abs_std_30,0.01241804603769135,-0.01241804603769135,absolute standardized coefficient
+ETH,ElasticNet,crypto_macro,ETH_abs_std_7,0.14956374593092858,0.14956374593092858,absolute standardized coefficient
+ETH,ElasticNet,crypto_macro,ETH_ret_lag_0,0.16881836971918113,-0.16881836971918113,absolute standardized coefficient
+ETH,ElasticNet,crypto_macro,ETH_ret_lag_1,0.028461666752747288,-0.028461666752747288,absolute standardized coefficient
+ETH,ElasticNet,crypto_macro,ETH_ret_lag_2,0.014860525641626831,-0.014860525641626831,absolute standardized coefficient
+ETH,ElasticNet,crypto_macro,ETH_ret_lag_3,0.0,-0.0,absolute standardized coefficient
+ETH,ElasticNet,crypto_macro,ETH_ret_lag_7,0.0,0.0,absolute standardized coefficient
+ETH,ElasticNet,crypto_macro,US2Y_asof_change_on_release,0.014795186337333916,-0.014795186337333916,absolute standardized coefficient
+ETH,ElasticNet,crypto_macro,US2Y_asof_days_since_observation,0.11053379235278547,-0.11053379235278547,absolute standardized coefficient
+ETH,ElasticNet,crypto_macro,US2Y_asof_level,0.05870236632076693,-0.05870236632076693,absolute standardized coefficient
+ETH,ElasticNet,crypto_macro,US2Y_asof_release_today,0.058484367601497694,-0.058484367601497694,absolute standardized coefficient
+ETH,ElasticNet,crypto_macro,VIX_asof_change_on_release,0.11138451941926086,-0.11138451941926086,absolute standardized coefficient
+ETH,ElasticNet,crypto_macro,VIX_asof_days_since_observation,0.07115965692508687,-0.07115965692508687,absolute standardized coefficient
+ETH,ElasticNet,crypto_macro,VIX_asof_level,0.12883095453754867,0.12883095453754867,absolute standardized coefficient
+ETH,ElasticNet,crypto_macro,VIX_asof_release_today,0.10221895442513201,-0.10221895442513201,absolute standardized coefficient
+ETH,ElasticNet,crypto_macro,weekday_cos,0.2631028509566317,0.2631028509566317,absolute standardized coefficient
+ETH,ElasticNet,crypto_macro,weekday_sin,0.265822070659754,0.265822070659754,absolute standardized coefficient
+ETH,XGBoost,crypto_macro,BTC_abs_lag_0,0.011133790016174316,,normalized feature importance (XGBoost gain)
+ETH,XGBoost,crypto_macro,BTC_abs_lag_1,0.021319422870874405,,normalized feature importance (XGBoost gain)
+ETH,XGBoost,crypto_macro,BTC_abs_lag_14,0.025837132707238197,,normalized feature importance (XGBoost gain)
+ETH,XGBoost,crypto_macro,BTC_abs_lag_2,0.011669939383864403,,normalized feature importance (XGBoost gain)
+ETH,XGBoost,crypto_macro,BTC_abs_lag_3,0.012601986527442932,,normalized feature importance (XGBoost gain)
+ETH,XGBoost,crypto_macro,BTC_abs_lag_7,0.01675320975482464,,normalized feature importance (XGBoost gain)
+ETH,XGBoost,crypto_macro,BTC_abs_mean_14,0.007600662764161825,,normalized feature importance (XGBoost gain)
+ETH,XGBoost,crypto_macro,BTC_abs_mean_3,0.013970453292131424,,normalized feature importance (XGBoost gain)
+ETH,XGBoost,crypto_macro,BTC_abs_mean_30,0.02632693387567997,,normalized feature importance (XGBoost gain)
+ETH,XGBoost,crypto_macro,BTC_abs_mean_7,0.045425429940223694,,normalized feature importance (XGBoost gain)
+ETH,XGBoost,crypto_macro,BTC_abs_std_14,0.022067900747060776,,normalized feature importance (XGBoost gain)
+ETH,XGBoost,crypto_macro,BTC_abs_std_3,0.01419284101575613,,normalized feature importance (XGBoost gain)
+ETH,XGBoost,crypto_macro,BTC_abs_std_30,0.015763787552714348,,normalized feature importance (XGBoost gain)
+ETH,XGBoost,crypto_macro,BTC_abs_std_7,0.03891170769929886,,normalized feature importance (XGBoost gain)
+ETH,XGBoost,crypto_macro,BTC_ret_lag_0,0.013585110194981098,,normalized feature importance (XGBoost gain)
+ETH,XGBoost,crypto_macro,BTC_ret_lag_1,0.01679677516222,,normalized feature importance (XGBoost gain)
+ETH,XGBoost,crypto_macro,BTC_ret_lag_2,0.015443574637174606,,normalized feature importance (XGBoost gain)
+ETH,XGBoost,crypto_macro,BTC_ret_lag_3,0.0074794176034629345,,normalized feature importance (XGBoost gain)
+ETH,XGBoost,crypto_macro,BTC_ret_lag_7,0.01367256511002779,,normalized feature importance (XGBoost gain)
+ETH,XGBoost,crypto_macro,DXY_asof_change_on_release,0.02145230770111084,,normalized feature importance (XGBoost gain)
+ETH,XGBoost,crypto_macro,DXY_asof_days_since_observation,0.019782654941082,,normalized feature importance (XGBoost gain)
+ETH,XGBoost,crypto_macro,DXY_asof_level,0.029404036700725555,,normalized feature importance (XGBoost gain)
+ETH,XGBoost,crypto_macro,DXY_asof_release_today,0.012798654846847057,,normalized feature importance (XGBoost gain)
+ETH,XGBoost,crypto_macro,ETH_abs_lag_0,0.007725038565695286,,normalized feature importance (XGBoost gain)
+ETH,XGBoost,crypto_macro,ETH_abs_lag_1,0.01761389896273613,,normalized feature importance (XGBoost gain)
+ETH,XGBoost,crypto_macro,ETH_abs_lag_14,0.01061861403286457,,normalized feature importance (XGBoost gain)
+ETH,XGBoost,crypto_macro,ETH_abs_lag_2,0.012204905971884727,,normalized feature importance (XGBoost gain)
+ETH,XGBoost,crypto_macro,ETH_abs_lag_3,0.020064184442162514,,normalized feature importance (XGBoost gain)
+ETH,XGBoost,crypto_macro,ETH_abs_lag_7,0.013423571363091469,,normalized feature importance (XGBoost gain)
+ETH,XGBoost,crypto_macro,ETH_abs_mean_14,0.041186463087797165,,normalized feature importance (XGBoost gain)
+ETH,XGBoost,crypto_macro,ETH_abs_mean_3,0.025874847546219826,,normalized feature importance (XGBoost gain)
+ETH,XGBoost,crypto_macro,ETH_abs_mean_30,0.04562846198678017,,normalized feature importance (XGBoost gain)
+ETH,XGBoost,crypto_macro,ETH_abs_mean_7,0.0780724361538887,,normalized feature importance (XGBoost gain)
+ETH,XGBoost,crypto_macro,ETH_abs_std_14,0.029645590111613274,,normalized feature importance (XGBoost gain)
+ETH,XGBoost,crypto_macro,ETH_abs_std_3,0.015665560960769653,,normalized feature importance (XGBoost gain)
+ETH,XGBoost,crypto_macro,ETH_abs_std_30,0.028120895847678185,,normalized feature importance (XGBoost gain)
+ETH,XGBoost,crypto_macro,ETH_abs_std_7,0.040494538843631744,,normalized feature importance (XGBoost gain)
+ETH,XGBoost,crypto_macro,ETH_ret_lag_0,0.012379503808915615,,normalized feature importance (XGBoost gain)
+ETH,XGBoost,crypto_macro,ETH_ret_lag_1,0.01218379195779562,,normalized feature importance (XGBoost gain)
+ETH,XGBoost,crypto_macro,ETH_ret_lag_2,0.015216396190226078,,normalized feature importance (XGBoost gain)
+ETH,XGBoost,crypto_macro,ETH_ret_lag_3,0.017256662249565125,,normalized feature importance (XGBoost gain)
+ETH,XGBoost,crypto_macro,ETH_ret_lag_7,0.008764120750129223,,normalized feature importance (XGBoost gain)
+ETH,XGBoost,crypto_macro,US2Y_asof_change_on_release,0.01611880026757717,,normalized feature importance (XGBoost gain)
+ETH,XGBoost,crypto_macro,US2Y_asof_days_since_observation,0.0,,normalized feature importance (XGBoost gain)
+ETH,XGBoost,crypto_macro,US2Y_asof_level,0.025906596332788467,,normalized feature importance (XGBoost gain)
+ETH,XGBoost,crypto_macro,US2Y_asof_release_today,0.0,,normalized feature importance (XGBoost gain)
+ETH,XGBoost,crypto_macro,VIX_asof_change_on_release,0.021976802498102188,,normalized feature importance (XGBoost gain)
+ETH,XGBoost,crypto_macro,VIX_asof_days_since_observation,0.0,,normalized feature importance (XGBoost gain)
+ETH,XGBoost,crypto_macro,VIX_asof_level,0.01575557142496109,,normalized feature importance (XGBoost gain)
+ETH,XGBoost,crypto_macro,VIX_asof_release_today,0.0,,normalized feature importance (XGBoost gain)
+ETH,XGBoost,crypto_macro,weekday_cos,0.016620546579360962,,normalized feature importance (XGBoost gain)
+ETH,XGBoost,crypto_macro,weekday_sin,0.017491964623332024,,normalized feature importance (XGBoost gain)
