@@ -1,0 +1,109 @@
+asset,model,feature_set,params,validation_year,mae,n_val
+BTC,ElasticNet,crypto_only,"{""alpha"": 0.01, ""l1_ratio"": 0.2}",2022,1.7005140580210651,365
+BTC,ElasticNet,crypto_only,"{""alpha"": 0.01, ""l1_ratio"": 0.2}",2023,1.278537498381539,365
+BTC,ElasticNet,crypto_only,"{""alpha"": 0.01, ""l1_ratio"": 0.2}",2024,1.3755277036524765,366
+BTC,ElasticNet,crypto_only,"{""alpha"": 0.01, ""l1_ratio"": 0.8}",2022,1.6974727292127412,365
+BTC,ElasticNet,crypto_only,"{""alpha"": 0.01, ""l1_ratio"": 0.8}",2023,1.278395729151669,365
+BTC,ElasticNet,crypto_only,"{""alpha"": 0.01, ""l1_ratio"": 0.8}",2024,1.3796449670412103,366
+BTC,ElasticNet,crypto_only,"{""alpha"": 0.1, ""l1_ratio"": 0.2}",2022,1.6946518745062595,365
+BTC,ElasticNet,crypto_only,"{""alpha"": 0.1, ""l1_ratio"": 0.2}",2023,1.2816188788520346,365
+BTC,ElasticNet,crypto_only,"{""alpha"": 0.1, ""l1_ratio"": 0.2}",2024,1.3878111186845932,366
+BTC,ElasticNet,crypto_only,"{""alpha"": 0.1, ""l1_ratio"": 0.8}",2022,1.7112042763269149,365
+BTC,ElasticNet,crypto_only,"{""alpha"": 0.1, ""l1_ratio"": 0.8}",2023,1.300818385489965,365
+BTC,ElasticNet,crypto_only,"{""alpha"": 0.1, ""l1_ratio"": 0.8}",2024,1.4074056550042355,366
+BTC,ElasticNet,crypto_only,"{""alpha"": 0.5, ""l1_ratio"": 0.2}",2022,1.7332150699152027,365
+BTC,ElasticNet,crypto_only,"{""alpha"": 0.5, ""l1_ratio"": 0.2}",2023,1.3481551533805944,365
+BTC,ElasticNet,crypto_only,"{""alpha"": 0.5, ""l1_ratio"": 0.2}",2024,1.434706387803326,366
+BTC,ElasticNet,crypto_only,"{""alpha"": 0.5, ""l1_ratio"": 0.8}",2022,1.7925731873293973,365
+BTC,ElasticNet,crypto_only,"{""alpha"": 0.5, ""l1_ratio"": 0.8}",2023,1.546496321001649,365
+BTC,ElasticNet,crypto_only,"{""alpha"": 0.5, ""l1_ratio"": 0.8}",2024,1.5157376240219411,366
+BTC,XGBoost,crypto_only,"{""learning_rate"": 0.04, ""max_depth"": 2, ""n_estimators"": 200}",2022,1.7528883148494359,365
+BTC,XGBoost,crypto_only,"{""learning_rate"": 0.04, ""max_depth"": 2, ""n_estimators"": 200}",2023,1.4078291438270891,365
+BTC,XGBoost,crypto_only,"{""learning_rate"": 0.04, ""max_depth"": 2, ""n_estimators"": 200}",2024,1.4028784392038653,366
+BTC,XGBoost,crypto_only,"{""learning_rate"": 0.04, ""max_depth"": 3, ""n_estimators"": 250}",2022,1.7301230787713506,365
+BTC,XGBoost,crypto_only,"{""learning_rate"": 0.04, ""max_depth"": 3, ""n_estimators"": 250}",2023,1.5460432538535969,365
+BTC,XGBoost,crypto_only,"{""learning_rate"": 0.04, ""max_depth"": 3, ""n_estimators"": 250}",2024,1.3911894467681694,366
+BTC,XGBoost,crypto_only,"{""learning_rate"": 0.08, ""max_depth"": 2, ""n_estimators"": 200}",2022,1.7408037251524098,365
+BTC,XGBoost,crypto_only,"{""learning_rate"": 0.08, ""max_depth"": 2, ""n_estimators"": 200}",2023,1.4466535277401438,365
+BTC,XGBoost,crypto_only,"{""learning_rate"": 0.08, ""max_depth"": 2, ""n_estimators"": 200}",2024,1.3980821230575788,366
+BTC,ElasticNet,crypto_macro,"{""alpha"": 0.01, ""l1_ratio"": 0.2}",2022,1.6410091350654368,365
+BTC,ElasticNet,crypto_macro,"{""alpha"": 0.01, ""l1_ratio"": 0.2}",2023,1.3042873424241448,365
+BTC,ElasticNet,crypto_macro,"{""alpha"": 0.01, ""l1_ratio"": 0.2}",2024,1.3086483795997763,366
+BTC,ElasticNet,crypto_macro,"{""alpha"": 0.01, ""l1_ratio"": 0.8}",2022,1.6341102387055724,365
+BTC,ElasticNet,crypto_macro,"{""alpha"": 0.01, ""l1_ratio"": 0.8}",2023,1.2854130707684372,365
+BTC,ElasticNet,crypto_macro,"{""alpha"": 0.01, ""l1_ratio"": 0.8}",2024,1.3093015864659945,366
+BTC,ElasticNet,crypto_macro,"{""alpha"": 0.1, ""l1_ratio"": 0.2}",2022,1.6194372116358247,365
+BTC,ElasticNet,crypto_macro,"{""alpha"": 0.1, ""l1_ratio"": 0.2}",2023,1.2460404916628978,365
+BTC,ElasticNet,crypto_macro,"{""alpha"": 0.1, ""l1_ratio"": 0.2}",2024,1.3267520153549384,366
+BTC,ElasticNet,crypto_macro,"{""alpha"": 0.1, ""l1_ratio"": 0.8}",2022,1.6248098765559327,365
+BTC,ElasticNet,crypto_macro,"{""alpha"": 0.1, ""l1_ratio"": 0.8}",2023,1.2785368842949576,365
+BTC,ElasticNet,crypto_macro,"{""alpha"": 0.1, ""l1_ratio"": 0.8}",2024,1.3744971617588049,366
+BTC,ElasticNet,crypto_macro,"{""alpha"": 0.5, ""l1_ratio"": 0.2}",2022,1.643344448308562,365
+BTC,ElasticNet,crypto_macro,"{""alpha"": 0.5, ""l1_ratio"": 0.2}",2023,1.3240403540471815,365
+BTC,ElasticNet,crypto_macro,"{""alpha"": 0.5, ""l1_ratio"": 0.2}",2024,1.4048466650035825,366
+BTC,ElasticNet,crypto_macro,"{""alpha"": 0.5, ""l1_ratio"": 0.8}",2022,1.7925731873293973,365
+BTC,ElasticNet,crypto_macro,"{""alpha"": 0.5, ""l1_ratio"": 0.8}",2023,1.546496321001649,365
+BTC,ElasticNet,crypto_macro,"{""alpha"": 0.5, ""l1_ratio"": 0.8}",2024,1.5157376240219411,366
+BTC,XGBoost,crypto_macro,"{""learning_rate"": 0.04, ""max_depth"": 2, ""n_estimators"": 200}",2022,1.784095115015912,365
+BTC,XGBoost,crypto_macro,"{""learning_rate"": 0.04, ""max_depth"": 2, ""n_estimators"": 200}",2023,1.423052324630205,365
+BTC,XGBoost,crypto_macro,"{""learning_rate"": 0.04, ""max_depth"": 2, ""n_estimators"": 200}",2024,1.3552152279468221,366
+BTC,XGBoost,crypto_macro,"{""learning_rate"": 0.04, ""max_depth"": 3, ""n_estimators"": 250}",2022,1.7584684709115228,365
+BTC,XGBoost,crypto_macro,"{""learning_rate"": 0.04, ""max_depth"": 3, ""n_estimators"": 250}",2023,1.6239767596439079,365
+BTC,XGBoost,crypto_macro,"{""learning_rate"": 0.04, ""max_depth"": 3, ""n_estimators"": 250}",2024,1.3259245700152404,366
+BTC,XGBoost,crypto_macro,"{""learning_rate"": 0.08, ""max_depth"": 2, ""n_estimators"": 200}",2022,1.7906893464141083,365
+BTC,XGBoost,crypto_macro,"{""learning_rate"": 0.08, ""max_depth"": 2, ""n_estimators"": 200}",2023,1.6446961287185107,365
+BTC,XGBoost,crypto_macro,"{""learning_rate"": 0.08, ""max_depth"": 2, ""n_estimators"": 200}",2024,1.3440710989564815,366
+ETH,ElasticNet,crypto_only,"{""alpha"": 0.01, ""l1_ratio"": 0.2}",2022,2.2664483023726634,365
+ETH,ElasticNet,crypto_only,"{""alpha"": 0.01, ""l1_ratio"": 0.2}",2023,1.5688275775255232,365
+ETH,ElasticNet,crypto_only,"{""alpha"": 0.01, ""l1_ratio"": 0.2}",2024,1.7516461654001536,366
+ETH,ElasticNet,crypto_only,"{""alpha"": 0.01, ""l1_ratio"": 0.8}",2022,2.2647347839762166,365
+ETH,ElasticNet,crypto_only,"{""alpha"": 0.01, ""l1_ratio"": 0.8}",2023,1.5738935611537987,365
+ETH,ElasticNet,crypto_only,"{""alpha"": 0.01, ""l1_ratio"": 0.8}",2024,1.7496137102079783,366
+ETH,ElasticNet,crypto_only,"{""alpha"": 0.1, ""l1_ratio"": 0.2}",2022,2.259717183460867,365
+ETH,ElasticNet,crypto_only,"{""alpha"": 0.1, ""l1_ratio"": 0.2}",2023,1.595421749783431,365
+ETH,ElasticNet,crypto_only,"{""alpha"": 0.1, ""l1_ratio"": 0.2}",2024,1.7463440058814355,366
+ETH,ElasticNet,crypto_only,"{""alpha"": 0.1, ""l1_ratio"": 0.8}",2022,2.2785957466355735,365
+ETH,ElasticNet,crypto_only,"{""alpha"": 0.1, ""l1_ratio"": 0.8}",2023,1.6411647307688695,365
+ETH,ElasticNet,crypto_only,"{""alpha"": 0.1, ""l1_ratio"": 0.8}",2024,1.742160097419339,366
+ETH,ElasticNet,crypto_only,"{""alpha"": 0.5, ""l1_ratio"": 0.2}",2022,2.289324029128614,365
+ETH,ElasticNet,crypto_only,"{""alpha"": 0.5, ""l1_ratio"": 0.2}",2023,1.7073159386829266,365
+ETH,ElasticNet,crypto_only,"{""alpha"": 0.5, ""l1_ratio"": 0.2}",2024,1.7703632543059438,366
+ETH,ElasticNet,crypto_only,"{""alpha"": 0.5, ""l1_ratio"": 0.8}",2022,2.347728539247083,365
+ETH,ElasticNet,crypto_only,"{""alpha"": 0.5, ""l1_ratio"": 0.8}",2023,1.9677013948833435,365
+ETH,ElasticNet,crypto_only,"{""alpha"": 0.5, ""l1_ratio"": 0.8}",2024,1.8420077306932257,366
+ETH,XGBoost,crypto_only,"{""learning_rate"": 0.04, ""max_depth"": 2, ""n_estimators"": 200}",2022,2.3077872411140303,365
+ETH,XGBoost,crypto_only,"{""learning_rate"": 0.04, ""max_depth"": 2, ""n_estimators"": 200}",2023,1.7821761088327182,365
+ETH,XGBoost,crypto_only,"{""learning_rate"": 0.04, ""max_depth"": 2, ""n_estimators"": 200}",2024,1.7081805709331037,366
+ETH,XGBoost,crypto_only,"{""learning_rate"": 0.04, ""max_depth"": 3, ""n_estimators"": 250}",2022,2.320894112088107,365
+ETH,XGBoost,crypto_only,"{""learning_rate"": 0.04, ""max_depth"": 3, ""n_estimators"": 250}",2023,1.9223870029115149,365
+ETH,XGBoost,crypto_only,"{""learning_rate"": 0.04, ""max_depth"": 3, ""n_estimators"": 250}",2024,1.7334645935021422,366
+ETH,XGBoost,crypto_only,"{""learning_rate"": 0.08, ""max_depth"": 2, ""n_estimators"": 200}",2022,2.309424658301962,365
+ETH,XGBoost,crypto_only,"{""learning_rate"": 0.08, ""max_depth"": 2, ""n_estimators"": 200}",2023,1.8569351069762352,365
+ETH,XGBoost,crypto_only,"{""learning_rate"": 0.08, ""max_depth"": 2, ""n_estimators"": 200}",2024,1.728815670344908,366
+ETH,ElasticNet,crypto_macro,"{""alpha"": 0.01, ""l1_ratio"": 0.2}",2022,2.2145562470205906,365
+ETH,ElasticNet,crypto_macro,"{""alpha"": 0.01, ""l1_ratio"": 0.2}",2023,1.594497337375541,365
+ETH,ElasticNet,crypto_macro,"{""alpha"": 0.01, ""l1_ratio"": 0.2}",2024,1.6137384462201656,366
+ETH,ElasticNet,crypto_macro,"{""alpha"": 0.01, ""l1_ratio"": 0.8}",2022,2.206965352788915,365
+ETH,ElasticNet,crypto_macro,"{""alpha"": 0.01, ""l1_ratio"": 0.8}",2023,1.583570647684411,365
+ETH,ElasticNet,crypto_macro,"{""alpha"": 0.01, ""l1_ratio"": 0.8}",2024,1.6127102112225602,366
+ETH,ElasticNet,crypto_macro,"{""alpha"": 0.1, ""l1_ratio"": 0.2}",2022,2.180802992562994,365
+ETH,ElasticNet,crypto_macro,"{""alpha"": 0.1, ""l1_ratio"": 0.2}",2023,1.5403247558859183,365
+ETH,ElasticNet,crypto_macro,"{""alpha"": 0.1, ""l1_ratio"": 0.2}",2024,1.6181773878670618,366
+ETH,ElasticNet,crypto_macro,"{""alpha"": 0.1, ""l1_ratio"": 0.8}",2022,2.1734748707046263,365
+ETH,ElasticNet,crypto_macro,"{""alpha"": 0.1, ""l1_ratio"": 0.8}",2023,1.589193063822604,365
+ETH,ElasticNet,crypto_macro,"{""alpha"": 0.1, ""l1_ratio"": 0.8}",2024,1.651699683431024,366
+ETH,ElasticNet,crypto_macro,"{""alpha"": 0.5, ""l1_ratio"": 0.2}",2022,2.1699199501154576,365
+ETH,ElasticNet,crypto_macro,"{""alpha"": 0.5, ""l1_ratio"": 0.2}",2023,1.666272846190496,365
+ETH,ElasticNet,crypto_macro,"{""alpha"": 0.5, ""l1_ratio"": 0.2}",2024,1.689126242868559,366
+ETH,ElasticNet,crypto_macro,"{""alpha"": 0.5, ""l1_ratio"": 0.8}",2022,2.268373522433323,365
+ETH,ElasticNet,crypto_macro,"{""alpha"": 0.5, ""l1_ratio"": 0.8}",2023,1.9677013948833435,365
+ETH,ElasticNet,crypto_macro,"{""alpha"": 0.5, ""l1_ratio"": 0.8}",2024,1.840725047561849,366
+ETH,XGBoost,crypto_macro,"{""learning_rate"": 0.04, ""max_depth"": 2, ""n_estimators"": 200}",2022,2.2753706183067046,365
+ETH,XGBoost,crypto_macro,"{""learning_rate"": 0.04, ""max_depth"": 2, ""n_estimators"": 200}",2023,2.0294000753415657,365
+ETH,XGBoost,crypto_macro,"{""learning_rate"": 0.04, ""max_depth"": 2, ""n_estimators"": 200}",2024,1.607576280717895,366
+ETH,XGBoost,crypto_macro,"{""learning_rate"": 0.04, ""max_depth"": 3, ""n_estimators"": 250}",2022,2.260283939372134,365
+ETH,XGBoost,crypto_macro,"{""learning_rate"": 0.04, ""max_depth"": 3, ""n_estimators"": 250}",2023,2.224056442153148,365
+ETH,XGBoost,crypto_macro,"{""learning_rate"": 0.04, ""max_depth"": 3, ""n_estimators"": 250}",2024,1.5977897887511687,366
+ETH,XGBoost,crypto_macro,"{""learning_rate"": 0.08, ""max_depth"": 2, ""n_estimators"": 200}",2022,2.328734875138162,365
+ETH,XGBoost,crypto_macro,"{""learning_rate"": 0.08, ""max_depth"": 2, ""n_estimators"": 200}",2023,2.2493688491153607,365
+ETH,XGBoost,crypto_macro,"{""learning_rate"": 0.08, ""max_depth"": 2, ""n_estimators"": 200}",2024,1.6015068523826903,366
