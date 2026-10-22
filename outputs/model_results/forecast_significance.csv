@@ -1,0 +1,9 @@
+asset,reference_model,reference_feature_set,candidate_model,candidate_feature_set,mae_reduction,ci95_lower,ci95_upper,n_obs,block_days,bootstrap_reps,ci_excludes_zero
+BTC,Historical30,crypto_only,ElasticNet,crypto_only,-0.01050897,-0.05762303,0.03858522,365,7,2000,False
+BTC,ElasticNet,crypto_only,ElasticNet,crypto_macro,-0.03336735,-0.05964982,-0.00677312,365,7,2000,True
+BTC,Historical30,crypto_only,XGBoost,crypto_only,-0.06092030,-0.11836263,-0.00395790,365,7,2000,True
+BTC,XGBoost,crypto_only,XGBoost,crypto_macro,0.00791675,-0.02088847,0.03354765,365,7,2000,False
+ETH,Historical30,crypto_only,ElasticNet,crypto_only,0.07389917,-0.00616570,0.15552374,365,7,2000,False
+ETH,ElasticNet,crypto_only,ElasticNet,crypto_macro,0.00807703,-0.02817264,0.04390305,365,7,2000,False
+ETH,Historical30,crypto_only,XGBoost,crypto_only,0.06367571,-0.01194481,0.13712353,365,7,2000,False
+ETH,XGBoost,crypto_only,XGBoost,crypto_macro,0.00191484,-0.05111668,0.04652694,365,7,2000,False
