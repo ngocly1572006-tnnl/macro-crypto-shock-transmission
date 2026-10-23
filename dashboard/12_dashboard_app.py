@@ -1509,6 +1509,97 @@ def difference_interpret(
     return finding, meaning, caution
 
 
+
+
+# ============================================================
+# 06B. PHÂN TÍCH CHUYÊN SÂU — BỔ SUNG CHO BẢN V5
+# ============================================================
+
+def deep_analysis(title, finding, mechanism, evidence, limitation):
+    """Bốn tầng diễn giải: quan sát → cơ chế → thống kê → giới hạn."""
+    parts = [
+        ("01 · KẾT QUẢ QUAN SÁT", finding, "#F4EDF5", "#9270B5"),
+        ("02 · CƠ CHẾ KINH TẾ", mechanism, "#E2F2EC", "#25887E"),
+        ("03 · BẰNG CHỨNG THỐNG KÊ", evidence, "#EEE8F7", "#9270B5"),
+        ("04 · GIỚI HẠN & HÀM Ý", limitation, "#FFF0DD", "#C7954E"),
+    ]
+    content = "".join(
+        '<div style="background:'+bg+';border-left:5px solid '+edge+';'
+        'border-radius:12px;padding:18px 22px;margin:12px 0">'
+        '<div style="font-weight:900;color:#4D3956;font-size:14px">'+esc(label)+'</div>'
+        '<div style="color:#443A4B;font-size:16px;line-height:1.9;white-space:pre-line">'
+        +esc(body)+'</div></div>'
+        for label, body, bg, edge in parts
+    )
+    st.html('<div style="background:white;border:1px solid #E6D8E4;'
+            'border-radius:19px;padding:24px;margin:18px 0 30px">'
+            '<div style="font-size:20px;font-weight:900;color:#503A57">'
+            +esc(title)+'</div>'+content+'</div>')
+
+
+def fdr_overview(df, key, asset=None):
+    if df.empty or not {'shock', 'horizon', 'p_value_fdr'}.issubset(df.columns):
+        return
+    part = filter_df(df, response=asset) if asset else df.copy()
+    part = numeric_frame(part, 'horizon', 'p_value_fdr')
+    part = part.dropna(subset=['horizon', 'p_value_fdr'])
+    if part.empty:
+        return
+    part['significant'] = (part['p_value_fdr'] < 0.05).astype(int)
+    piv = part.pivot_table(index='shock', columns='horizon', values='significant', aggfunc='max')
+    if piv.empty:
+        return
+    fig = go.Figure(go.Heatmap(
+        x=piv.columns, y=piv.index, z=piv.values,
+        zmin=0, zmax=1, colorscale=[[0,'#F0E5EF'],[0.49,'#F0E5EF'],[0.5,'#25887E'],[1,'#25887E']],
+        text=np.where(piv.values==1,'✓','—'), texttemplate='%{text}',
+        showscale=False,
+    ))
+    fig.update_xaxes(title='Chân trời h')
+    plot(fig, key, 310)
+
+
+def paired_difference_chart(df, key, label):
+    if df.empty or not {'horizon','difference'}.issubset(df.columns):
+        return
+    part=numeric_frame(df,'horizon','difference','difference_p_value','p_value_fdr')
+    part=part.dropna(subset=['horizon','difference']).sort_values('horizon')
+    if part.empty: return
+    qcol='p_value_fdr' if 'p_value_fdr' in part else 'difference_p_value'
+    colors=[C['teal'] if num(q)<0.05 else C['coral'] for q in part.get(qcol,pd.Series([np.nan]*len(part)))]
+    fig=go.Figure(go.Bar(x=part['horizon'],y=part['difference'],marker_color=colors,
+                         text=part['difference'].round(3),textposition='outside'))
+    fig.add_hline(y=0,line_dash='dash',line_color='#A995A8')
+    fig.update_xaxes(title='Chân trời h')
+    fig.update_yaxes(title=label)
+    plot(fig,key,410)
+
+
+def feature_increment_chart(df, asset, metric, key):
+    if df.empty or not {'model','feature_set','value'}.issubset(df.columns): return
+    part=filter_df(df,response=asset,metric=metric)
+    if part.empty and 'asset' in df: part=filter_df(df,asset=asset,metric=metric)
+    if part.empty:return
+    part=numeric_frame(part,'value')
+    piv=part.pivot_table(index='model',columns='feature_set',values='value',aggfunc='mean')
+    if not {'crypto_only','crypto_macro'}.issubset(piv.columns): return
+    delta=(piv['crypto_only']-piv['crypto_macro']).dropna().sort_values()
+    if delta.empty:return
+    fig=go.Figure(go.Bar(x=delta.values,y=delta.index,orientation='h',
+        marker_color=[C['teal'] if x>0 else C['coral'] for x in delta.values],
+        text=[f'{x:+.4f}' for x in delta.values],textposition='outside'))
+    fig.add_vline(x=0,line_dash='dash',line_color='#A995A8')
+    fig.update_xaxes(title=f'Giảm {metric} khi thêm Macro (dương = cải thiện)')
+    plot(fig,key,390)
+
+
+def deep_mechanism(shock):
+    return {
+        'VIX': 'VIX tăng thường phản ánh mức bất ổn kỳ vọng cao hơn. Khi các nhà đầu tư giảm đòn bẩy và ưu tiên thanh khoản, nhu cầu nắm giữ crypto có thể giảm. Nhưng VIX cũng phản ứng với cùng một tin tức mà crypto phản ứng, nên không thể mặc định một chiều nhân quả.',
+        'DXY': 'DXY mạnh có thể đi cùng điều kiện USD thắt chặt và khẩu vị rủi ro suy yếu. Giá crypto định danh USD còn có thể phản ánh thay đổi sức mua và dòng vốn xuyên biên giới. Cơ chế này chỉ là giả thuyết giải thích, không được nhận diện độc lập.',
+        'US2Y': 'US2Y phản ánh kỳ vọng chính sách tiền tệ và triển vọng kinh tế. Tăng lợi suất có thể làm chi phí cơ hội của tài sản không sinh lãi tăng, nhưng đồng thời có thể phản ánh tin tức tăng trưởng, nên dấu hệ số có thể biến đổi.',
+    }.get(shock,'Mối liên hệ có thể chịu ảnh hưởng đồng thời từ tâm lý thị trường, thanh khoản và tin tức vĩ mô.')
+
 # ============================================================
 # 07. SIDEBAR
 # ============================================================
@@ -1955,6 +2046,14 @@ elif PAGE == "rq1":
 
     show_table(all_h0, "Hệ số LP cùng ngày")
 
+    section('Phân tích bổ sung · Bản đồ ý nghĩa FDR', 'Ô xanh thể hiện kiểm định còn ý nghĩa sau điều chỉnh FDR 5%.')
+    fdr_overview(lp_fdr, 'rq1_fdr_heatmap', asset)
+    deep_analysis('Đọc sâu kết quả truyền dẫn',
+        f'Với {asset}, các hệ số theo {shock} có thể âm hoặc dương tùy chân trời. Không dùng dấu hệ số một mình để khẳng định tác động.',
+        deep_mechanism(shock),
+        'Mỗi hệ số được kiểm định riêng, nhưng có 186 kiểm định LP trong nghiên cứu. Chỉ 8 kiểm định còn ý nghĩa sau BH-FDR 5%. Bản đồ FDR giúp phân biệt tín hiệu được kiểm chứng và hệ số chỉ mang tính mô tả.',
+        'Hệ số của ba cú sốc khác đơn vị. Không so sánh trực tiếp trị số VIX, DXY và US2Y; cũng không suy ra lợi nhuận giao dịch hoặc quan hệ nhân quả.')
+
     answer(
         "RQ1",
         "Có bằng chứng về liên hệ âm cùng ngày "
@@ -2050,6 +2149,13 @@ elif PAGE == "rq2":
 
     show_table(lp, "Kết quả Local Projections")
     show_table(irf, "Kết quả VAR / IRF")
+
+    section('Phân tích bổ sung · Cơ chế và mức độ bền vững', 'Phân biệt dấu, độ lớn và độ tin cậy thống kê.')
+    deep_analysis('Vì sao đường phản ứng thay đổi theo chân trời?',
+        f'Đường LP và VAR/IRF của {asset} trước {shock} cho thấy diễn biến hệ số theo thời gian; đỉnh tuyệt đối không nhất thiết là tác động có ý nghĩa.',
+        deep_mechanism(shock) + ' Phản ứng có thể điều chỉnh theo quá trình định giá lại rủi ro và tái cân bằng danh mục.',
+        'Đọc khoảng tin cậy tại từng h, đối chiếu bảng LP FDR. LP đo ngày lịch còn VAR đo phiên vĩ mô; VAR(5) còn phụ thuộc thứ tự Cholesky VIX → DXY → US2Y → BTC → ETH.',
+        'Không xem h có hệ số lớn nhất là bằng chứng phản ứng kéo dài. Không so sánh trực tiếp hai phương pháp về trị số hoặc chân trời thời gian.')
 
     answer(
         "RQ2",
@@ -2184,6 +2290,14 @@ elif PAGE == "rq3":
     show_table(difference, "Kiểm định chênh lệch RQ3")
     show_table(sub, "Hệ số từng giai đoạn")
 
+    section('Phân tích bổ sung · Chênh lệch hệ số theo chân trời', 'Cột biểu thị Post − Pre; màu không thay thế q-value.')
+    paired_difference_chart(DATA['rq3'].pipe(filter_df, response=asset, shock=shock), 'rq3_difference_bars', 'Post − Pre')
+    deep_analysis('Vì sao nhìn khác mà chưa kết luận thay đổi?',
+        'Các đường Pre/Post có thể cách nhau ở một số chân trời nhưng kiểm định chênh lệch mới là cơ sở kết luận.',
+        'Sau 2020, thị trường crypto có thể thay đổi về quy mô và nhà đầu tư, trong khi chính sách tiền tệ trải qua nhiều chế độ. Những thay đổi này làm giả thuyết đứt gãy cấu trúc hợp lý về kinh tế.',
+        'Trong 186 kiểm định chênh lệch Pre/Post, không có kiểm định nào còn ý nghĩa sau BH-FDR 5%. Độ lớn chênh lệch ước lượng không đủ để bác bỏ giả thuyết bằng nhau.',
+        'Không có bằng chứng khác biệt không chứng minh hai giai đoạn tương đương. Cỡ mẫu, độ nhiễu và cách chọn mốc 2020 đều ảnh hưởng sức mạnh kiểm định.')
+
     answer(
         "RQ3",
         "Chưa đủ bằng chứng về thay đổi truyền dẫn "
@@ -2312,6 +2426,14 @@ elif PAGE == "rq4":
 
     show_table(difference, "Kiểm định Calm/Stress")
     show_table(regime, "Hệ số theo trạng thái")
+
+    section('Phân tích bổ sung · Chênh lệch Stress − Calm', 'Đọc chênh lệch cùng với quy mô mẫu hai trạng thái.')
+    paired_difference_chart(DATA['rq4'].pipe(filter_df, response=asset, shock=shock), 'rq4_difference_bars', 'Stress − Calm')
+    deep_analysis('Stress có làm truyền dẫn mạnh hơn không?',
+        'Không thể kết luận Stress làm phản ứng mạnh hơn chỉ vì đường Stress cao hoặc thấp hơn Calm.',
+        'Trong giai đoạn VIX cao, nhu cầu thanh khoản và giảm đòn bẩy có thể tăng. Crypto có thể trở nên nhạy cảm hơn với cùng một thay đổi vĩ mô, nhưng cơ chế này cần được kiểm định.',
+        'Mẫu Calm gồm 1.839 quan sát, Stress 151. Trong 186 kiểm định chênh lệch, không có kết quả nào còn ý nghĩa sau BH-FDR 5%.',
+        'Mẫu Stress nhỏ khiến khoảng tin cậy rộng và độ mạnh thống kê thấp. Chưa phát hiện khác biệt không đồng nghĩa Stress và Calm có cùng cơ chế.')
 
     answer(
         "RQ4",
@@ -2859,6 +2981,14 @@ elif PAGE == "rq5":
         )
 
     show_table(comparison, "Bảng so sánh mô hình")
+
+    section('Phân tích bổ sung · Giá trị gia tăng của Macro', 'So sánh chênh lệch sai số giữa hai bộ đặc trưng trong cùng thuật toán.')
+    feature_increment_chart(DATA['comparison'], asset, metric, 'rq5_macro_increment')
+    deep_analysis('Thêm Macro có tạo giá trị dự báo thực tế?',
+        'Giá trị gia tăng của Macro phải được đánh giá qua mức giảm MAE/RMSE ngoài mẫu, không qua độ lớn hệ số hồi quy hay feature importance.',
+        'VIX, DXY và US2Y có thể phản ánh rủi ro hệ thống, nhưng thông tin đó có thể đã nằm trong chuỗi crypto. Thêm đặc trưng làm tăng chiều mô hình và có nguy cơ học nhiễu.',
+        'Tập kiểm tra năm 2025 gồm 365 ngày. Với BTC, Elastic Net Crypto-only MAE ≈ 1,1309 và Crypto+Macro ≈ 1,1643: thêm Macro làm xấu đi, được block bootstrap xác nhận. Với ETH, cải thiện nhỏ chưa được xác nhận thống kê.',
+        'Mô hình dự báo |lợi suất log ngày tiếp theo|, không dự báo chiều giá hoặc lợi nhuận giao dịch. Phải đánh giá bootstrap và tính ổn định ngoài mẫu, không chọn mô hình dựa trên một đồ thị đẹp.')
 
     answer(
         "RQ5",
