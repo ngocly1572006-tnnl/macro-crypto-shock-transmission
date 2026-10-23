@@ -28,6 +28,7 @@
       "ma": "US2Y",
       "vai_tro": "dieu_kien_tai_chinh_toan_cau",
       "cach_bien_doi": "sai_phan_bac_mot",
+      "cong_thuc": "US2Y_t - US2Y_t_1",
       "don_vi_goc": "phan_tram",
       "don_vi_sai_phan": "diem_phan_tram",
       "luu_y": "Sai phân US2Y phản ánh thay đổi lợi suất, không mặc nhiên là cú sốc chính sách tiền tệ thuần túy."
@@ -44,6 +45,7 @@
       "ma": "VIX",
       "vai_tro": "rui_ro_toan_cau",
       "cach_bien_doi": "sai_phan_bac_mot",
+      "cong_thuc": "VIX_t - VIX_t_1",
       "don_vi_goc": "diem_chi_so",
       "luu_y": "Sai phân VIX phản ánh thay đổi điểm chỉ số, không phải mức VIX tuyệt đối."
     }
@@ -132,16 +134,20 @@
     "phan_tich_sau_2020": true,
     "bien_dai_dien_cang_thang": "VIX",
     "bien_dai_dien_bien_dong_tien_ma_hoa": "bien_dong_thuc_te",
-    "cach_xac_dinh_trang_thai": "nguong_phan_vi",
-    "phan_vi_de_xuat": 0.75,
+    "cach_xac_dinh_trang_thai": "nguong_co_dinh",
+    "nguong_stress_co_so": 30,
+    "nguong_stress_kiem_tra_do_nhay": [25, 35],
+    "do_tre_vix": 1,
+    "don_vi_do_tre": "phien_quan_sat_vix",
     "quy_tac": [
-      "Xác định trạng thái căng thẳng bằng ngưỡng phân vị của VIX hoặc biến động crypto.",
-      "Ngưỡng phải được ước lượng từ mẫu huấn luyện hoặc dữ liệu quá khứ tại thời điểm phân loại.",
-      "Không sử dụng toàn bộ mẫu, bao gồm dữ liệu tương lai, để xác định ngưỡng trong đánh giá dự báo ngoài mẫu.",
-      "Kiểm tra độ nhạy với các ngưỡng thay thế."
+        "Xác định Stress dựa trên quan sát VIX gần nhất đã có sẵn tại thời điểm phân loại.",
+        "Không sử dụng quan sát VIX chưa được công bố tại thời điểm phân loại.",
+        "Đặc tả cơ sở sử dụng ngưỡng VIX 30 điểm; kiểm tra độ nhạy với ngưỡng 25 và 35 điểm.",
+        "Ghi nhận ngày quan sát VIX được sử dụng cho từng ngày crypto."
     ],
-    "luu_y": "Chia mẫu thành hai giai đoạn: trước năm 2020 (2018–2019) và từ năm 2020 trở đi (2020–2025). Mốc phân chia được xác định trước theo thiết kế nghiên cứu RQ3."
+    "luu_y": "Giai đoạn trước năm 2020 gồm 2018-2019; giai đoạn từ năm 2020 trở đi gồm 2020-2025. Đây là mốc phân chia được xác định trước trong thiết kế nghiên cứu."
   },
+
   "du_bao_rui_ro": {
     "bien_muc_tieu": "gia_tri_tuyet_doi_loi_suat_log_ngay_tiep_theo",
     "tai_san": ["BTC", "ETH"],
@@ -162,12 +168,13 @@
     "kinh_te_luong_mo_rong": "Local Projections",
     "hoc_may_co_so": "Elastic Net",
     "hoc_may_phi_tuyen": "XGBoost",
-    "phan_tach_muc_tieu": {
+    "phan_tach_muc_tieu": { 
       "VAR": "Phân tích động thái tương tác giữa lợi suất crypto và các biến tài chính toàn cầu.",
-      "Local Projections": "Ước lượng phản ứng của BTC và ETH tại các thời hạn sau cú sốc.",
-      "Elastic Net": "Mô hình dự báo cơ sở có điều chuẩn.",
-      "XGBoost": "Mô hình dự báo phi tuyến để kiểm tra khả năng cải thiện dự báo."
+      "Local Projections": "Ước lượng mối liên hệ giữa các thay đổi của chỉ báo tài chính toàn cầu và lợi suất BTC, ETH tại các chân trời từ h=0 đến h=30 ngày.",
+      "Elastic Net": "Mô hình dự báo có điều chuẩn.",
+      "XGBoost": "Mô hình dự báo phi tuyến để kiểm tra khả năng cải thiện dự báo ngoài mẫu."
     },
+
     "luu_y": [
       "Sai phân US2Y, DXY và VIX không tự động được diễn giải là cú sốc ngoại sinh.",
       "Nếu muốn kết luận về cú sốc chính sách tiền tệ, cần xác định thước đo cú sốc phù hợp.",
@@ -183,17 +190,17 @@
     "so_sanh_mo_hinh_co_so_va_mo_hinh_bo_sung_bien_vi_mo": true,
     "mo_hinh_co_so": "chi_su_dung_dac_trung_thi_truong_crypto",
     "mo_hinh_bo_sung": "dac_trung_thi_truong_crypto_va_bien_tai_chinh_toan_cau",
-    "thuo_c_do_du_bao": ["MAE", "RMSE"],
+    "thuoc_do_du_bao": ["MAE", "RMSE"],
     "quy_tac": [
-      "Chia tập huấn luyện, xác thực và kiểm tra theo thứ tự thời gian.",
-      "Không xáo trộn ngẫu nhiên các quan sát theo ngày.",
-      "Chỉ chuẩn hóa dữ liệu và chọn đặc trưng bằng dữ liệu huấn luyện.",
-      "Chọn siêu tham số mà không sử dụng tập kiểm tra cuối cùng.",
-      "So sánh các mô hình trên cùng thời hạn dự báo và cùng tập ngày đánh giá.",
-      "Báo cáo kết quả riêng cho BTC và ETH, cho từng thời hạn 1 ngày.",
-      "Dùng cùng định nghĩa biến mục tiêu cho mô hình cơ sở và mô hình bổ sung.",
-      "Lưu ngày dự báo, dữ liệu đầu vào và kết quả dự báo để có thể tái lập."
-    ],
+    "Giữ năm 2025 làm tập kiểm tra cuối cùng.",
+    "Sử dụng dữ liệu 2018-2024 để huấn luyện và xác thực theo thứ tự thời gian.",
+    "Sử dụng rolling-origin trong giai đoạn huấn luyện và xác thực để lựa chọn mô hình.",
+    "Không sử dụng kết quả trên tập kiểm tra năm 2025 để lựa chọn siêu tham số.",
+    "So sánh các mô hình trên cùng ngày đánh giá, cùng mục tiêu và cùng thời hạn dự báo.",
+    "Chỉ chuẩn hóa dữ liệu và lựa chọn đặc trưng bằng dữ liệu huấn luyện.",
+    "Báo cáo riêng kết quả BTC và ETH bằng MAE và RMSE.",
+    "Lưu ngày dự báo, dữ liệu đầu vào và kết quả dự báo để có thể tái lập."
+  ],
     "luu_y": "MAE và RMSE phù hợp với mục tiêu biến động thực tế liên tục. Nếu đổi mục tiêu sang xác suất xảy ra rủi ro đuôi, cần bổ sung thước đo đánh giá phù hợp."
   },
   "kiem_soat_chat_luong_du_lieu": {
