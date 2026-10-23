@@ -3,7 +3,7 @@
 # MACRO × CRYPTO INTELLIGENCE
 # RESEARCH DASHBOARD — READER-FRIENDLY VERSION 5
 #
-# 7 trang | 5 câu hỏi nghiên cứu
+# 8 trang | 5 câu hỏi nghiên cứu
 # Không chạy lại VAR / LP / ML
 # Đọc trực tiếp các kết quả CSV hiện có
 #
@@ -36,6 +36,7 @@ st.set_page_config(
 ROOT = Path(__file__).resolve().parents[1]
 RESULTS = ROOT / "outputs" / "model_results"
 TABLES = ROOT / "outputs" / "tables"
+FIGURES = ROOT / "outputs" / "figures"
 
 C = {
     "plum": "#553C5C",
@@ -81,6 +82,7 @@ PAGES = {
     "🛡️ RQ4 · Calm/Stress": "rq4",
     "🧠 RQ5 · Dự báo ML": "rq5",
     "📚 Dữ liệu & cách đọc": "methods",
+    "🎯 Kết luận & ứng dụng": "final_conclusion",
 }
 
 SHOCKS = {
@@ -111,6 +113,7 @@ FILES = {
     "lp_fdr": ("lp_fdr.csv", RESULTS),
     "irf": ("irf_results.csv", RESULTS),
     "subperiod": ("subperiod_results.csv", RESULTS),
+    "rolling": ("rolling_sensitivity.csv", RESULTS),
     "rq3": ("subperiod_difference_fdr.csv", RESULTS),
     "regime": ("regime_results.csv", RESULTS),
     "rq4": ("regime_difference_fdr.csv", RESULTS),
@@ -573,6 +576,93 @@ li[aria-selected="true"] {
     color:#503A57!important;
     font-size:15px!important;
     font-weight:900!important;
+}
+
+/* V5 FIX: thống nhất TẤT CẢ điều khiển nhập/chọn ở chế độ sáng. */
+[data-testid="stSelectbox"] [data-baseweb="select"],
+[data-testid="stMultiSelect"] [data-baseweb="select"],
+[data-testid="stSelectbox"] [data-baseweb="select"] > div,
+[data-testid="stMultiSelect"] [data-baseweb="select"] > div,
+[data-testid="stSelectbox"] [data-baseweb="select"] > div > div,
+[data-testid="stMultiSelect"] [data-baseweb="select"] > div > div,
+[data-testid="stSelectbox"] [data-baseweb="select"] [role="combobox"],
+[data-testid="stMultiSelect"] [data-baseweb="select"] [role="combobox"],
+[data-testid="stSelectbox"] [data-baseweb="select"] input,
+[data-testid="stMultiSelect"] [data-baseweb="select"] input,
+[data-testid="stTextInput"] input,
+[data-testid="stNumberInput"] input,
+[data-testid="stDateInput"] input,
+[data-testid="stTextArea"] textarea,
+[data-testid="stTimeInput"] input {
+    background-color:#FFFFFF!important;
+    color:#503A57!important;
+    -webkit-text-fill-color:#503A57!important;
+    color-scheme:light!important;
+}
+[data-testid="stSelectbox"] [data-baseweb="select"] > div,
+[data-testid="stMultiSelect"] [data-baseweb="select"] > div,
+[data-testid="stTextInput"] input,
+[data-testid="stNumberInput"] input,
+[data-testid="stDateInput"] input,
+[data-testid="stTextArea"] textarea,
+[data-testid="stTimeInput"] input {
+    border:2px solid #C8AFCB!important;
+    border-radius:12px!important;
+}
+[data-testid="stSelectbox"] [data-baseweb="select"] svg,
+[data-testid="stMultiSelect"] [data-baseweb="select"] svg {
+    fill:#553C5C!important;
+    color:#553C5C!important;
+}
+[data-testid="stSelectbox"] [data-baseweb="select"] input::placeholder,
+[data-testid="stMultiSelect"] [data-baseweb="select"] input::placeholder,
+[data-testid="stTextInput"] input::placeholder {
+    color:#88738B!important;
+    -webkit-text-fill-color:#88738B!important;
+}
+/* Menu xổ xuống: hỗ trợ cả portal của BaseWeb và Streamlit phiên bản mới. */
+[data-baseweb="popover"],
+[data-baseweb="popover"] > div,
+[data-baseweb="menu"],
+[data-baseweb="menu"] > div,
+[data-testid="stSelectboxVirtualDropdown"],
+[data-testid="stSelectboxVirtualDropdown"] > div,
+[role="listbox"] {
+    background-color:#FFFFFF!important;
+    color:#503A57!important;
+    color-scheme:light!important;
+}
+[data-baseweb="menu"] [role="option"],
+[data-testid="stSelectboxVirtualDropdown"] [role="option"],
+[role="listbox"] [role="option"] {
+    background-color:#FFFFFF!important;
+    color:#503A57!important;
+    -webkit-text-fill-color:#503A57!important;
+}
+[data-baseweb="menu"] [role="option"]:hover,
+[data-testid="stSelectboxVirtualDropdown"] [role="option"]:hover,
+[role="listbox"] [role="option"][aria-selected="true"] {
+    background-color:#F2E4EF!important;
+}
+/* Sidebar: vòng tròn radio không còn bị đen. */
+[data-testid="stSidebar"] [role="radiogroup"] [data-baseweb="radio"] > div:first-child,
+[data-testid="stSidebar"] [role="radiogroup"] [data-baseweb="radio"] > div:first-child > div,
+[data-testid="stSidebar"] [role="radiogroup"] [data-testid="stMarkdownContainer"] {
+    color:#FFF5FB!important;
+}
+[data-testid="stSidebar"] [role="radiogroup"] input[type="radio"] + div {
+    background:#FFFFFF!important;
+    border-color:#F1D6E5!important;
+}
+[data-testid="stSidebar"] [role="radiogroup"] input[type="radio"]:checked + div {
+    background:#D77676!important;
+    border-color:#FFFFFF!important;
+}
+/* Mọi nhãn bộ lọc trong vùng nội dung giữ màu tím gốc. */
+[data-testid="stMain"] [data-testid="stWidgetLabel"] p,
+[data-testid="stMain"] [data-testid="stSelectbox"] label p,
+[data-testid="stMain"] [data-testid="stMultiSelect"] label p {
+    color:#503A57!important;
 }
 
 /* Bảng màu */
@@ -1146,6 +1236,9 @@ def style_plot(fig, height=430):
         title_font=dict(color=C["ink"], size=16),
         gridcolor="#EEE5EC",
         zerolinecolor="#D4C5D2",
+        nticks=6,
+        tickformat="~g",
+        separatethousands=True,
     )
 
     return fig
@@ -1167,7 +1260,7 @@ def response_chart(
     df,
     key,
     color,
-    x_title="Chân trời phản ứng",
+    x_title="Số ngày sau biến động",
 ):
     if df.empty or not {"horizon", "estimate"}.issubset(df.columns):
         st.info("Chưa có dữ liệu phù hợp để dựng biểu đồ.")
@@ -1227,7 +1320,7 @@ def response_chart(
         line_color="#A995A8",
     )
 
-    fig.update_xaxes(title=x_title)
+    fig.update_xaxes(title=x_title, tickmode="array", tickvals=part["horizon"].iloc[::max(1, len(part)//7)].tolist(), ticktext=[f"Ngày {int(v)}" for v in part["horizon"].iloc[::max(1, len(part)//7)]])
     fig.update_yaxes(title="Hệ số phản ứng")
 
     plot(fig, key)
@@ -1237,7 +1330,7 @@ def response_chart(
 def two_lines(
     datasets,
     key,
-    x_title="Chân trời h",
+    x_title="Số ngày sau biến động",
     y_title="Hệ số ước lượng",
 ):
     fig = go.Figure()
@@ -1276,7 +1369,7 @@ def two_lines(
         y=0, line_dash="dash", line_color="#A995A8"
     )
 
-    fig.update_xaxes(title=x_title)
+    fig.update_xaxes(title=x_title, tickmode="array", tickvals=[0, 5, 10, 15, 20, 25, 30], ticktext=[f"Ngày {v}" for v in [0, 5, 10, 15, 20, 25, 30]])
     fig.update_yaxes(title=y_title)
 
     plot(fig, key)
@@ -1555,42 +1648,123 @@ def fdr_overview(df, key, asset=None):
         text=np.where(piv.values==1,'✓','—'), texttemplate='%{text}',
         showscale=False,
     ))
-    fig.update_xaxes(title='Chân trời h')
+    fig.update_xaxes(title='Số ngày sau biến động')
     plot(fig, key, 310)
 
 
+def rq3_year_comparison(sub, difference, key, days):
+    """One selected horizon; plot separate estimates and their OWN 95% CIs."""
+    test = first(filter_df(difference, horizon=days))
+    fig = go.Figure()
+    entries = [("2018–2019", "pre_2020", "pre_beta", C["violet"]),
+               ("2020–2025", "post_2020", "post_beta", C["coral"])]
+    if test is None:
+        st.info("Không có kết quả kiểm định chênh lệch ở ngày đã chọn.")
+        return
+    for years, period, beta_field, color in entries:
+        beta = num(field(test, beta_field))
+        if not np.isfinite(beta):
+            continue
+        fig.add_trace(go.Scatter(x=[years], y=[beta], mode="markers",
+            marker=dict(size=19, color=color, symbol="diamond"),
+            name=years,
+            hovertemplate=f"{years}<br>Hệ số từ mô hình tương tác: %{{y:.4f}}<extra></extra>"))
+    if not fig.data:
+        st.info("Không có hệ số cho lựa chọn này trong subperiod_results.csv.")
+        return
+    fig.add_hline(y=0, line_dash="dash", line_color="#A995A8")
+    fig.update_xaxes(title="Giai đoạn nghiên cứu", type="category",
+        categoryorder="array", categoryarray=["2018–2019", "2020–2025"])
+    fig.update_yaxes(title="Hệ số trong mô hình tương tác Pre/Post")
+    plot(fig, key, 410)
+    st.caption("Hai điểm và ba KPI cùng lấy từ một dòng subperiod_difference_fdr.csv "
+               "tại ngày đã chọn (mô hình tương tác). Không vẽ khoảng tin cậy "
+               "riêng vì CSV này chỉ có sai số chuẩn của chênh lệch. "
+               "Khoảng tin cậy của hồi quy riêng từng giai đoạn có trong bảng phía dưới.")
+
+
+def rolling_year_chart(df, asset, shock, key):
+    """Rolling 252-session estimates plotted on actual calendar dates."""
+    part = filter_df(df, asset=asset, shock=shock).copy()
+    if part.empty or "date" not in part or "rolling_beta" not in part:
+        st.info("Chưa có dữ liệu rolling_sensitivity.csv cho lựa chọn này.")
+        return
+    part["date"] = pd.to_datetime(part["date"], errors="coerce")
+    part["rolling_beta"] = pd.to_numeric(part["rolling_beta"], errors="coerce")
+    part = part.dropna(subset=["date", "rolling_beta"]).sort_values("date")
+    if part.empty:
+        st.info("Không có ngày hợp lệ để vẽ hệ số rolling.")
+        return
+    fig = go.Figure(go.Scatter(x=part["date"], y=part["rolling_beta"],
+        mode="lines", name=f"{shock} → {asset}",
+        line=dict(color=C["violet"], width=2.5),
+        hovertemplate="Ngày %{x|%d/%m/%Y}<br>Hệ số rolling %{y:.4f}<extra></extra>"))
+    fig.add_hline(y=0, line_dash="dash", line_color="#A995A8")
+    fig.add_vline(x="2020-01-01", line_dash="dot", line_color=C["coral"])
+    fig.update_xaxes(title="Năm quan sát", tickformat="%Y", dtick="M12")
+    fig.update_yaxes(title="Hệ số hồi quy cửa sổ 252 phiên")
+    plot(fig, key, 440)
+    st.caption("Mỗi điểm là hệ số ước lượng từ cửa sổ 252 phiên gần nhất, "
+               "không phải hệ số riêng của một năm. Đường dọc đánh dấu 2020; "
+               "biểu đồ mô tả diễn biến, không thay thế kiểm định RQ3.")
+
+
+def original_figure(filename, caption):
+    """Use the original research output, not a reconstructed plot."""
+    path = FIGURES / filename
+    if path.is_file():
+        st.image(str(path), use_container_width=True)
+        st.caption(caption)
+    else:
+        st.info(f"Chưa tìm thấy outputs/figures/{filename}. "
+                "Đặt nguyên thư mục figures từ ZIP vào outputs/figures của dự án.")
+
 def paired_difference_chart(df, key, label):
-    """Chênh lệch theo chân trời, màu biểu thị ý nghĩa FDR (không phải dấu)."""
-    if df.empty or 'horizon' not in df:
+    """Đường chênh lệch theo horizon; q-value được giữ nguyên từ CSV."""
+    if df.empty or 'horizon' not in df.columns:
         st.info('Chưa có dữ liệu chênh lệch theo chân trời.')
         return
     part = df.copy()
-    if 'difference' not in part and 'difference_stress_minus_calm' in part:
-        part['difference'] = part['difference_stress_minus_calm']
-    if 'difference' not in part:
+    for candidate in ('difference_post_minus_pre', 'difference_stress_minus_calm'):
+        if 'difference' not in part.columns and candidate in part.columns:
+            part['difference'] = part[candidate]
+    if 'difference' not in part.columns:
         st.info('CSV chưa có cột chênh lệch hệ số.')
         return
     part = numeric_frame(part, 'horizon', 'difference', 'p_value_fdr',
                          'difference_ci_lower', 'difference_ci_upper')
     part = part.dropna(subset=['horizon', 'difference']).sort_values('horizon')
     if part.empty:
+        st.info('Không có hệ số chênh lệch hợp lệ.')
         return
-    q = pd.to_numeric(part['p_value_fdr'], errors='coerce') if 'p_value_fdr' in part else pd.Series(np.nan, index=part.index)
-    significant = q.lt(.05) & q.notna()
-    colors = [C['teal'] if ok else C['coral'] for ok in significant]
-    fig = go.Figure(go.Bar(
-        x=part['horizon'], y=part['difference'], marker_color=colors,
-        text=part['difference'].map(lambda x: f'{x:+.3f}'),
-        textposition='outside', name='Chênh lệch ước lượng',
-        customdata=np.column_stack([q.fillna(-1).to_numpy()]),
-        hovertemplate='h=%{x}<br>Chênh lệch=%{y:.4f}<br>q-value=%{customdata[0]:.4f}<extra></extra>',
+    q = (pd.to_numeric(part['p_value_fdr'], errors='coerce')
+         if 'p_value_fdr' in part else pd.Series(np.nan, index=part.index))
+    significant = q.notna() & q.lt(.05)
+    fig = go.Figure()
+    if {'difference_ci_lower', 'difference_ci_upper'}.issubset(part.columns):
+        ci = part.dropna(subset=['difference_ci_lower', 'difference_ci_upper'])
+        if len(ci) >= 2:
+            xx = ci['horizon'].tolist()
+            fig.add_trace(go.Scatter(
+                x=xx + xx[::-1],
+                y=ci['difference_ci_upper'].tolist() + ci['difference_ci_lower'].tolist()[::-1],
+                fill='toself', fillcolor='rgba(146,112,181,.16)',
+                line=dict(color='rgba(0,0,0,0)'),
+                name='Khoảng tin cậy', hoverinfo='skip'))
+    fig.add_trace(go.Scatter(
+        x=part['horizon'], y=part['difference'], mode='lines+markers',
+        name='Chênh lệch hệ số', line=dict(color=C['violet'], width=3),
+        marker=dict(size=7, color=[C['teal'] if x else C['coral'] for x in significant]),
+        customdata=np.column_stack([q.to_numpy()]),
+        hovertemplate='Sau %{x} ngày<br>Chênh lệch=%{y:+.6f}'
+                      '<br>q-value FDR=%{customdata[0]:.4f}<extra></extra>',
     ))
     fig.add_hline(y=0, line_dash='dash', line_color='#A995A8')
-    fig.update_xaxes(title='Chân trời h')
+    fig.update_xaxes(title='Số ngày sau biến động vĩ mô', dtick=5)
     fig.update_yaxes(title=label)
     plot(fig, key, 410)
-    st.caption('Màu xanh: q-value FDR < 0,05; màu coral: chưa đạt FDR hoặc thiếu q-value. '
-               'Chiều âm/dương đọc theo vị trí cột so với đường 0.')
+    st.caption('Điểm xanh: q-value FDR < 0,05; điểm coral: chưa đạt FDR hoặc thiếu q-value. '
+               'Đường thể hiện chênh lệch ước lượng; không thể kết luận chỉ từ khoảng cách với 0.')
 
 
 def feature_increment_chart(df, asset, metric, key):
@@ -1660,7 +1834,7 @@ def forecast_bootstrap_chart(df, asset):
         st.info('Chưa có dữ liệu bootstrap.')
         return
     part = filter_df(df, asset=asset) if 'asset' in df else filter_df(df, response=asset)
-    required = {'mae_reduction', 'ci95_lower', 'ci95_upper'}
+    required = {'mae_reduction', 'ci_lower', 'ci_upper'}
     if part.empty or not required.issubset(part.columns):
         st.info('Thiếu cột bootstrap cần thiết.')
         return
@@ -1673,8 +1847,8 @@ def forecast_bootstrap_chart(df, asset):
         candidate = f"{row.get('candidate_model', 'N/A')} · {row.get('candidate_feature_set', 'N/A')}"
         labels.append(f'{candidate}  so với  {reference}')
     x = part['mae_reduction'].to_numpy(dtype=float)
-    lo = part['ci95_lower'].to_numpy(dtype=float)
-    hi = part['ci95_upper'].to_numpy(dtype=float)
+    lo = part['ci_lower'].to_numpy(dtype=float)
+    hi = part['ci_upper'].to_numpy(dtype=float)
     valid = (lo <= x) & (x <= hi)
     if not valid.all():
         st.warning('Có khoảng tin cậy bootstrap không bao chứa ước lượng; kiểm tra CSV.')
@@ -1721,7 +1895,7 @@ def significance_by_horizon(df, title):
     )
     fig = go.Figure(go.Bar(x=by_h['horizon'], y=by_h['passes'],
                            marker_color=C['teal'], name='Đạt FDR'))
-    fig.update_xaxes(title='Chân trời h')
+    fig.update_xaxes(title='Số ngày sau biến động')
     fig.update_yaxes(title='Số kiểm định đạt FDR 5%', dtick=1)
     plot(fig, 'horizon_significance_' + title, 340)
 
@@ -1815,6 +1989,9 @@ if PAGE == "overview":
             "Dự báo ngoài mẫu", "2025",
             "365 ngày", "gold",
         )
+
+    section("Diễn biến giá BTC và ETH theo năm", "Biểu đồ gốc từ pipeline nghiên cứu, chuẩn hóa giá tại thời điểm đầu = 100.")
+    original_figure("crypto_price_trends.png", "Trục ngang là năm thực tế 2018–2025; chỉ số giá chuẩn hóa, không phải lợi suất ngày.")
 
     section('Bối cảnh thị trường 2018–2025',
             'Từ thị trường tài sản số tương đối tách biệt đến câu hỏi về mức độ gắn kết với tài chính toàn cầu.',
@@ -2003,6 +2180,9 @@ if PAGE == "overview":
     else:
         st.info("Chưa có correlation_matrix.csv.")
 
+    section("Ma trận tương quan từ kết quả nghiên cứu", "Mối liên hệ tuyến tính mô tả, không phải bằng chứng nhân quả.")
+    original_figure("correlation_heatmap.png", "Hệ số Pearson từ dữ liệu biến đổi trong mẫu; đọc cùng RQ1.")
+
     show_table(correlation, "Dữ liệu tương quan")
 
     answer(
@@ -2022,6 +2202,9 @@ if PAGE == "overview":
 # ============================================================
 
 elif PAGE == "rq1":
+
+    section("Bức tranh LP của BTC và ETH", "Đồ thị gốc: phản ứng tại ngày 0–30 và khoảng tin cậy HAC 95%.")
+    original_figure("lp_responses.png", "Trục 0–30 là số ngày sau biến động vĩ mô, KHÔNG phải năm lịch.")
 
     hero(
         "RESEARCH QUESTION 01",
@@ -2119,10 +2302,10 @@ elif PAGE == "rq1":
                 "teal",
             )
 
-        # Biểu đồ riêng cho cặp tài sản–biến vĩ mô được chọn, ngay sau KPI.
+        # Một ước lượng đơn lẻ: biểu đồ điểm + CI, tránh trục cột bị phóng đại.
         section(
             'Biểu đồ · Hệ số LP cùng ngày cho lựa chọn hiện tại',
-            f'{ASSETS[asset]} trước {SHOCKS[shock]} · h = 0',
+            f'{ASSETS[asset]} trước {SHOCKS[shock]} · mẫu 2018–2025 · h = 0',
             'LOCAL PROJECTIONS · SELECTED PAIR',
         )
         beta = num(field(row, 'estimate'))
@@ -2134,18 +2317,19 @@ elif PAGE == "rq1":
                 err = dict(type='data', symmetric=False,
                            array=[upper-beta], arrayminus=[beta-lower],
                            visible=True, color=C['plum'], thickness=2, width=8)
-            fig = go.Figure(go.Bar(
-                x=[f'{asset} · {shock}'], y=[beta], width=.35,
-                marker_color=C['coral'] if beta < 0 else C['teal'],
-                text=[fmt(beta)], textposition='outside',
+            fig = go.Figure(go.Scatter(
+                x=[f'{asset} · {shock}'], y=[beta], mode='markers+text',
+                marker=dict(size=17, color=C['coral'] if beta < 0 else C['teal']),
+                text=[f'{beta:+.4f}'], textposition='top center',
                 error_y=err, name='Hệ số LP tại h = 0',
+                hovertemplate=f'{asset} · {shock}<br>Hệ số LP: %{{y:.6f}}<extra></extra>',
             ))
             fig.add_hline(y=0, line_dash='dash', line_color=C['muted'])
-            fig.update_yaxes(title='Hệ số LP · h = 0')
+            fig.update_yaxes(title='Hệ số LP · h = 0', zeroline=True)
             fig.update_layout(showlegend=False)
             plot(fig, f'rq1_selected_{asset}_{shock}', 400)
-            st.caption('Thanh sai số (nếu có) là khoảng tin cậy từ CSV; '
-                       'ý nghĩa thống kê cần đối chiếu p-value và q-value FDR.')
+            st.caption('Điểm là hệ số LP; thanh sai số (nếu có) là khoảng tin cậy từ CSV. '
+                       'Ý nghĩa thống kê được đánh giá bằng p-value và q-value FDR.')
         conclusion(*lp_interpret(asset, shock, row))
     else:
         st.info(
@@ -2243,6 +2427,11 @@ elif PAGE == "rq1":
 
 elif PAGE == "rq2":
 
+    section("Phản ứng động VAR(5) – BTC", "Kết quả IRF gốc và khoảng tin cậy 95%.")
+    original_figure("irf_btc.png", "Trục ngang là phiên phản ứng 0–30, không phải năm.")
+    section("Phản ứng động VAR(5) – ETH", "Cùng cách đọc với BTC.")
+    original_figure("irf_eth.png", "IRF Cholesky phụ thuộc thứ tự biến, không phải cú sốc nhân quả đã nhận diện.")
+
     hero(
         "RESEARCH QUESTION 02",
         "RQ2 · <em>Phản ứng theo thời gian</em>",
@@ -2292,7 +2481,7 @@ elif PAGE == "rq2":
 
     if response_chart(
         lp, "rq2_lp", C["coral"],
-        "Chân trời h · Ngày lịch",
+        "Số ngày sau biến động (ngày lịch)",
     ):
         conclusion(
             *dynamic_interpret(asset, shock, lp, "LP")
@@ -2319,7 +2508,7 @@ elif PAGE == "rq2":
 
     if response_chart(
         irf, "rq2_var", C["violet"],
-        "Chân trời h · Phiên vĩ mô",
+        "Số phiên giao dịch vĩ mô sau biến động",
     ):
         conclusion(
             *dynamic_interpret(asset, shock, irf, "VAR")
@@ -2387,54 +2576,43 @@ elif PAGE == "rq3":
 
     asset, shock = selectors("rq3")
 
+    section("Hệ số biến đổi qua từng năm (2019–2025)",
+            "Dữ liệu rolling 252 phiên: nhìn được năm nào độ nhạy với VIX/DXY/US2Y tăng hoặc giảm.")
+    guide("Quan hệ Macro–Crypto có ổn định qua thời gian?",
+          "Trục ngang là năm thực tế; trục dọc là hệ số ước lượng trong cửa sổ 252 phiên.",
+          "Hệ số thay đổi không tự chứng minh đứt gãy năm 2020; kiểm định RQ3 ở bên dưới mới trả lời điều đó.")
+    rolling_year_chart(DATA["rolling"], asset, shock, "rq3_rolling_years")
+
     section(
-        "Biểu đồ · So sánh hai đường phản ứng",
-        f"{asset} trước biến động {shock}.",
+        "Biểu đồ · So sánh 2018–2019 với 2020–2025",
+        f"{asset} trước biến động {shock} · Pre: 2018–2019 | Post: 2020–2025.",
     )
 
     guide(
-        "Sau năm 2020, phản ứng của crypto có khác đi không?",
-        "So sánh hai đường hệ số của hai giai đoạn "
-        "ở cùng một chân trời h.",
-        "Hai đường cách xa nhau chưa đủ để "
-        "kết luận khác biệt. Cần xem kiểm định "
-        "chênh lệch sau FDR.",
+        "Hệ số phản ứng có thay đổi giữa 2018–2019 và 2020–2025 không?",
+        "Trục ngang ghi rõ 2018–2019 và 2020–2025. Chọn số ngày sau biến động "
+        "để so sánh hệ số tại cùng một thời điểm phản ứng.",
+        "Hai cột khác nhau chưa đủ để kết luận khác biệt. "
+        "Cần xem kiểm định chênh lệch sau FDR.",
     )
 
-    sub = filter_df(
-        DATA["subperiod"], response=asset, shock=shock
-    )
-
-    periods = unique_values(sub, "period")
-
-    datasets = []
-
-    for i, period in enumerate(periods[:4]):
-        color = [
-            C["violet"], C["coral"],
-            C["teal"], C["gold"],
-        ][i]
-
-        datasets.append(
-            (
-                str(period),
-                filter_df(sub, period=period),
-                color,
-            )
-        )
-
-    two_lines(
-        datasets,
-        "rq3_period_lines",
-        "Chân trời h · Ngày lịch",
-        "Hệ số LP",
+    sub = filter_df(DATA["subperiod"], response=asset, shock=shock)
+    available_days = sorted(set(pd.to_numeric(sub.get("horizon", pd.Series(dtype=float)),
+                                                   errors="coerce").dropna().astype(int)))
+    selected_days = st.selectbox(
+        "📅 So sánh tại bao nhiêu ngày sau biến động vĩ mô?",
+        available_days if available_days else [0],
+        format_func=lambda day: f"Sau {day} ngày" if day else "Cùng ngày (0 ngày)",
+        key="rq3_response_day",
     )
 
     difference = filter_df(
         DATA["rq3"], response=asset, shock=shock
     )
 
-    h0 = first(filter_df(difference, horizon=0))
+    rq3_year_comparison(sub, difference, "rq3_period_lines", selected_days)
+
+    h0 = first(filter_df(difference, horizon=selected_days))
 
     if h0 is not None:
         c1, c2, c3 = st.columns(3)
@@ -2443,7 +2621,7 @@ elif PAGE == "rq3":
             kpi(
                 "Hệ số trước 2020",
                 fmt(field(h0, "pre_beta")),
-                "Giai đoạn 2018–2019",
+                f"Giai đoạn 2018–2019 · sau {selected_days} ngày · mô hình tương tác",
                 "violet",
             )
 
@@ -2451,7 +2629,7 @@ elif PAGE == "rq3":
             kpi(
                 "Hệ số sau 2020",
                 fmt(field(h0, "post_beta")),
-                "Giai đoạn 2020–2025",
+                f"Giai đoạn 2020–2025 · sau {selected_days} ngày · mô hình tương tác",
                 "coral",
             )
 
@@ -2459,7 +2637,7 @@ elif PAGE == "rq3":
             kpi(
                 "q-value FDR",
                 fmt(field(h0, "p_value_fdr")),
-                "Kiểm định chênh lệch",
+                f"Kiểm định chênh lệch · sau {selected_days} ngày",
                 "teal",
             )
 
@@ -2474,7 +2652,7 @@ elif PAGE == "rq3":
                 ],
                 (
                     f"Đây là kết quả so sánh {asset} "
-                    f"trước biến {shock} tại h = 0."
+                    f"trước biến {shock} sau {selected_days} ngày."
                 ),
             ),
             heading='DIỄN GIẢI KIỂM ĐỊNH CHÊNH LỆCH',
@@ -2483,8 +2661,8 @@ elif PAGE == "rq3":
     show_table(difference, "Kiểm định chênh lệch RQ3")
     show_table(sub, "Hệ số từng giai đoạn")
 
-    section('Phân tích bổ sung · Chênh lệch hệ số theo chân trời', 'Cột biểu thị Post − Pre; màu không thay thế q-value.')
-    paired_difference_chart(DATA['rq3'].pipe(filter_df, response=asset, shock=shock), 'rq3_difference_bars', 'Post − Pre')
+    section('Đối chiếu kết quả theo năm', 'Hai giai đoạn nghiên cứu được hiển thị trực tiếp bằng năm: 2018–2019 và 2020–2025.')
+    st.caption('Dữ liệu RQ3 được ước lượng theo hai giai đoạn, không phải hệ số riêng cho từng năm. Vì vậy không thể gắn một hệ số riêng cho 2020, 2021, 2022… nếu chưa ước lượng thêm mô hình theo năm. Biểu đồ phía trên thể hiện đúng hai giai đoạn gốc; bảng bên dưới giữ nguyên toàn bộ kiểm định theo số ngày.')
     fdr_count_summary(DATA['rq3'], 'Kiểm định chênh lệch Pre/Post', asset)
     deep_analysis('Vì sao nhìn khác mà chưa kết luận thay đổi?',
         'Các đường Pre/Post có thể cách nhau ở một số chân trời nhưng kiểm định chênh lệch mới là cơ sở kết luận.',
@@ -2510,6 +2688,9 @@ elif PAGE == "rq3":
 # ============================================================
 
 elif PAGE == "rq4":
+
+    section("Calm và Stress – toàn bộ BTC/ETH", "Biểu đồ gốc từ mô hình Local Projections có điều kiện.")
+    original_figure("regime_comparison.png", "Trục ngang là số ngày phản ứng; vùng màu là khoảng tin cậy của từng trạng thái.")
 
     hero(
         "RESEARCH QUESTION 04",
@@ -2566,7 +2747,7 @@ elif PAGE == "rq4":
 
     section(
         "Biểu đồ · Phản ứng trong hai trạng thái",
-        f"So sánh {asset} trước {shock}.",
+        f"So sánh {asset} trước {shock} · Calm và Stress trong mẫu 2018–2025.",
     )
 
     guide(
@@ -2591,7 +2772,7 @@ elif PAGE == "rq4":
             ("Stress", stress, C["coral"]),
         ],
         "rq4_regime_lines",
-        "Chân trời h · Ngày lịch",
+        "Số ngày sau biến động (ngày lịch)",
         "Hệ số LP",
     )
 
@@ -2671,6 +2852,9 @@ elif PAGE == "rq4":
 # ============================================================
 
 elif PAGE == "rq5":
+
+    section("Dự báo so với thực tế trong năm 2025", "Biểu đồ gốc 365 ngày của cả BTC và ETH.")
+    original_figure("forecast_comparison.png", "Đường xám là độ lớn lợi suất thực tế, các đường còn lại là dự báo; trục ngang hiển thị tháng năm 2025.")
 
     hero(
         "RESEARCH QUESTION 05",
@@ -3344,8 +3528,8 @@ elif PAGE == "methods":
             "Chiều hệ số không tự động chứng minh nhân quả.",
         ),
         (
-            "Chân trời h",
-            "h = 0 là cùng thời điểm; h lớn hơn 0 "
+            "Số ngày sau biến động",
+            "Ngày 0 là cùng thời điểm; các ngày tiếp theo "
             "là các thời điểm tiếp theo. "
             "LP và VAR có thể dùng đơn vị thời gian khác nhau.",
         ),
@@ -3470,6 +3654,169 @@ elif PAGE == "methods":
     )
 
 
+
+
+# ============================================================
+# 15. KẾT LUẬN & ỨNG DỤNG — từ Chương 05 của paper
+# ============================================================
+
+elif PAGE == "final_conclusion":
+    hero(
+        "RESEARCH CONCLUSION · 2018–2025",
+        "Kết luận <em>& ứng dụng</em>",
+        "Tổng hợp năm câu hỏi nghiên cứu từ Chương 05: mối liên hệ, phản ứng động, "
+        "khác biệt giai đoạn/trạng thái và giá trị dự báo ngoài mẫu.",
+    )
+
+    section("Nhóm đang nghiên cứu điều gì?", "Đọc 60 giây để hiểu bài, không cần mở báo cáo.")
+    insight("BÀI TOÁN", "Khi USD mạnh lên, lãi suất hoặc lo ngại rủi ro thay đổi, Bitcoin và Ethereum phản ứng thế nào?",
+            "Nhóm theo dõi BTC và ETH trong 2018–2025, đối chiếu với ba thước đo tài chính toàn cầu: VIX (rủi ro), DXY (sức mạnh USD) và US2Y (lợi suất trái phiếu Mỹ 2 năm). Không chỉ hỏi hai thị trường có liên hệ không, nhóm còn hỏi liệu liên hệ ấy có dùng để dự báo ngày mai hay không.", "violet")
+    c1, c2, c3, c4 = st.columns(4)
+    with c1: kpi("Tài sản số", "2", "BTC và ETH", "violet")
+    with c2: kpi("Nhân tố vĩ mô", "3", "VIX, DXY, US2Y", "coral")
+    with c3: kpi("Thời gian", "2018–25", "Dữ liệu lịch sử", "teal")
+    with c4: kpi("Dự báo kiểm tra", "2025", "365 ngày ngoài mẫu", "gold")
+
+    section("5 bước nhóm đã thực hiện", "Từ đặt câu hỏi đến kiểm tra ứng dụng thật.")
+    insight("BƯỚC 1 · RQ1", "Tìm mối liên hệ", "Ước lượng Local Projections để xem lợi suất BTC/ETH liên hệ với biến động VIX, DXY, US2Y tại ngày đầu và các ngày sau. Dùng khoảng tin cậy và BH-FDR để tránh đọc nhầm những tín hiệu ngẫu nhiên.", "violet")
+    insight("BƯỚC 2 · RQ2", "Xem phản ứng kéo dài bao lâu", "Đối chiếu đường LP với phản ứng động VAR(5). Chú ý phản ứng ngay thời điểm đầu so với các ngày/phiên tiếp theo, không gán kết quả này cho từng năm lịch.", "teal")
+    insight("BƯỚC 3 · RQ3", "Kiểm tra trước và sau 2020", "Đặt 2018–2019 cạnh 2020–2025 và kiểm định trực tiếp chênh lệch hệ số. Xem thêm rolling 252 phiên theo trục năm để hiểu hệ số biến thiên liên tục.", "coral")
+    insight("BƯỚC 4 · RQ4", "Kiểm tra khi thị trường căng thẳng", "Phân loại Calm/Stress theo VIX phiên trước (Stress khi VIX ≥ 30), rồi xem quan hệ vĩ mô–crypto có thay đổi đủ rõ về thống kê hay không.", "gold")
+    insight("BƯỚC 5 · RQ5", "Kiểm tra liệu Macro có giúp dự báo", "Cho Elastic Net và XGBoost dự báo độ lớn lợi suất ngày tiếp theo. So sánh bộ chỉ có dữ liệu crypto với bộ bổ sung vĩ mô trên năm 2025 chưa dùng huấn luyện; đối chiếu benchmark lịch sử 30 ngày.", "violet")
+
+    section("3 phát hiện người xem cần nhớ", "Những kết luận có thể rút ra mà không cần hiểu hết công thức.")
+    insight("PHÁT HIỆN 01", "Rủi ro tăng hoặc USD mạnh thường đi kèm lợi suất crypto yếu hơn trong cùng ngày.", "Đây là mối liên hệ có điều kiện trong mẫu, không phải dự báo chắc chắn ngày tiếp theo và không chứng minh quan hệ nhân quả.", "coral")
+    insight("PHÁT HIỆN 02", "Chưa xác nhận thay đổi hệ số có hệ thống sau 2020 hoặc khi VIX cao.", "RQ3 và RQ4 đều có 0/186 kiểm định chênh lệch đạt BH-FDR 5%. Không tìm thấy bằng chứng đủ mạnh KHÔNG có nghĩa hai giai đoạn hay trạng thái giống hệt nhau.", "gold")
+    insight("PHÁT HIỆN 03", "Biết bối cảnh không đồng nghĩa dự báo tốt hơn.", "Các biến vĩ mô có thể hữu ích để theo dõi rủi ro, nhưng bổ sung chúng không mang lại cải thiện dự báo ngoài mẫu ổn định cho BTC/ETH trong thiết kế kiểm tra năm 2025.", "teal")
+
+    section("Bằng chứng trực quan", "Đối chiếu biểu đồ gốc để tự kiểm tra câu chuyện nghiên cứu.")
+    original_figure("rolling_sensitivity.png", "Hệ số rolling 252 phiên biến động qua 2019–2025; đây là quan sát mô tả, không thay thế kiểm định chênh lệch.")
+    original_figure("forecast_comparison.png", "Năm 2025: các mô hình bám xu hướng độ lớn lợi suất nhưng khó bắt trọn các ngày biến động cực đoan.")
+
+    section("Ứng dụng thế nào cho đúng?", "Ba tình huống gần với quyết định thực tế.")
+    insight("NẾU BẠN LÀ NHÀ ĐẦU TƯ", "Thấy VIX tăng không có nghĩa phải bán BTC ngay.", "Dùng VIX/DXY như tín hiệu cảnh báo bối cảnh, kết hợp thanh khoản, biến động và giới hạn rủi ro; nghiên cứu không kiểm định chiến lược mua bán sau phí.", "violet")
+    insight("NẾU BẠN QUẢN TRỊ RỦI RO", "Xây dựng kịch bản thay vì tin vào một hệ số cố định.", "Đặt các kịch bản USD mạnh lên, bất ổn tăng, lãi suất thay đổi; đánh giá danh mục BTC/ETH theo mức chịu lỗ, không mặc định Stress sẽ tạo hệ số khác có ý nghĩa.", "teal")
+    insight("NẾU BẠN XÂY DỰNG MÔ HÌNH", "Thêm biến mới phải chứng minh giảm lỗi trên dữ liệu chưa thấy.", "Đặt benchmark đơn giản trước, sau đó kiểm tra MAE/RMSE, độ ổn định qua thời gian và thời điểm dữ liệu thực sự có sẵn; không chọn mô hình chỉ vì có nhiều biến.", "coral")
+
+    section("Thông điệp trung tâm", "Kết luận tổng hợp dựa trên Chương 05 của bài nghiên cứu.")
+    insight(
+        "KẾT LUẬN CHÍNH",
+        "VIX và DXY có liên hệ âm cùng ngày với BTC/ETH — nhưng chưa đủ để dự báo tốt hơn.",
+        "Trong mẫu 2018–2025, VIX và DXY có hệ số âm cùng ngày và vẫn có ý nghĩa sau "
+        "điều chỉnh BH-FDR 5%. Bằng chứng về US2Y yếu hơn. Phản ứng ở các ngày sau "
+        "không ổn định; chưa xác nhận khác biệt có hệ thống giữa hai giai đoạn hoặc "
+        "giữa Calm và Stress; thêm biến vĩ mô cũng chưa cải thiện dự báo ngoài mẫu "
+        "một cách nhất quán.",
+        "teal",
+    )
+
+    section("Kết quả theo 5 câu hỏi nghiên cứu", "Đọc kết luận theo đúng trình tự RQ1 → RQ5.")
+    insight(
+        "RQ1 · MỐI LIÊN HỆ CÙNG NGÀY",
+        "VIX và DXY: liên hệ âm có ý nghĩa thống kê; US2Y: chưa đủ bằng chứng.",
+        "LP cùng ngày: VIX → BTC −0,5725, ETH −0,7824; DXY → BTC −0,8489, "
+        "ETH −0,9866. Cả bốn hệ số đạt BH-FDR 5%. US2Y → BTC −2,3639 "
+        "(q = 0,8634), ETH −2,7575 (q = 0,8358): không đạt FDR. "
+        "Đây là liên hệ thống kê có điều kiện, không phải tác động nhân quả đã nhận diện.",
+        "coral",
+    )
+    insight(
+        "RQ2 · PHẢN ỨNG ĐỘNG",
+        "Bằng chứng rõ nhất xuất hiện cùng ngày; phản ứng kéo dài không ổn định.",
+        "LP và VAR(5)/IRF đều cho thấy phản ứng ban đầu âm nổi bật với VIX/DXY. "
+        "Ở những ngày hoặc phiên sau, dấu và độ lớn thay đổi, nhiều khoảng tin cậy "
+        "chứa 0. IRF Cholesky phụ thuộc thứ tự biến và khác LP về đơn vị phản ứng; "
+        "không diễn giải các đường này như quan hệ nhân quả chắc chắn.",
+        "violet",
+    )
+    insight(
+        "RQ3 · TRƯỚC VÀ SAU 2020",
+        "Chưa xác nhận thay đổi có hệ thống giữa 2018–2019 và 2020–2025.",
+        "Trong 186 kiểm định chênh lệch, 20 kiểm định đạt p < 0,05 trước điều chỉnh "
+        "nhưng 0 kiểm định còn ý nghĩa sau BH-FDR 5%. Việc chưa phát hiện khác biệt "
+        "không chứng minh hai giai đoạn giống hệt nhau; giai đoạn 2018–2019 ngắn hơn.",
+        "gold",
+    )
+    insight(
+        "RQ4 · CALM VÀ STRESS",
+        "Chưa xác nhận hệ số truyền dẫn khác nhau theo trạng thái thị trường.",
+        "Stress được xác định bằng VIX phiên trước ≥ 30. Có 1.839 quan sát Calm "
+        "và 151 Stress. Trong 186 kiểm định, 13 có p < 0,05 trước điều chỉnh "
+        "nhưng 0 còn ý nghĩa sau FDR. Kiểm tra ngưỡng 25/35 cũng không cho "
+        "khác biệt bền vững sau FDR. Mất cân đối cỡ mẫu là một giới hạn quan trọng.",
+        "teal",
+    )
+    insight(
+        "RQ5 · DỰ BÁO NGOÀI MẪU 2025",
+        "Thêm VIX, DXY, US2Y không cải thiện dự báo nhất quán.",
+        "Dự báo trị tuyệt đối lợi suất log ngày tiếp theo trên 365 ngày năm 2025. "
+        "Với BTC, Elastic Net thêm macro làm MAE tăng từ 1,1309 lên 1,1643; "
+        "chênh lệch cải thiện = −0,0334, khoảng tin cậy bootstrap 95% "
+        "[−0,0597; −0,0068]. Với ETH, một số cải thiện nhỏ không có ý nghĩa "
+        "thống kê theo bootstrap. Giá trị giải thích không đồng nghĩa giá trị dự báo.",
+        "coral",
+    )
+
+    section("Hàm ý thực tiễn", "Cách sử dụng kết quả mà không suy diễn quá mức.")
+    insight(
+        "DÀNH CHO NHÀ ĐẦU TƯ",
+        "Dùng VIX và DXY để quan sát bối cảnh rủi ro, không dùng riêng để mua/bán.",
+        "VIX tăng và USD mạnh lên có thể đồng hành với môi trường bất lợi cho "
+        "crypto trong dữ liệu nghiên cứu. Tuy nhiên, liên hệ cùng ngày không bảo đảm "
+        "hướng giá ngày mai và chưa tạo thành chiến lược giao dịch đã kiểm định sau phí.",
+        "violet",
+    )
+    insight(
+        "DÀNH CHO QUẢN TRỊ DANH MỤC",
+        "Sử dụng kịch bản và stress testing thay vì cố định một hệ số rủi ro.",
+        "Kết hợp thông tin VIX/DXY với biến động, thanh khoản, tương quan và "
+        "mức sụt giảm của BTC/ETH. Không giả định hệ số tăng theo tỷ lệ cố định "
+        "khi VIX vượt 30 vì RQ4 chưa xác nhận khác biệt sau FDR.",
+        "teal",
+    )
+    insight(
+        "DÀNH CHO PHÁT TRIỂN MÔ HÌNH",
+        "Chỉ bổ sung macro nếu kiểm định ngoài mẫu chứng minh lợi ích ổn định.",
+        "So sánh MAE, RMSE, khoảng tin cậy bootstrap và benchmark đơn giản; "
+        "kiểm tra độ trễ công bố, nguy cơ rò rỉ dữ liệu và hiệu quả qua nhiều giai đoạn. "
+        "Feature importance không thay thế đánh giá giá trị dự báo tăng thêm.",
+        "gold",
+    )
+
+    section("Giới hạn nghiên cứu", "Những điều cần nhớ trước khi áp dụng kết quả.")
+    method_note(
+        "Giới hạn của bằng chứng",
+        "Mẫu chỉ gồm BTC, ETH, VIX, DXY, US2Y giai đoạn 2018–2025; "
+        "crypto giao dịch 24/7 trong khi biến vĩ mô theo lịch phiên. "
+        "LP và VAR/IRF không nhận diện cú sốc nhân quả ngoại sinh. "
+        "Mốc chia 2020 và ngưỡng VIX 30 là quy ước; mẫu Stress nhỏ. "
+        "ML chỉ kiểm tra một năm 2025 và mục tiêu độ lớn lợi suất ngày tiếp theo, "
+        "không phải mọi thước đo biến động hay rủi ro đuôi.",
+    )
+
+    section("Hướng nghiên cứu tiếp theo", "Mở rộng kiểm định, không khẳng định vượt quá dữ liệu hiện tại.")
+    insight(
+        "PHÁT TRIỂN NGHIÊN CỨU",
+        "Mở rộng dữ liệu, nhận diện cú sốc và kiểm định dự báo trên nhiều giai đoạn.",
+        "Có thể bổ sung tài sản crypto, thước đo thanh khoản/tín dụng, điểm gãy "
+        "cấu trúc từ dữ liệu và cách phân loại trạng thái khác. Nghiên cứu tiếp theo "
+        "nên dùng cú sốc chính sách tần suất cao nếu muốn tiếp cận nhân quả, "
+        "kiểm tra nhiều thứ tự Cholesky, và dự báo thêm realized volatility, "
+        "VaR, Expected Shortfall với nhiều tập ngoài mẫu.",
+        "violet",
+    )
+    answer(
+        "KẾT LUẬN",
+        "Có liên hệ thống kê, nhưng chưa đủ bằng chứng về tính ổn định hoặc lợi ích dự báo tăng thêm.",
+        "VIX và DXY hữu ích như chỉ báo bối cảnh để quản trị rủi ro và xây dựng "
+        "kịch bản. Chúng không phải tín hiệu giao dịch độc lập. "
+        "Kết quả cần được kiểm chứng thêm trước khi ứng dụng dự báo thực tế.",
+    )
+    st.caption("Nguồn nội dung: 05_discussion_conclusion_formatted_revised.docx · Mục 5.1–5.7. "
+               "Các con số được giữ theo tài liệu; dashboard không ước lượng lại mô hình.")
+
+
+# ============================================================
 # ============================================================
 # 15. FOOTER
 # ============================================================
