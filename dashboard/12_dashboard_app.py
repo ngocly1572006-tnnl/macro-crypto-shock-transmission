@@ -1,13 +1,20 @@
 
 # ============================================================
 # MACRO × CRYPTO INTELLIGENCE
-# COMPLETE RESEARCH DASHBOARD — VERSION 3
-# Plum / Coral / Teal / Champagne
+# RESEARCH DASHBOARD — READER-FRIENDLY VERSION 5
+#
+# 7 trang | 5 câu hỏi nghiên cứu
+# Không chạy lại VAR / LP / ML
+# Đọc trực tiếp các kết quả CSV hiện có
+#
+# Run:
+# python -m streamlit run dashboard/12_dashboard_app.py
 # ============================================================
 
 from pathlib import Path
 import html
 import re
+import unicodedata
 
 import numpy as np
 import pandas as pd
@@ -16,12 +23,12 @@ import streamlit as st
 
 
 # ============================================================
-# 01. PAGE CONFIGURATION
+# 01. CẤU HÌNH
 # ============================================================
 
 st.set_page_config(
     page_title="Macro × Crypto Intelligence",
-    page_icon="✦",
+    page_icon="📊",
     layout="wide",
     initial_sidebar_state="expanded",
 )
@@ -31,757 +38,794 @@ RESULTS = ROOT / "outputs" / "model_results"
 TABLES = ROOT / "outputs" / "tables"
 
 C = {
-    "plum": "#503A55",
-    "plum_dark": "#382A3F",
-    "coral": "#DA7774",
-    "teal": "#25877E",
-    "violet": "#9572BA",
-    "gold": "#D3A15B",
-    "ink": "#392E3F",
-    "muted": "#756678",
-    "bg": "#F3EDF1",
+    "plum": "#553C5C",
+    "deep": "#402D48",
+    "coral": "#D77676",
+    "teal": "#25887E",
+    "violet": "#9270B5",
+    "gold": "#C7954E",
+    "ink": "#3D3045",
+    "muted": "#76677C",
+    "bg": "#F5EFF3",
     "white": "#FFFFFF",
 }
 
 RQ = {
     "RQ1": (
-        "Các cú sốc tài chính toàn cầu truyền dẫn đến lợi suất "
-        "Bitcoin và Ethereum như thế nào?"
+        "Các biến động tài chính toàn cầu liên hệ như thế nào "
+        "với lợi suất Bitcoin và Ethereum?"
     ),
     "RQ2": (
-        "Phản ứng của Bitcoin và Ethereum trước các cú sốc "
+        "Phản ứng của Bitcoin và Ethereum trước các biến động "
         "tài chính toàn cầu diễn biến như thế nào theo thời gian?"
     ),
     "RQ3": (
-        "Mối quan hệ truyền dẫn giữa điều kiện tài chính toàn cầu "
-        "và thị trường tiền mã hóa có thay đổi giữa giai đoạn "
-        "trước và sau năm 2020 không?"
+        "Mối quan hệ giữa điều kiện tài chính toàn cầu và "
+        "BTC/ETH có thay đổi trước và sau năm 2020 không?"
     ),
     "RQ4": (
-        "Mức độ truyền dẫn của các cú sốc tài chính toàn cầu "
-        "đến Bitcoin và Ethereum có khác nhau giữa trạng thái "
+        "Mối quan hệ này có khác nhau giữa thị trường "
         "bình ổn (Calm) và căng thẳng (Stress) không?"
     ),
     "RQ5": (
-        "Việc bổ sung các biến tài chính vĩ mô có cải thiện "
-        "khả năng dự báo độ lớn lợi suất ngày tiếp theo của "
-        "Bitcoin và Ethereum so với mô hình chỉ sử dụng "
-        "dữ liệu tiền mã hóa không?"
+        "Bổ sung dữ liệu vĩ mô có cải thiện dự báo độ lớn "
+        "lợi suất ngày tiếp theo của BTC/ETH không?"
     ),
-}
-
-SHOCK_LABELS = {
-    "VIX": "VIX · Chỉ số bất định thị trường",
-    "DXY": "DXY · Sức mạnh đồng USD",
-    "US2Y": "US2Y · Lợi suất TPCP Mỹ 2 năm",
 }
 
 PAGES = {
     "🏠 Tổng quan nghiên cứu": "overview",
-    "💌 RQ1 · Truyền dẫn cú sốc": "rq1",
+    "📉 RQ1 · Truyền dẫn": "rq1",
     "📈 RQ2 · Phản ứng động": "rq2",
     "🔄 RQ3 · Trước/sau 2020": "rq3",
     "🛡️ RQ4 · Calm/Stress": "rq4",
     "🧠 RQ5 · Dự báo ML": "rq5",
-    "📚 Dữ liệu & phương pháp": "methods",
+    "📚 Dữ liệu & cách đọc": "methods",
+}
+
+SHOCKS = {
+    "VIX": "VIX · Mức độ bất ổn tài chính",
+    "DXY": "DXY · Sức mạnh đồng USD",
+    "US2Y": "US2Y · Lợi suất TPCP Mỹ 2 năm",
+}
+
+SHOCK_MEANING = {
+    "VIX": (
+        "VIX phản ánh mức độ bất ổn kỳ vọng trên thị trường "
+        "cổ phiếu Mỹ. VIX tăng thường gắn với tâm lý lo ngại rủi ro."
+    ),
+    "DXY": (
+        "DXY phản ánh sức mạnh của USD so với một rổ tiền tệ. "
+        "DXY tăng nghĩa là USD mạnh lên."
+    ),
+    "US2Y": (
+        "US2Y là lợi suất trái phiếu Chính phủ Mỹ kỳ hạn 2 năm, "
+        "thường nhạy cảm với kỳ vọng về lãi suất."
+    ),
+}
+
+ASSETS = {"BTC": "Bitcoin", "ETH": "Ethereum"}
+
+FILES = {
+    "lp": ("lp_results.csv", RESULTS),
+    "lp_fdr": ("lp_fdr.csv", RESULTS),
+    "irf": ("irf_results.csv", RESULTS),
+    "subperiod": ("subperiod_results.csv", RESULTS),
+    "rq3": ("subperiod_difference_fdr.csv", RESULTS),
+    "regime": ("regime_results.csv", RESULTS),
+    "rq4": ("regime_difference_fdr.csv", RESULTS),
+    "regime_diag": ("regime_diagnostics.csv", RESULTS),
+    "comparison": ("model_comparison.csv", RESULTS),
+    "forecast": ("forecast_results.csv", RESULTS),
+    "significance": ("forecast_significance.csv", RESULTS),
+    "importance": ("feature_importance.csv", RESULTS),
+    "correlation": ("correlation_matrix.csv", TABLES),
+    "quality": ("preprocessing_quality_report.csv", TABLES),
+    "descriptive": ("descriptive_stats.csv", TABLES),
 }
 
 
 # ============================================================
-# 02. GLOBAL CSS — ONE SINGLE STYLE BLOCK
+# 02. GIAO DIỆN
 # ============================================================
 
 CSS = """
 <style>
-:root {
-    color-scheme: light;
-    --plum: #503A55;
-    --coral: #DA7774;
-    --teal: #25877E;
-    --violet: #9572BA;
-    --gold: #D3A15B;
-    --ink: #392E3F;
-}
+:root { color-scheme:light; }
 
 .stApp {
-    background: #F3EDF1 !important;
-    color: #392E3F !important;
+    background:#F5EFF3!important;
+    color:#3D3045!important;
 }
 
 [data-testid="stHeader"] {
-    background: #F3EDF1 !important;
+    background:#F5EFF3!important;
 }
 
 .block-container {
-    max-width: 1500px !important;
-    padding-top: 4.5rem !important;
-    padding-bottom: 3.5rem !important;
+    max-width:1450px!important;
+    padding-top:3.5rem!important;
+    padding-bottom:4rem!important;
 }
 
-.stApp h1,
-.stApp h2,
-.stApp h3 {
-    color: #392E3F !important;
-    font-weight: 900 !important;
+.stApp h1,.stApp h2,.stApp h3 {
+    color:#3D3045!important;
+    font-weight:900!important;
 }
 
-.stApp p {
-    font-size: 15px;
-    line-height: 1.75;
+.stApp p,.stApp li {
+    line-height:1.75;
 }
-
-/* ============================================================
-   SIDEBAR
-   ============================================================ */
 
 [data-testid="stSidebar"] {
-    background: linear-gradient(
-        180deg, #503A55 0%, #382A3F 100%
-    ) !important;
+    background:linear-gradient(180deg,#553C5C,#3E2D47)!important;
 }
 
 [data-testid="stSidebar"] p,
-[data-testid="stSidebar"] label {
-    color: #F6EBF3 !important;
-    font-size: 14px !important;
+[data-testid="stSidebar"] label,
+[data-testid="stSidebar"] span {
+    color:#FFF5FB!important;
 }
 
 [data-testid="stSidebar"] [role="radiogroup"] label {
-    padding: 12px 12px !important;
-    border-radius: 12px;
-    margin: 4px 0;
+    border-radius:12px;
+    padding:10px!important;
+    margin:3px 0;
 }
 
 [data-testid="stSidebar"]
 [role="radiogroup"] label:has(input:checked) {
-    background: #DA7774 !important;
-}
-
-[data-testid="stSidebar"]
-[role="radiogroup"] label:has(input:checked) p {
-    color: #FFFFFF !important;
-    font-weight: 900 !important;
+    background:#C87582!important;
 }
 
 .brand {
-    background: linear-gradient(
-        135deg, #77577E, #A06C88
-    );
-    border: 1px solid #AE88A3;
-    border-radius: 19px;
-    padding: 24px 19px;
-    margin-bottom: 23px;
+    background:linear-gradient(135deg,#775681,#A76D87);
+    border-radius:19px;
+    padding:25px 20px;
+    margin-bottom:24px;
+    color:white;
 }
 
 .brand-title {
-    color: white !important;
-    font-size: 24px;
-    font-weight: 950;
-    letter-spacing: -.6px;
+    color:#FFFFFF;
+    font-size:26px;
+    font-weight:950;
+    line-height:1.35;
 }
 
 .brand-sub {
-    color: #FFE6EE !important;
-    font-size: 12px;
-    font-weight: 750;
-    margin-top: 9px;
+    color:#FFE3DC;
+    font-size:12px;
+    font-weight:800;
+    letter-spacing:1px;
+    margin-top:10px;
 }
 
-.side-note {
-    background: #624B68;
-    border: 1px solid #816989;
-    border-radius: 15px;
-    padding: 19px;
-    color: #F6EDF4;
-    font-size: 13px;
-    font-weight: 550;
-    line-height: 2;
+.side-card {
+    background:#614B69;
+    border:1px solid #856E8D;
+    border-radius:14px;
+    padding:19px;
+    color:#FFF1F8;
+    font-size:14px;
+    line-height:2;
 }
 
-.side-note strong {
-    color: #FFD1B7;
-    font-size: 13px;
-}
-
-/* ============================================================
-   HERO — FULLY ROUNDED / LARGE TYPOGRAPHY
-   ============================================================ */
+.side-card strong { color:#FFD4B8; }
 
 .hero {
-    position: relative;
-    isolation: isolate;
-    overflow: hidden;
-
-    background: linear-gradient(
-        112deg,
-        #503A55 0%,
-        #705173 61%,
-        #A16D87 100%
-    );
-
-    padding: 39px 42px;
-    border-radius: 25px !important;
-
-    margin-top: 18px;
-    margin-bottom: 27px;
-
-    box-shadow: 0 13px 32px rgba(69,42,74,.14);
+    background:linear-gradient(110deg,#503A57,#765477,#A76F86);
+    border-radius:24px;
+    padding:40px 43px;
+    margin:16px 0 27px;
+    box-shadow:0 12px 29px rgba(70,40,75,.13);
 }
 
-/* Subtle concentric circles instead of a giant star */
-
-.hero::after {
-    content: "";
-    position: absolute;
-    width: 240px;
-    height: 240px;
-    right: -57px;
-    top: -75px;
-    border-radius: 50%;
-    border: 1px solid rgba(255,218,204,.24);
-    box-shadow:
-        0 0 0 32px rgba(255,218,204,.052),
-        0 0 0 68px rgba(255,218,204,.032),
-        0 0 0 105px rgba(255,218,204,.016);
-    pointer-events: none;
-    z-index: -1;
-}
-
-.hero-tag {
-    color: #FFD0B7 !important;
-    font-size: 13px;
-    font-weight: 950;
-    letter-spacing: 2px;
+.hero-kicker {
+    color:#FFD3B9;
+    font-size:13px;
+    font-weight:950;
+    letter-spacing:1.7px;
 }
 
 .hero-title {
-    color: #FFFFFF !important;
-    font-size: clamp(37px, 3.5vw, 53px);
-    font-weight: 950;
-    letter-spacing: -1.5px;
-    line-height: 1.23;
-    margin: 15px 0 13px;
-    max-width: 940px;
+    color:#FFFFFF;
+    font-size:clamp(35px,3.5vw,51px);
+    font-weight:950;
+    line-height:1.27;
+    margin:12px 0;
 }
 
 .hero-title em {
-    color: #FFC7A9;
-    font-style: normal;
+    color:#FFD1AE;
+    font-style:normal;
 }
 
-.hero-desc {
-    color: #F8EDF5 !important;
-    font-size: 17px;
-    font-weight: 650;
-    line-height: 1.8;
-    max-width: 900px;
+.hero-description {
+    color:#FFF0F8;
+    font-size:18px;
+    font-weight:600;
+    line-height:1.8;
+    max-width:1050px;
 }
 
-/* ============================================================
-   SECTION HEADINGS
-   ============================================================ */
-
-.section-head {
-    margin: 34px 0 18px;
+.section {
+    margin:36px 0 19px;
 }
 
-.section-eyebrow {
-    color: #B65B67 !important;
-    font-size: 12px;
-    font-weight: 950;
-    letter-spacing: 1.6px;
+.section-kicker {
+    color:#AD596E;
+    font-size:12px;
+    font-weight:950;
+    letter-spacing:1.4px;
 }
 
 .section-title {
-    color: #392E3F !important;
-    font-size: 29px;
-    font-weight: 950;
-    letter-spacing: -.6px;
-    margin-top: 7px;
+    color:#3D3045;
+    font-size:29px;
+    font-weight:950;
+    margin:8px 0;
+    line-height:1.4;
 }
 
-.section-sub {
-    color: #6F6073 !important;
-    font-size: 16px;
-    font-weight: 550;
-    margin-top: 8px;
-    line-height: 1.75;
+.section-desc {
+    color:#76677C;
+    font-size:16px;
+    font-weight:600;
+    line-height:1.8;
 }
-
-/* ============================================================
-   RESEARCH QUESTION CARD
-   ============================================================ */
 
 .question {
-    background: #FFFFFF;
-    border: 1px solid #E3D5E1;
-    border-left: 6px solid #DA7774;
-    border-radius: 17px;
-    padding: 25px 28px;
-    margin: 17px 0 25px;
-    box-shadow: 0 5px 18px rgba(60,40,65,.04);
+    background:#FFFFFF;
+    border:1px solid #E7D8E5;
+    border-left:6px solid #D77676;
+    border-radius:17px;
+    padding:24px 28px;
+    margin:18px 0 25px;
 }
 
-.question-tag {
-    color: #B65B67 !important;
-    font-size: 12px;
-    font-weight: 950;
-    letter-spacing: 1.4px;
+.question-label {
+    color:#B35C6B;
+    font-size:13px;
+    font-weight:950;
+    letter-spacing:1px;
 }
 
 .question-text {
-    color: #392E3F !important;
-    font-size: 21px;
-    font-weight: 850;
-    line-height: 1.75;
-    margin-top: 10px;
+    color:#3D3045;
+    font-size:21px;
+    font-weight:900;
+    line-height:1.65;
+    margin-top:10px;
 }
-
-/* ============================================================
-   KPI CARDS
-   ============================================================ */
 
 .kpi {
-    background: #FFFFFF;
-    border: 1px solid #E4D8E3;
-    border-top: 6px solid #DA7774;
-    border-radius: 19px;
-    padding: 24px 23px;
-    min-height: 165px;
-    box-shadow: 0 6px 20px rgba(67,43,72,.06);
+    background:#FFFFFF;
+    border:1px solid #E6D8E4;
+    border-top:6px solid #D77676;
+    border-radius:17px;
+    padding:23px;
+    min-height:160px;
+    margin-bottom:10px;
+    box-shadow:0 5px 16px rgba(60,40,65,.04);
 }
 
-.kpi.coral {border-top-color: #DA7774;}
-.kpi.teal {border-top-color: #25877E;}
-.kpi.violet {border-top-color: #9572BA;}
-.kpi.gold {border-top-color: #D3A15B;}
+.kpi.teal { border-top-color:#25887E; }
+.kpi.violet { border-top-color:#9270B5; }
+.kpi.gold { border-top-color:#C7954E; }
+.kpi.coral { border-top-color:#D77676; }
 
 .kpi-label {
-    color: #745E78 !important;
-    font-size: 13px;
-    font-weight: 950;
-    letter-spacing: .8px;
-    text-transform: uppercase;
+    color:#775E79;
+    font-size:13px;
+    font-weight:900;
+    text-transform:uppercase;
 }
 
 .kpi-value {
-    color: #503A55 !important;
-    font-size: clamp(31px, 2.8vw, 44px);
-    font-weight: 950;
-    letter-spacing: -1px;
-    margin-top: 15px;
+    color:#503A57;
+    font-size:clamp(27px,2.5vw,40px);
+    font-weight:950;
+    margin:13px 0 8px;
 }
 
-.kpi-sub {
-    color: #6F6174 !important;
-    font-size: 14px;
-    font-weight: 600;
-    margin-top: 10px;
+.kpi-detail {
+    color:#776B7A;
+    font-size:14px;
+    font-weight:600;
 }
 
-/* ============================================================
-   INSIGHT CARDS
-   ============================================================ */
-
-.insight {
-    border-left: 6px solid #DA7774;
-    border-radius: 17px;
-    padding: 25px 27px;
-    margin: 13px 0 21px;
+.info-card {
+    border-radius:17px;
+    border-left:6px solid #9270B5;
+    padding:23px 26px;
+    margin:15px 0 22px;
+    background:#EAE1F4;
 }
 
-.insight.coral {
-    background: #F9E1E1;
-    border-left-color: #DA7774;
+.info-card.teal {
+    background:#DFEFEA;
+    border-left-color:#25887E;
 }
 
-.insight.teal {
-    background: #DDEFE9;
-    border-left-color: #25877E;
+.info-card.coral {
+    background:#F9E4E2;
+    border-left-color:#D77676;
 }
 
-.insight.violet {
-    background: #EAE1F4;
-    border-left-color: #9572BA;
+.info-card.gold {
+    background:#FAEEDB;
+    border-left-color:#C7954E;
 }
 
-.insight.gold {
-    background: #F9ECD6;
-    border-left-color: #D3A15B;
+.info-card.white {
+    background:#FFFFFF;
+    border-left-color:#775681;
 }
 
-.insight.white {
-    background: #FFFFFF;
-    border-left-color: #77577E;
+.info-label {
+    color:#9B5470;
+    font-size:12px;
+    font-weight:950;
+    letter-spacing:1px;
 }
 
-.insight-tag {
-    color: #895368 !important;
-    font-size: 12px;
-    font-weight: 950;
-    letter-spacing: 1.2px;
+.info-title {
+    color:#3D3045;
+    font-size:21px;
+    font-weight:950;
+    margin:9px 0;
+    line-height:1.5;
 }
 
-.insight-title {
-    color: #392E3F !important;
-    font-size: 21px;
-    font-weight: 950;
-    margin: 11px 0;
-    line-height: 1.5;
+.info-body {
+    color:#4D4253;
+    font-size:16px;
+    font-weight:600;
+    line-height:1.85;
 }
 
-.insight-body {
-    color: #4F4253 !important;
-    font-size: 16px;
-    font-weight: 600;
-    line-height: 1.9;
+.guide {
+    background:#FFFFFF;
+    border:1px solid #E5D8E4;
+    border-left:6px solid #9270B5;
+    border-radius:17px;
+    padding:23px 27px;
+    margin:17px 0 23px;
 }
 
-/* ============================================================
-   SELECTBOX / MULTISELECT — NO DARK BACKGROUND
-   ============================================================ */
+.guide-label {
+    color:#9561A4;
+    font-size:13px;
+    font-weight:950;
+    letter-spacing:1px;
+}
+
+.guide-question {
+    color:#3D3045;
+    font-size:21px;
+    font-weight:950;
+    margin:10px 0 15px;
+}
+
+.guide-line {
+    color:#514556;
+    font-size:16px;
+    line-height:1.85;
+    margin-top:9px;
+}
+
+.guide-line b { color:#9860A4; }
+
+.result {
+    background:#FFFFFF;
+    border:1px solid #E8DCE6;
+    border-radius:20px;
+    overflow:hidden;
+    margin:19px 0 34px;
+    box-shadow:0 7px 22px rgba(70,40,75,.06);
+}
+
+.result-header {
+    background:linear-gradient(110deg,#553C5C,#805B7C);
+    color:#FFFFFF;
+    font-size:15px;
+    font-weight:950;
+    letter-spacing:1px;
+    padding:19px 25px;
+}
+
+.result-inner { padding:25px 28px; }
+
+.result-step {
+    color:#A65D70;
+    font-size:13px;
+    font-weight:950;
+    margin-bottom:9px;
+}
+
+.result-main {
+    color:#3D3045;
+    font-size:23px;
+    font-weight:950;
+    line-height:1.55;
+    margin-bottom:24px;
+}
+
+.result-meaning {
+    background:#E2F1EC;
+    border-left:5px solid #25887E;
+    border-radius:13px;
+    padding:19px 22px;
+    margin-bottom:15px;
+}
+
+.result-caution {
+    background:#FFF0DD;
+    border-left:5px solid #C7954E;
+    border-radius:13px;
+    padding:19px 22px;
+}
+
+.result-subtitle {
+    font-size:13px;
+    font-weight:950;
+    margin-bottom:9px;
+}
+
+.result-meaning .result-subtitle { color:#176E65; }
+.result-caution .result-subtitle { color:#966B31; }
+
+.result-text {
+    color:#443C49;
+    font-size:16px;
+    font-weight:600;
+    line-height:1.85;
+}
+
+.answer {
+    background:linear-gradient(110deg,#DDEEE8,#EEE5F4);
+    border-left:7px solid #25887E;
+    border-radius:18px;
+    padding:26px 29px;
+    margin:30px 0;
+}
+
+.answer-label {
+    color:#227A70;
+    font-size:13px;
+    font-weight:950;
+    letter-spacing:1px;
+}
+
+.answer-title {
+    color:#3D3045;
+    font-size:24px;
+    font-weight:950;
+    margin:12px 0;
+    line-height:1.5;
+}
+
+.answer-body {
+    color:#4A4251;
+    font-size:17px;
+    font-weight:600;
+    line-height:1.85;
+}
+
+/* Input controls: luôn sáng, không phụ thuộc dark theme */
 
 [data-testid="stSelectbox"] label p,
 [data-testid="stMultiSelect"] label p {
-    color: #503A55 !important;
-    font-size: 16px !important;
-    font-weight: 900 !important;
+    color:#503A57!important;
+    font-size:16px!important;
+    font-weight:900!important;
 }
 
 [data-testid="stSelectbox"] [data-baseweb="select"],
-[data-testid="stMultiSelect"] [data-baseweb="select"] {
-    background: #FFFFFF !important;
-    border-radius: 13px !important;
+[data-testid="stMultiSelect"] [data-baseweb="select"],
+[data-testid="stSelectbox"] [data-baseweb="select"] > div,
+[data-testid="stMultiSelect"] [data-baseweb="select"] > div {
+    background:#FFFFFF!important;
+    color:#503A57!important;
+    border-radius:12px!important;
 }
 
 [data-testid="stSelectbox"] [data-baseweb="select"] > div,
 [data-testid="stMultiSelect"] [data-baseweb="select"] > div {
-    background: #FFFFFF !important;
-    border: 2px solid #C8AEC8 !important;
-    border-radius: 13px !important;
-    min-height: 51px !important;
-    box-shadow: none !important;
+    border:2px solid #C8AFCB!important;
+    min-height:49px!important;
 }
 
-[data-testid="stSelectbox"] [data-baseweb="select"] span,
-[data-testid="stSelectbox"] [data-baseweb="select"] input,
-[data-testid="stMultiSelect"] [data-baseweb="select"] span {
-    color: #503A55 !important;
-    -webkit-text-fill-color: #503A55 !important;
-    font-size: 16px !important;
-    font-weight: 850 !important;
+[data-testid="stSelectbox"] [data-baseweb="select"] *,
+[data-testid="stMultiSelect"] [data-baseweb="select"] * {
+    color:#503A57!important;
+    -webkit-text-fill-color:#503A57!important;
 }
 
-[data-testid="stSelectbox"] [data-baseweb="select"] svg,
-[data-testid="stMultiSelect"] [data-baseweb="select"] svg {
-    color: #A06C88 !important;
-    fill: #A06C88 !important;
-}
-
-[data-testid="stSelectbox"] [data-baseweb="select"] > div:hover,
-[data-testid="stMultiSelect"] [data-baseweb="select"] > div:hover {
-    background: #FFF8F7 !important;
-    border-color: #DA7774 !important;
-}
-
-/* Dropdown menu */
-
-div[data-baseweb="popover"],
-div[data-baseweb="menu"],
-ul[role="listbox"] {
-    background: #FFFFFF !important;
-    color: #503A55 !important;
-}
-
+[data-baseweb="popover"],
+[data-baseweb="popover"] *,
+[data-baseweb="menu"],
+[data-baseweb="menu"] *,
+ul[role="listbox"],
 li[role="option"] {
-    background: #FFFFFF !important;
-    color: #503A55 !important;
-    font-size: 15px !important;
-}
-
-li[role="option"] *,
-ul[role="listbox"] * {
-    color: #503A55 !important;
-    -webkit-text-fill-color: #503A55 !important;
+    background-color:#FFFFFF!important;
+    color:#503A57!important;
+    -webkit-text-fill-color:#503A57!important;
 }
 
 li[role="option"]:hover,
 li[aria-selected="true"] {
-    background: #F3E3ED !important;
+    background-color:#F2E4EF!important;
 }
 
-/* ============================================================
-   EXPANDERS
-   ============================================================ */
-
 [data-testid="stExpander"] {
-    background: #FFFFFF !important;
-    border: 1px solid #E1D3DF !important;
-    border-radius: 15px !important;
-    overflow: hidden;
+    background:#FFFFFF!important;
+    border:1px solid #E5D6E2!important;
+    border-radius:14px!important;
 }
 
 [data-testid="stExpander"] summary {
-    background: #F4E9F0 !important;
+    background:#F4EAF2!important;
 }
 
 [data-testid="stExpander"] summary p {
-    color: #503A55 !important;
-    font-size: 15px !important;
-    font-weight: 900 !important;
+    color:#503A57!important;
+    font-size:15px!important;
+    font-weight:900!important;
 }
 
-/* ============================================================
-   COLORFUL TABLES
-   ============================================================ */
+/* Bảng màu */
 
-.table-scroll {
-    overflow-x: auto;
-    overflow-y: auto;
-    max-height: 460px;
-    border-radius: 13px;
-    border: 1px solid #E3D5E0;
+.table-wrap {
+    overflow:auto;
+    max-height:460px;
+    border:1px solid #E6D9E4;
+    border-radius:14px;
 }
 
 .color-table {
-    width: 100%;
-    min-width: 720px;
-    border-collapse: collapse;
-    font-size: 14px;
+    border-collapse:collapse;
+    width:100%;
+    min-width:700px;
+    font-size:14px;
 }
 
 .color-table th {
-    background: #5F4565;
-    color: #FFFFFF;
-    padding: 15px;
-    text-align: left;
-    position: sticky;
-    top: 0;
-    z-index: 2;
-    font-weight: 900;
+    background:#5D4564;
+    color:#FFFFFF;
+    padding:14px;
+    text-align:left;
+    position:sticky;
+    top:0;
+    white-space:nowrap;
 }
 
-.color-table th:nth-child(4n+2) {
-    background: #785A80;
-}
-
-.color-table th:nth-child(4n+3) {
-    background: #347F79;
-}
-
-.color-table th:nth-child(4n+4) {
-    background: #BB7079;
-}
+.color-table th:nth-child(3n+2) { background:#795A82; }
+.color-table th:nth-child(3n+3) { background:#31877D; }
 
 .color-table td {
-    padding: 13px 15px;
-    color: #483A4C;
-    background: #FFFFFF;
-    border-bottom: 1px solid #EDE3EB;
-    white-space: nowrap;
-    font-size: 14px;
+    padding:12px 14px;
+    background:#FFFFFF;
+    color:#493D50;
+    border-bottom:1px solid #EEE4EC;
+    white-space:nowrap;
 }
 
 .color-table tr:nth-child(even) td {
-    background: #F8F1F6;
+    background:#F9F3F8;
 }
 
 .color-table tr:hover td {
-    background: #FBE7E5;
+    background:#FCECE8;
 }
 
 .cell-tag {
-    display: inline-block;
-    background: #E9DCF1;
-    color: #674A7B;
-    border-radius: 8px;
-    padding: 5px 9px;
-    font-weight: 900;
+    display:inline-block;
+    background:#EADCF1;
+    color:#684C7A;
+    border-radius:8px;
+    padding:4px 9px;
+    font-weight:850;
 }
 
-.cell-pos {
-    color: #237E72;
-    font-weight: 850;
-}
-
-.cell-neg {
-    color: #C15E6C;
-    font-weight: 850;
-}
-
-/* ============================================================
-   BUTTONS / MISC
-   ============================================================ */
+.cell-positive { color:#207F73; font-weight:850; }
+.cell-negative { color:#C75F70; font-weight:850; }
 
 .stButton > button {
-    border-radius: 12px !important;
-    background: #503A55 !important;
-    color: #FFFFFF !important;
-    border: none !important;
-    font-size: 14px !important;
-    font-weight: 900 !important;
+    background:#553C5C!important;
+    border:none!important;
+    border-radius:12px!important;
+    color:#FFFFFF!important;
+    font-weight:850!important;
 }
 
-.stButton > button p {
-    color: #FFFFFF !important;
-    font-weight: 900 !important;
-}
+.stButton > button * { color:#FFFFFF!important; }
 
-.stCaption,
 [data-testid="stCaptionContainer"] p {
-    color: #756678 !important;
-    font-size: 13px !important;
+    color:#756779!important;
+    font-size:14px!important;
 }
 
-hr {
-    border-color: #DDCFDC !important;
-}
-
-@media (max-width: 900px) {
-    .block-container {
-        padding-top: 3.5rem !important;
-    }
-
-    .hero {
-        padding: 28px 24px;
-    }
-
-    .hero-title {
-        font-size: 35px;
-    }
-
-    .section-title {
-        font-size: 25px;
-    }
-
-    .insight-title {
-        font-size: 19px;
-    }
+@media(max-width:900px) {
+    .hero { padding:27px 24px; }
+    .hero-title { font-size:35px; }
+    .section-title { font-size:25px; }
+    .block-container { padding-top:3rem!important; }
 }
 </style>
 """
 
-# IMPORTANT: Render CSS once.
-# Do not paste CSS elsewhere in the Python file.
 st.html(CSS)
 
 
 # ============================================================
-# 03. DATA LOADING
+# 03. ĐỌC VÀ CHUẨN HÓA DỮ LIỆU
 # ============================================================
 
 @st.cache_data(show_spinner=False)
-def read_csv(name, folder="model_results"):
-    base = RESULTS if folder == "model_results" else TABLES
-    path = base / name
-
+def read_csv(path):
     if not path.exists():
         return pd.DataFrame()
 
     try:
         return pd.read_csv(path)
-    except Exception as exc:
-        st.warning(f"Không đọc được {name}: {exc}")
+    except Exception:
         return pd.DataFrame()
+
+
+ALIASES = {
+    "response": [
+        "response", "asset", "coin", "target",
+        "response_variable", "asset_name",
+    ],
+    "shock": [
+        "shock", "impulse", "shock_variable",
+        "impulse_variable",
+    ],
+    "horizon": ["horizon", "h", "step"],
+    "estimate": [
+        "estimate", "beta", "coefficient",
+        "coef", "irf", "response_value",
+    ],
+    "ci_lower": [
+        "ci_lower", "lower_ci", "ci_low",
+        "lower", "ci95_lower", "ci_lower_95",
+        "lower_95", "ci_low_95", "ci_lower_95pct",
+    ],
+    "ci_upper": [
+        "ci_upper", "upper_ci", "ci_high",
+        "upper", "ci95_upper", "ci_upper_95",
+        "upper_95", "ci_high_95", "ci_upper_95pct",
+    ],
+    "p_value": ["p_value", "pvalue", "p"],
+    "p_value_fdr": [
+        "p_value_fdr", "q_value", "p_fdr",
+        "bh_q_value", "fdr_p_value",
+    ],
+    "period": ["period", "subperiod", "sample_period"],
+    "regime": ["regime", "market_regime", "state"],
+    "model": ["model", "model_name"],
+    "feature_set": [
+        "feature_set", "features", "feature_group",
+    ],
+    "metric": ["metric", "metric_name"],
+    "value": ["value", "score", "metric_value"],
+    "date": ["date", "ds", "timestamp"],
+    "actual": [
+        "actual", "y_true", "realized", "y_actual",
+    ],
+    "predicted": [
+        "predicted", "prediction", "y_pred", "forecast",
+    ],
+    "feature": ["feature", "feature_name"],
+    "importance": [
+        "importance", "gain", "importance_value",
+    ],
+}
+
+
+def clean_col(value):
+    value = unicodedata.normalize("NFKD", str(value))
+    value = "".join(
+        c for c in value if not unicodedata.combining(c)
+    )
+    value = re.sub(r"[^a-zA-Z0-9]+", "_", value.lower())
+    return value.strip("_")
+
+
+def normalize_columns(df):
+    if df.empty:
+        return df.copy()
+
+    result = df.copy()
+    result.columns = [clean_col(c) for c in result.columns]
+
+    rename = {}
+    used = set()
+
+    for canonical, options in ALIASES.items():
+        if canonical in result.columns:
+            used.add(canonical)
+            continue
+
+        for option in options:
+            candidate = clean_col(option)
+
+            if candidate in result.columns and candidate not in used:
+                rename[candidate] = canonical
+                used.add(candidate)
+                break
+
+    return result.rename(columns=rename)
 
 
 @st.cache_data(show_spinner=False)
 def load_data():
     return {
-        "lp": read_csv("lp_results.csv"),
-        "lp_fdr": read_csv("lp_fdr.csv"),
-        "irf": read_csv("irf_results.csv"),
-        "subperiod": read_csv("subperiod_results.csv"),
-        "rq3": read_csv("subperiod_difference_fdr.csv"),
-        "regime": read_csv("regime_results.csv"),
-        "rq4": read_csv("regime_difference_fdr.csv"),
-        "regime_diag": read_csv("regime_diagnostics.csv"),
-        "comparison": read_csv("model_comparison.csv"),
-        "forecast": read_csv("forecast_results.csv"),
-        "significance": read_csv("forecast_significance.csv"),
-        "importance": read_csv("feature_importance.csv"),
-        "quality": read_csv(
-            "preprocessing_quality_report.csv",
-            "tables",
-        ),
-        "correlation": read_csv(
-            "correlation_matrix.csv",
-            "tables",
-        ),
-        "descriptive": read_csv(
-            "descriptive_stats.csv",
-            "tables",
-        ),
-        "var_diag": read_csv("var_lag_diagnostics.csv"),
+        key: normalize_columns(read_csv(folder / filename))
+        for key, (filename, folder) in FILES.items()
     }
 
 
-D = load_data()
+DATA = load_data()
 
 
-# ============================================================
-# 04. DATA HELPERS
-# ============================================================
-
-def normalize(df):
-    if df.empty:
-        return df.copy()
-
-    df = df.copy()
-
-    aliases = {
-        "response": ["response", "asset", "coin", "target"],
-        "shock": ["shock", "impulse", "variable"],
-        "horizon": ["horizon", "h", "step"],
-        "estimate": ["estimate", "beta", "coefficient"],
-        "ci_lower": [
-            "ci_lower", "lower_ci", "ci_low",
-            "lower", "ci95_lower",
-            "ci_lower_95", "ci_low_95",
-        ],
-        "ci_upper": [
-            "ci_upper", "upper_ci", "ci_high",
-            "upper", "ci95_upper",
-            "ci_upper_95", "ci_high_95",
-        ],
-        "p_value": ["p_value", "pvalue", "p"],
-        "p_value_fdr": [
-            "p_value_fdr", "q_value", "p_fdr",
-        ],
-    }
-
-    rename = {}
-    used = set()
-
-    for target, possibilities in aliases.items():
-        if target in df.columns:
-            continue
-
-        for name in possibilities:
-            if name in df.columns and name not in used:
-                rename[name] = target
-                used.add(name)
-                break
-
-    return df.rename(columns=rename)
+def num(value):
+    try:
+        value = float(value)
+        return value if np.isfinite(value) else np.nan
+    except (TypeError, ValueError):
+        return np.nan
 
 
-for key in D:
-    D[key] = normalize(D[key])
+def fmt(value, digits=4):
+    value = num(value)
+    return "N/A" if np.isnan(value) else f"{value:,.{digits}f}"
 
 
-def filtered(df, **kwargs):
+def esc(value):
+    return html.escape(str(value), quote=True)
+
+
+def col(df, *names):
+    for name in names:
+        if name in df.columns:
+            return name
+    return None
+
+
+def field(row, *names):
+    if row is None:
+        return np.nan
+
+    for name in names:
+        if name in row.index:
+            return row[name]
+
+    return np.nan
+
+
+def filter_df(df, **conditions):
     if df.empty:
         return df.copy()
 
     result = df.copy()
 
-    for col, value in kwargs.items():
-        if col in result.columns and value is not None:
-            result = result[
-                result[col].astype(str).str.lower()
-                == str(value).lower()
-            ]
+    for column, value in conditions.items():
+        if column not in result.columns or value is None:
+            continue
+
+        series = result[column].astype(str).str.strip().str.lower()
+        target = str(value).strip().lower()
+
+        if column == "horizon":
+            numeric = pd.to_numeric(
+                result[column], errors="coerce"
+            )
+            result = result[numeric == num(value)]
+        else:
+            result = result[series == target]
 
     return result.copy()
 
@@ -790,94 +834,200 @@ def first(df):
     return None if df.empty else df.iloc[0]
 
 
-def fmt(value, digits=4):
-    try:
-        if pd.isna(value):
-            return "N/A"
-        return f"{float(value):,.{digits}f}"
-    except (TypeError, ValueError):
-        return "N/A"
+def numeric_frame(df, *columns):
+    result = df.copy()
+
+    for column in columns:
+        if column in result.columns:
+            result[column] = pd.to_numeric(
+                result[column], errors="coerce"
+            )
+
+    return result
 
 
-def safe(value):
-    return html.escape(str(value), quote=True)
+def unique_values(df, column):
+    if df.empty or column not in df.columns:
+        return []
+
+    return [
+        x for x in df[column].dropna().unique().tolist()
+        if str(x).strip()
+    ]
+
+
+def fdr_message(row):
+    q = num(field(row, "p_value_fdr"))
+    p = num(field(row, "p_value"))
+
+    if np.isfinite(q):
+        if q < 0.05:
+            return (
+                "Có ý nghĩa sau điều chỉnh FDR",
+                f"q = {fmt(q)} < 0,05",
+                True,
+            )
+
+        return (
+            "Chưa đủ bằng chứng sau điều chỉnh FDR",
+            f"q = {fmt(q)} ≥ 0,05",
+            False,
+        )
+
+    if np.isfinite(p):
+        return (
+            "Có ý nghĩa theo kiểm định gốc"
+            if p < 0.05
+            else "Chưa có ý nghĩa theo kiểm định gốc",
+            f"p = {fmt(p)}; chưa xác nhận FDR",
+            None,
+        )
+
+    return (
+        "Chưa có thông tin kiểm định",
+        "Không tìm thấy p-value hoặc q-value",
+        None,
+    )
 
 
 # ============================================================
-# 05. UI HELPERS
+# 04. CÁC THÀNH PHẦN GIAO DIỆN
 # ============================================================
 
-def hero(tag, title, description):
+def hero(kicker, title, description):
     st.html(
         f"""
-<div class="hero">
-    <div class="hero-tag">{safe(tag)}</div>
-    <div class="hero-title">{title}</div>
-    <div class="hero-desc">{safe(description)}</div>
-</div>
-"""
+        <div class="hero">
+            <div class="hero-kicker">{esc(kicker)}</div>
+            <div class="hero-title">{title}</div>
+            <div class="hero-description">{esc(description)}</div>
+        </div>
+        """
     )
 
 
-def section(title, subtitle="", eyebrow="RESEARCH ANALYTICS"):
+def section(title, description="", kicker="RESEARCH ANALYTICS"):
     st.html(
         f"""
-<div class="section-head">
-    <div class="section-eyebrow">{safe(eyebrow)}</div>
-    <div class="section-title">{safe(title)}</div>
-    <div class="section-sub">{safe(subtitle)}</div>
-</div>
-"""
+        <div class="section">
+            <div class="section-kicker">{esc(kicker)}</div>
+            <div class="section-title">{esc(title)}</div>
+            <div class="section-desc">{esc(description)}</div>
+        </div>
+        """
     )
 
 
-def question(number):
+def question(rq):
     st.html(
         f"""
-<div class="question">
-    <div class="question-tag">
-        {number} · CÂU HỎI NGHIÊN CỨU
-    </div>
-    <div class="question-text">{safe(RQ[number])}</div>
-</div>
-"""
+        <div class="question">
+            <div class="question-label">
+                {esc(rq)} · CÂU HỎI NGHIÊN CỨU
+            </div>
+            <div class="question-text">{esc(RQ[rq])}</div>
+        </div>
+        """
     )
 
 
-def kpi(label, value, subtitle="", tone="coral"):
+def kpi(label, value, detail="", tone="coral"):
     st.html(
         f"""
-<div class="kpi {tone}">
-    <div class="kpi-label">{safe(label)}</div>
-    <div class="kpi-value">{safe(value)}</div>
-    <div class="kpi-sub">{safe(subtitle)}</div>
-</div>
-"""
+        <div class="kpi {esc(tone)}">
+            <div class="kpi-label">{esc(label)}</div>
+            <div class="kpi-value">{esc(value)}</div>
+            <div class="kpi-detail">{esc(detail)}</div>
+        </div>
+        """
     )
 
 
-def insight(tag, title, body, tone="teal"):
+def insight(label, title, body, tone="violet"):
     st.html(
         f"""
-<div class="insight {tone}">
-    <div class="insight-tag">{safe(tag)}</div>
-    <div class="insight-title">{safe(title)}</div>
-    <div class="insight-body">{safe(body)}</div>
-</div>
-"""
+        <div class="info-card {esc(tone)}">
+            <div class="info-label">{esc(label)}</div>
+            <div class="info-title">{esc(title)}</div>
+            <div class="info-body">{esc(body)}</div>
+        </div>
+        """
     )
 
 
-def show_table(df, label="📋 Xem dữ liệu chi tiết"):
-    with st.expander(label):
+def guide(question_text, how_to_read, focus):
+    st.html(
+        f"""
+        <div class="guide">
+            <div class="guide-label">TRƯỚC KHI XEM BIỂU ĐỒ</div>
+            <div class="guide-question">{esc(question_text)}</div>
+            <div class="guide-line">
+                <b>Cách đọc:</b> {esc(how_to_read)}
+            </div>
+            <div class="guide-line">
+                <b>Cần chú ý:</b> {esc(focus)}
+            </div>
+        </div>
+        """
+    )
+
+
+def conclusion(finding, meaning, caution):
+    st.html(
+        f"""
+        <div class="result">
+            <div class="result-header">
+                KẾT LUẬN TỪ BIỂU ĐỒ
+            </div>
+            <div class="result-inner">
+                <div class="result-step">
+                    01 · PHÁT HIỆN CHÍNH
+                </div>
+                <div class="result-main">{esc(finding)}</div>
+
+                <div class="result-meaning">
+                    <div class="result-subtitle">
+                        02 · ĐIỀU NÀY CÓ NGHĨA GÌ?
+                    </div>
+                    <div class="result-text">{esc(meaning)}</div>
+                </div>
+
+                <div class="result-caution">
+                    <div class="result-subtitle">
+                        03 · GIỚI HẠN CỦA KẾT LUẬN
+                    </div>
+                    <div class="result-text">{esc(caution)}</div>
+                </div>
+            </div>
+        </div>
+        """
+    )
+
+
+def answer(rq, title, body):
+    st.html(
+        f"""
+        <div class="answer">
+            <div class="answer-label">
+                TRẢ LỜI CÂU HỎI {esc(rq)}
+            </div>
+            <div class="answer-title">{esc(title)}</div>
+            <div class="answer-body">{esc(body)}</div>
+        </div>
+        """
+    )
+
+
+def show_table(df, title="Xem bảng số liệu chi tiết"):
+    with st.expander("📋 " + title):
         if df.empty:
-            st.info("Chưa tìm thấy dữ liệu.")
+            st.info("Không tìm thấy dữ liệu.")
             return
 
         display = df.head(100).copy()
 
         headers = "".join(
-            f"<th>{safe(c)}</th>" for c in display.columns
+            f"<th>{esc(name)}</th>" for name in display.columns
         )
 
         rows = []
@@ -887,194 +1037,50 @@ def show_table(df, label="📋 Xem dữ liệu chi tiết"):
 
             for name, value in record.items():
                 if pd.isna(value):
-                    text = "—"
+                    content = "—"
 
-                elif str(name).lower() in [
-                    "response", "asset", "shock",
-                    "period", "regime",
-                ]:
-                    text = (
-                        f'<span class="cell-tag">'
-                        f'{safe(value)}</span>'
+                elif name in {
+                    "response", "shock", "regime", "period",
+                    "model", "feature_set", "metric",
+                }:
+                    content = (
+                        f'<span class="cell-tag">{esc(value)}</span>'
                     )
 
                 elif isinstance(value, (int, float, np.number)):
                     css = (
-                        "cell-pos" if value > 0
-                        else "cell-neg" if value < 0
+                        "cell-positive" if value > 0
+                        else "cell-negative" if value < 0
                         else ""
                     )
 
-                    text = (
-                        f'<span class="{css}">'
-                        f'{fmt(value, 4)}</span>'
+                    content = (
+                        f'<span class="{css}">{fmt(value)}</span>'
                     )
 
                 else:
-                    text = safe(value)
+                    content = esc(value)
 
-                cells.append(f"<td>{text}</td>")
+                cells.append(f"<td>{content}</td>")
 
             rows.append("<tr>" + "".join(cells) + "</tr>")
 
         st.html(
-            '<div class="table-scroll">'
+            '<div class="table-wrap">'
             '<table class="color-table">'
-            f'<thead><tr>{headers}</tr></thead>'
+            f"<thead><tr>{headers}</tr></thead>"
             f'<tbody>{"".join(rows)}</tbody>'
-            '</table></div>'
+            "</table></div>"
         )
 
         if len(df) > 100:
             st.caption(
-                f"Hiển thị 100/{len(df):,} dòng đầu tiên."
+                f"Đang hiển thị 100/{len(df):,} dòng đầu."
             )
 
 
-# ============================================================
-# 06. PLOTLY THEME — HIGH CONTRAST TYPOGRAPHY
-# ============================================================
-
-def plot_style(fig, height=420):
-    fig.update_layout(
-        template="plotly_white",
-        height=height,
-        paper_bgcolor="#FFFFFF",
-        plot_bgcolor="#FFFFFF",
-        font=dict(
-            family="Arial, sans-serif",
-            color="#392E3F",
-            size=16,
-        ),
-        title_font=dict(
-            color="#392E3F",
-            size=22,
-        ),
-        margin=dict(l=50, r=40, t=65, b=65),
-        hovermode="x unified",
-        legend=dict(
-            orientation="h",
-            yanchor="bottom",
-            y=1.02,
-            x=0,
-            font=dict(color="#503A55", size=15),
-            bgcolor="rgba(255,255,255,0)",
-        ),
-        hoverlabel=dict(
-            bgcolor="#FFFFFF",
-            bordercolor="#D6C6D6",
-            font=dict(color="#392E3F", size=14),
-        ),
-    )
-
-    fig.update_xaxes(
-        showgrid=False,
-        showline=True,
-        linecolor="#CDBDCD",
-        tickfont=dict(color="#503A55", size=14),
-        title_font=dict(color="#503A55", size=16),
-    )
-
-    fig.update_yaxes(
-        showgrid=True,
-        gridcolor="#EDE5EB",
-        zeroline=True,
-        zerolinecolor="#CDBDCD",
-        tickfont=dict(color="#503A55", size=14),
-        title_font=dict(color="#503A55", size=16),
-    )
-
-    return fig
-
-
-def chart(fig, key, height=420):
-    fig = plot_style(fig, height)
-
-    st.plotly_chart(
-        fig,
-        width="stretch",
-        key=key,
-        config={"displaylogo": False},
-        theme=None,
-    )
-
-
-def line_chart(
-    df,
-    key,
-    color,
-    x="horizon",
-    y="estimate",
-    x_title="Chân trời phản ứng",
-):
-    if df.empty or x not in df or y not in df:
-        st.info("Chưa có dữ liệu biểu đồ.")
-        return
-
-    part = df.copy()
-    part[x] = pd.to_numeric(part[x], errors="coerce")
-    part[y] = pd.to_numeric(part[y], errors="coerce")
-    part = part.dropna(subset=[x, y]).sort_values(x)
-
-    fig = go.Figure()
-
-    if (
-        "ci_lower" in part.columns
-        and "ci_upper" in part.columns
-    ):
-        ci = part.copy()
-
-        ci["ci_lower"] = pd.to_numeric(
-            ci["ci_lower"], errors="coerce"
-        )
-
-        ci["ci_upper"] = pd.to_numeric(
-            ci["ci_upper"], errors="coerce"
-        )
-
-        ci = ci.dropna(
-            subset=["ci_lower", "ci_upper"]
-        )
-
-        if not ci.empty:
-            xx = ci[x].tolist()
-
-            fig.add_trace(
-                go.Scatter(
-                    x=xx + xx[::-1],
-                    y=(
-                        ci["ci_upper"].tolist()
-                        + ci["ci_lower"].tolist()[::-1]
-                    ),
-                    fill="toself",
-                    fillcolor="rgba(149,114,186,.17)",
-                    line=dict(color="rgba(0,0,0,0)"),
-                    hoverinfo="skip",
-                    name="Khoảng tin cậy",
-                )
-            )
-
-    fig.add_trace(
-        go.Scatter(
-            x=part[x],
-            y=part[y],
-            mode="lines+markers",
-            line=dict(color=color, width=3.5),
-            marker=dict(size=7),
-            name="Hệ số phản ứng",
-        )
-    )
-
-    fig.add_hline(
-        y=0,
-        line_dash="dash",
-        line_color="#9E8A9F",
-    )
-
-    fig.update_xaxes(title=x_title)
-    fig.update_yaxes(title="Hệ số phản ứng")
-
-    chart(fig, key)
+def method_note(title, body):
+    insight("PHƯƠNG PHÁP ĐANG SỬ DỤNG", title, body, "violet")
 
 
 def selectors(prefix):
@@ -1084,18 +1090,423 @@ def selectors(prefix):
         asset = st.selectbox(
             "🪙 Chọn tài sản",
             ["BTC", "ETH"],
+            format_func=lambda x: ASSETS[x],
             key=f"{prefix}_asset",
         )
 
     with c2:
         shock = st.selectbox(
-            "🌐 Chọn cú sốc vĩ mô",
+            "🌐 Chọn biến tài chính",
             ["VIX", "DXY", "US2Y"],
-            format_func=lambda x: SHOCK_LABELS[x],
+            format_func=lambda x: SHOCKS[x],
             key=f"{prefix}_shock",
         )
 
     return asset, shock
+
+
+# ============================================================
+# 05. BIỂU ĐỒ
+# ============================================================
+
+def style_plot(fig, height=430):
+    fig.update_layout(
+        template="plotly_white",
+        height=height,
+        paper_bgcolor="#FFFFFF",
+        plot_bgcolor="#FFFFFF",
+        font=dict(
+            family="Arial, sans-serif",
+            color=C["ink"],
+            size=16,
+        ),
+        margin=dict(l=65, r=50, t=75, b=80),
+        hovermode="closest",
+        hoverlabel=dict(
+            bgcolor="#FFFFFF",
+            font=dict(color=C["ink"], size=14),
+        ),
+        legend=dict(
+            orientation="h",
+            y=1.12,
+            x=0,
+            font=dict(color=C["ink"], size=15),
+        ),
+    )
+
+    fig.update_xaxes(
+        tickfont=dict(color=C["ink"], size=14),
+        title_font=dict(color=C["ink"], size=16),
+        showgrid=False,
+        linecolor="#D4C5D2",
+    )
+
+    fig.update_yaxes(
+        tickfont=dict(color=C["ink"], size=14),
+        title_font=dict(color=C["ink"], size=16),
+        gridcolor="#EEE5EC",
+        zerolinecolor="#D4C5D2",
+    )
+
+    return fig
+
+
+def plot(fig, key, height=430):
+    fig = style_plot(fig, height)
+
+    st.plotly_chart(
+        fig,
+        use_container_width=True,
+        key=key,
+        theme=None,
+        config={"displaylogo": False},
+    )
+
+
+def response_chart(
+    df,
+    key,
+    color,
+    x_title="Chân trời phản ứng",
+):
+    if df.empty or not {"horizon", "estimate"}.issubset(df.columns):
+        st.info("Chưa có dữ liệu phù hợp để dựng biểu đồ.")
+        return False
+
+    part = numeric_frame(
+        df, "horizon", "estimate", "ci_lower", "ci_upper"
+    )
+
+    part = part.dropna(
+        subset=["horizon", "estimate"]
+    ).sort_values("horizon")
+
+    if part.empty:
+        st.info("Dữ liệu phản ứng không hợp lệ.")
+        return False
+
+    fig = go.Figure()
+
+    if {"ci_lower", "ci_upper"}.issubset(part.columns):
+        ci = part.dropna(
+            subset=["ci_lower", "ci_upper"]
+        ).sort_values("horizon")
+
+        if not ci.empty:
+            xx = ci["horizon"].tolist()
+
+            fig.add_trace(
+                go.Scatter(
+                    x=xx + xx[::-1],
+                    y=(
+                        ci["ci_upper"].tolist()
+                        + ci["ci_lower"].tolist()[::-1]
+                    ),
+                    fill="toself",
+                    fillcolor="rgba(146,112,181,.20)",
+                    line=dict(color="rgba(0,0,0,0)"),
+                    hoverinfo="skip",
+                    name="Khoảng tin cậy",
+                )
+            )
+
+    fig.add_trace(
+        go.Scatter(
+            x=part["horizon"],
+            y=part["estimate"],
+            mode="lines+markers",
+            line=dict(color=color, width=3.5),
+            marker=dict(size=7),
+            name="Hệ số ước lượng",
+        )
+    )
+
+    fig.add_hline(
+        y=0,
+        line_dash="dash",
+        line_color="#A995A8",
+    )
+
+    fig.update_xaxes(title=x_title)
+    fig.update_yaxes(title="Hệ số phản ứng")
+
+    plot(fig, key)
+    return True
+
+
+def two_lines(
+    datasets,
+    key,
+    x_title="Chân trời h",
+    y_title="Hệ số ước lượng",
+):
+    fig = go.Figure()
+    found = False
+
+    for label, df, color in datasets:
+        if df.empty or not {"horizon", "estimate"}.issubset(df.columns):
+            continue
+
+        part = numeric_frame(df, "horizon", "estimate")
+        part = part.dropna(
+            subset=["horizon", "estimate"]
+        ).sort_values("horizon")
+
+        if part.empty:
+            continue
+
+        found = True
+
+        fig.add_trace(
+            go.Scatter(
+                x=part["horizon"],
+                y=part["estimate"],
+                mode="lines+markers",
+                name=label,
+                line=dict(color=color, width=3.5),
+                marker=dict(size=6),
+            )
+        )
+
+    if not found:
+        st.info("Không tìm thấy chuỗi phản ứng phù hợp.")
+        return False
+
+    fig.add_hline(
+        y=0, line_dash="dash", line_color="#A995A8"
+    )
+
+    fig.update_xaxes(title=x_title)
+    fig.update_yaxes(title=y_title)
+
+    plot(fig, key)
+    return True
+
+
+# ============================================================
+# 06. DIỄN GIẢI KẾT QUẢ
+# ============================================================
+
+def lp_interpret(asset, shock, row):
+    beta = num(field(row, "estimate"))
+
+    if not np.isfinite(beta):
+        return (
+            "Chưa có hệ số để kết luận.",
+            "Không tìm thấy ước lượng cho lựa chọn hiện tại.",
+            "Cần kiểm tra dữ liệu nguồn.",
+        )
+
+    if beta < 0:
+        direction = "ngược chiều"
+        explanation = (
+            f"Khi {shock} tăng, lợi suất {asset} có xu hướng "
+            "thấp hơn trong cùng ngày, sau khi xét các yếu tố "
+            "kiểm soát của mô hình."
+        )
+    elif beta > 0:
+        direction = "cùng chiều"
+        explanation = (
+            f"Khi {shock} tăng, lợi suất {asset} có xu hướng "
+            "cao hơn trong cùng ngày, sau khi xét các yếu tố "
+            "kiểm soát của mô hình."
+        )
+    else:
+        direction = "không thể hiện chiều rõ ràng"
+        explanation = (
+            "Hệ số ước lượng bằng 0 nên không thể hiện "
+            "chiều hướng liên hệ rõ ràng."
+        )
+
+    status, detail, strong = fdr_message(row)
+
+    if strong is True:
+        evidence = (
+            "Kết quả vẫn đạt ngưỡng ý nghĩa thống kê "
+            "sau điều chỉnh nhiều kiểm định."
+        )
+    elif strong is False:
+        evidence = (
+            "Dù hệ số có chiều hướng như trên, chưa đủ "
+            "bằng chứng để khẳng định mối liên hệ "
+            "sau điều chỉnh nhiều kiểm định."
+        )
+    else:
+        evidence = (
+            "Cần thận trọng vì chưa xác nhận được "
+            "ý nghĩa thống kê sau điều chỉnh FDR."
+        )
+
+    return (
+        f"{shock} và lợi suất {ASSETS[asset]} "
+        f"có hệ số {direction} tại h = 0.",
+        (
+            f"Hệ số LP = {fmt(beta)}. {explanation} "
+            f"{status} ({detail}). {evidence}"
+        ),
+        (
+            "Đây là liên hệ thống kê có điều kiện, "
+            "không phải bằng chứng nhân quả. "
+            "Đơn vị của VIX, DXY và US2Y khác nhau "
+            "nên không so sánh trực tiếp độ lớn hệ số."
+        ),
+    )
+
+
+def dynamic_interpret(asset, shock, df, method="LP"):
+    if df.empty or not {"horizon", "estimate"}.issubset(df.columns):
+        return (
+            "Chưa có dữ liệu phản ứng động.",
+            "Không thể đánh giá diễn biến hệ số.",
+            "Kiểm tra dữ liệu CSV.",
+        )
+
+    part = numeric_frame(
+        df, "horizon", "estimate", "ci_lower", "ci_upper"
+    )
+
+    part = part.dropna(
+        subset=["horizon", "estimate"]
+    ).sort_values("horizon")
+
+    if part.empty:
+        return (
+            "Không có dữ liệu hợp lệ.",
+            "Chưa thể diễn giải biểu đồ.",
+            "Kiểm tra các cột hệ số và chân trời.",
+        )
+
+    start = part.iloc[0]
+    peak = part.loc[part["estimate"].abs().idxmax()]
+
+    first_h = int(start["horizon"])
+    peak_h = int(peak["horizon"])
+    peak_beta = float(peak["estimate"])
+
+    unit = "ngày lịch" if method == "LP" else "phiên vĩ mô"
+
+    finding = (
+        f"Phản ứng ước lượng của {asset} trước {shock} "
+        "thay đổi theo chân trời thời gian."
+    )
+
+    meaning = (
+        f"Ở h = {first_h}, hệ số là "
+        f"{fmt(start['estimate'])}. "
+        f"Hệ số có độ lớn tuyệt đối cao nhất tại "
+        f"h = {peak_h} ({fmt(peak_beta)}), "
+        f"tương ứng {peak_h} {unit} kể từ thời điểm gốc."
+    )
+
+    if {"ci_lower", "ci_upper"}.issubset(part.columns):
+        ci = part.dropna(
+            subset=["ci_lower", "ci_upper"]
+        ).copy()
+
+        if not ci.empty:
+            excludes_zero = (
+                (ci["ci_lower"] > 0)
+                | (ci["ci_upper"] < 0)
+            )
+
+            count = int(excludes_zero.sum())
+
+            meaning += (
+                f" Trong {len(ci)} chân trời có khoảng tin cậy, "
+                f"{count} chân trời có khoảng tin cậy "
+                "không chứa giá trị 0."
+            )
+
+            caution = (
+                "Khoảng tin cậy không chứa 0 gợi ý "
+                "ý nghĩa theo kiểm định từng chân trời, "
+                "nhưng không đồng nghĩa kết quả vẫn "
+                "có ý nghĩa sau điều chỉnh FDR. "
+                "Không chọn đỉnh của đường phản ứng "
+                "làm bằng chứng thống kê."
+            )
+        else:
+            caution = (
+                "Chưa có khoảng tin cậy hợp lệ để "
+                "đánh giá ý nghĩa thống kê của phản ứng."
+            )
+    else:
+        caution = (
+            "Biểu đồ chưa có khoảng tin cậy; "
+            "không thể kết luận phản ứng khác 0 "
+            "một cách đáng tin chỉ từ hình dạng đường."
+        )
+
+    if method == "LP":
+        caution += (
+            " LP ở đây mô tả lợi suất tại từng chân trời, "
+            "không phải lợi suất cộng dồn."
+        )
+    else:
+        caution += (
+            " IRF VAR phụ thuộc vào thứ tự Cholesky "
+            "và không có cùng đơn vị cú sốc với LP."
+        )
+
+    return finding, meaning, caution
+
+
+def difference_interpret(
+    row,
+    label,
+    names,
+    description,
+):
+    if row is None:
+        return (
+            f"Chưa có kiểm định chênh lệch {label}.",
+            "Không tìm thấy dòng kết quả phù hợp.",
+            "Chưa thể đánh giá sự khác biệt.",
+        )
+
+    diff = num(field(row, *names))
+    q = num(field(row, "p_value_fdr", "q_value"))
+    p = num(field(row, "difference_p_value", "p_value"))
+
+    finding = (
+        f"Chênh lệch hệ số {label} = {fmt(diff)}."
+        if np.isfinite(diff)
+        else f"Chưa xác định được chênh lệch {label}."
+    )
+
+    if np.isfinite(q):
+        if q < 0.05:
+            meaning = (
+                f"{description} q-value FDR = {fmt(q)}. "
+                "Có bằng chứng về khác biệt hệ số "
+                "sau điều chỉnh FDR 5%."
+            )
+        else:
+            meaning = (
+                f"{description} q-value FDR = {fmt(q)}. "
+                "Chưa đủ bằng chứng thống kê để "
+                "khẳng định hai nhóm khác nhau."
+            )
+    elif np.isfinite(p):
+        meaning = (
+            f"{description} p-value = {fmt(p)}. "
+            "Đây là kiểm định chưa điều chỉnh FDR; "
+            "không nên xem là kết luận cuối cùng."
+        )
+    else:
+        meaning = (
+            f"{description} Chưa tìm thấy kết quả "
+            "kiểm định chênh lệch."
+        )
+
+    caution = (
+        "Hai đường trên biểu đồ nhìn khác nhau "
+        "không đồng nghĩa khác biệt có ý nghĩa thống kê. "
+        "Không tìm thấy bằng chứng khác biệt cũng "
+        "không chứng minh hai nhóm hoàn toàn giống nhau."
+    )
+
+    return finding, meaning, caution
 
 
 # ============================================================
@@ -1105,16 +1516,18 @@ def selectors(prefix):
 with st.sidebar:
     st.html(
         """
-<div class="brand">
-    <div class="brand-title">✦ Crypto Insights</div>
-    <div class="brand-sub">
-        MACRO × CRYPTO RESEARCH DASHBOARD
-    </div>
-</div>
-"""
+        <div class="brand">
+            <div class="brand-title">
+                Crypto Insights
+            </div>
+            <div class="brand-sub">
+                MACRO × CRYPTO RESEARCH DASHBOARD
+            </div>
+        </div>
+        """
     )
 
-    selection = st.radio(
+    selected = st.radio(
         "Điều hướng",
         list(PAGES.keys()),
         label_visibility="collapsed",
@@ -1124,15 +1537,16 @@ with st.sidebar:
 
     st.html(
         """
-<div class="side-note">
-    <strong>THÔNG TIN NGHIÊN CỨU</strong><br>
-    Giai đoạn: 2018–2025<br>
-    Tài sản: BTC · ETH<br>
-    Biến vĩ mô: VIX · DXY · US2Y<br>
-    Phương pháp: VAR · LP · ML<br>
-    Dự báo ngoài mẫu: 2025
-</div>
-"""
+        <div class="side-card">
+            <strong>THÔNG TIN NGHIÊN CỨU</strong><br>
+            Giai đoạn: 2018–2025<br>
+            Tài sản: BTC · ETH<br>
+            Biến vĩ mô: VIX · DXY · US2Y<br>
+            Kinh tế lượng: VAR · LP<br>
+            Dự báo: Elastic Net · XGBoost<br>
+            Kiểm tra ngoài mẫu: 2025
+        </div>
+        """
     )
 
     if st.button(
@@ -1142,271 +1556,371 @@ with st.sidebar:
         st.cache_data.clear()
         st.rerun()
 
-
-page = PAGES[selection]
+PAGE = PAGES[selected]
 
 
 # ============================================================
-# 08. OVERVIEW
+# 08. TỔNG QUAN
 # ============================================================
 
-if page == "overview":
+if PAGE == "overview":
 
     hero(
         "GLOBAL FINANCIAL RESEARCH · 2018–2025",
         "Macro <em>× Crypto</em> Intelligence",
-        "Phân tích sự truyền dẫn cú sốc tài chính toàn cầu "
-        "đến Bitcoin và Ethereum thông qua VAR, "
-        "Local Projections và Machine Learning.",
+        "Nghiên cứu mối liên hệ giữa điều kiện tài chính "
+        "toàn cầu với Bitcoin và Ethereum, đồng thời kiểm tra "
+        "liệu dữ liệu vĩ mô có thực sự giúp dự báo tốt hơn.",
     )
 
     cols = st.columns(4)
 
     with cols[0]:
-        kpi("Ngày nghiên cứu", "2.922", "Ngày lịch", "coral")
+        kpi(
+            "Ngày nghiên cứu", "2.922",
+            "Ngày lịch · 2018–2025", "coral",
+        )
 
     with cols[1]:
-        kpi("Câu hỏi nghiên cứu", "05", "RQ1 đến RQ5", "teal")
+        kpi(
+            "Câu hỏi nghiên cứu", "05",
+            "RQ1 đến RQ5", "teal",
+        )
 
     with cols[2]:
-        kpi("Biến vĩ mô", "03", "VIX · DXY · US2Y", "violet")
+        kpi(
+            "Biến vĩ mô", "03",
+            "VIX · DXY · US2Y", "violet",
+        )
 
     with cols[3]:
-        kpi("Kiểm tra ngoài mẫu", "2025", "365 ngày", "gold")
+        kpi(
+            "Dự báo ngoài mẫu", "2025",
+            "365 ngày", "gold",
+        )
 
     section(
-        "Khung nghiên cứu",
-        "Năm câu hỏi kết nối phân tích truyền dẫn "
-        "và giá trị dự báo của dữ liệu vĩ mô.",
-        "RESEARCH FRAMEWORK",
+        "Nghiên cứu này đang trả lời điều gì?",
+        "Năm câu hỏi đi từ mô tả mối liên hệ "
+        "đến kiểm tra khả năng dự báo.",
+        "RESEARCH ROADMAP",
     )
 
-    for number in RQ:
-        question(number)
+    for rq in RQ:
+        question(rq)
 
     section(
-        "Những phát hiện quan trọng",
-        "Các kết quả nổi bật cần chú ý khi đọc dashboard.",
+        "Đọc nhanh kết quả nghiên cứu",
+        "Năm phát hiện chính trước khi đi vào biểu đồ.",
         "EXECUTIVE FINDINGS",
     )
 
-    c1, c2 = st.columns(2)
+    left, right = st.columns(2)
 
-    with c1:
+    with left:
         insight(
             "RQ1 · TRUYỀN DẪN",
-            "VIX và DXY liên hệ âm với lợi suất crypto.",
-            "Hệ số LP cùng ngày cho thấy mối liên hệ "
-            "âm đối với BTC và ETH. Đây là quan hệ "
-            "thống kê có điều kiện, không phải bằng chứng "
-            "nhân quả chắc chắn.",
+            "VIX và DXY có liên hệ âm cùng ngày.",
+            "Ở chân trời h = 0, hệ số LP của VIX và DXY "
+            "với lợi suất BTC/ETH mang dấu âm. "
+            "Điều này gợi ý lợi suất crypto thường thấp hơn "
+            "khi bất ổn tài chính hoặc sức mạnh USD gia tăng.",
             "teal",
         )
 
         insight(
             "RQ3 · TRƯỚC/SAU 2020",
-            "Chưa đủ bằng chứng về thay đổi có hệ thống.",
-            "Các kiểm định chênh lệch hệ số không còn "
-            "ý nghĩa sau điều chỉnh FDR.",
+            "Chưa xác nhận thay đổi có hệ thống.",
+            "Không có kiểm định chênh lệch nào "
+            "còn ý nghĩa sau BH-FDR 5%. "
+            "Không thể kết luận chắc chắn cơ chế truyền dẫn "
+            "đã thay đổi sau năm 2020.",
             "violet",
         )
 
-    with c2:
         insight(
-            "RQ4 · CALM/STRESS",
-            "Chưa xác nhận khác biệt truyền dẫn theo trạng thái.",
-            "Mẫu Stress nhỏ và các kiểm định chênh lệch "
-            "không còn ý nghĩa sau FDR.",
-            "coral",
-        )
-
-        insight(
-            "RQ5 · MACHINE LEARNING",
-            "Macro không cải thiện dự báo một cách nhất quán.",
-            "Bổ sung dữ liệu vĩ mô không tạo ra cải thiện "
-            "MAE có ý nghĩa thống kê ổn định ngoài mẫu.",
+            "RQ5 · DỰ BÁO",
+            "Dữ liệu vĩ mô chưa tạo lợi ích ổn định.",
+            "Việc thêm VIX, DXY và US2Y không cải thiện "
+            "sai số dự báo một cách nhất quán "
+            "trên tập ngoài mẫu năm 2025.",
             "gold",
         )
 
+    with right:
+        insight(
+            "RQ2 · PHẢN ỨNG ĐỘNG",
+            "Phản ứng thay đổi theo thời gian.",
+            "Đường LP và IRF cho thấy hệ số có thể "
+            "thay đổi dấu và độ lớn ở từng chân trời. "
+            "Cần đọc khoảng tin cậy và kiểm định "
+            "trước khi kết luận phản ứng kéo dài.",
+            "violet",
+        )
+
+        insight(
+            "RQ4 · CALM/STRESS",
+            "Chưa xác nhận khác biệt giữa hai trạng thái.",
+            "Các kiểm định chênh lệch không còn "
+            "ý nghĩa sau FDR. Mẫu Stress cũng nhỏ "
+            "hơn nhiều so với Calm, làm giảm độ chính xác.",
+            "coral",
+        )
+
     section(
-        "Tương quan giữa các biến",
-        "Tương quan mô tả không đồng nghĩa quan hệ nhân quả.",
+        "BTC, ETH và các biến vĩ mô liên hệ ra sao?",
+        "Ma trận tương quan là bước khám phá ban đầu.",
+        "DESCRIPTIVE ANALYSIS",
     )
 
-    corr = D["correlation"]
+    guide(
+        "Các biến có thường tăng giảm cùng nhau không?",
+        "Hệ số tương quan gần +1 nghĩa là cùng chiều mạnh; "
+        "gần −1 nghĩa là ngược chiều mạnh; gần 0 nghĩa là "
+        "liên hệ tuyến tính yếu.",
+        "Nhìn vào cặp BTC–ETH và các cặp BTC/ETH với VIX.",
+    )
 
-    if not corr.empty:
-        temp = corr.copy()
+    correlation = DATA["correlation"]
 
+    if not correlation.empty:
         try:
-            temp = temp.set_index(temp.columns[0])
-            temp = temp.apply(
-                pd.to_numeric,
-                errors="coerce",
+            matrix = correlation.copy()
+
+            if (
+                len(matrix.columns) > 1
+                and matrix.columns[0] not in matrix.columns[1:]
+            ):
+                matrix = matrix.set_index(matrix.columns[0])
+
+            matrix = matrix.apply(
+                pd.to_numeric, errors="coerce"
             )
 
             fig = go.Figure(
                 go.Heatmap(
-                    z=temp.values,
-                    x=temp.columns.tolist(),
-                    y=temp.index.tolist(),
+                    z=matrix.values,
+                    x=matrix.columns.tolist(),
+                    y=matrix.index.tolist(),
                     zmin=-1,
                     zmax=1,
                     colorscale=[
-                        [0, "#DA7774"],
-                        [0.5, "#FFF8F2"],
-                        [1, "#25877E"],
+                        [0, C["coral"]],
+                        [0.5, "#FFF8F5"],
+                        [1, C["teal"]],
                     ],
-                    text=np.round(temp.values, 2),
+                    text=np.round(matrix.values, 2),
                     texttemplate="%{text}",
                     textfont=dict(
-                        color="#392E3F",
-                        size=14,
+                        size=13, color=C["ink"]
                     ),
+                    colorbar=dict(title="r"),
                 )
             )
 
-            chart(fig, "overview_heatmap", 450)
+            plot(fig, "overview_correlation", 490)
 
-        except Exception:
-            st.info("Chưa thể dựng heatmap từ bảng tương quan.")
+            def corr(a, b):
+                try:
+                    return float(matrix.loc[a, b])
+                except Exception:
+                    return np.nan
 
+            btc_eth = corr(
+                "BTC_log_return_pct",
+                "ETH_log_return_pct",
+            )
+            btc_vix = corr(
+                "BTC_log_return_pct",
+                "VIX_change_points",
+            )
+            eth_vix = corr(
+                "ETH_log_return_pct",
+                "VIX_change_points",
+            )
+
+            if all(
+                np.isfinite(x)
+                for x in [btc_eth, btc_vix, eth_vix]
+            ):
+                conclusion(
+                    "BTC và ETH có tương quan dương mạnh; "
+                    "VIX có tương quan âm với lợi suất crypto.",
+                    (
+                        f"Tương quan BTC–ETH = {fmt(btc_eth, 2)}. "
+                        f"BTC–VIX = {fmt(btc_vix, 2)} và "
+                        f"ETH–VIX = {fmt(eth_vix, 2)}. "
+                        "Nói đơn giản, BTC và ETH thường "
+                        "biến động cùng chiều, còn khi VIX "
+                        "tăng thì lợi suất crypto có xu hướng thấp hơn."
+                    ),
+                    (
+                        "Tương quan không chứng minh quan hệ nhân quả. "
+                        "Các phần RQ1 và RQ2 sử dụng mô hình "
+                        "để kiểm tra sâu hơn."
+                    ),
+                )
+            else:
+                conclusion(
+                    "Ma trận cho thấy các mối liên hệ giữa biến.",
+                    "Màu xanh ngọc biểu thị tương quan dương; "
+                    "màu coral biểu thị tương quan âm.",
+                    "Không đọc được đầy đủ các cặp tương quan "
+                    "theo tên cột hiện tại. Hãy kiểm tra bảng gốc.",
+                )
+
+        except Exception as exc:
+            st.warning(
+                f"Không dựng được ma trận tương quan: {exc}"
+            )
     else:
-        st.info("Chưa tìm thấy correlation_matrix.csv.")
+        st.info("Chưa có correlation_matrix.csv.")
 
-    show_table(corr, "📋 Xem dữ liệu tương quan")
+    show_table(correlation, "Dữ liệu tương quan")
+
+    answer(
+        "TỔNG QUAN",
+        "Thị trường crypto có liên hệ với điều kiện tài chính, "
+        "nhưng điều đó không có nghĩa dữ liệu vĩ mô "
+        "luôn giúp dự báo tốt hơn.",
+        "Đây là thông điệp xuyên suốt nghiên cứu. "
+        "RQ1–RQ4 đánh giá mối liên hệ và sự khác biệt "
+        "giữa các điều kiện thị trường; RQ5 kiểm tra "
+        "giá trị dự báo thực tế trên dữ liệu chưa dùng để huấn luyện.",
+    )
 
 
 # ============================================================
-# 09. RQ1 — TRANSMISSION
+# 09. RQ1 — TRUYỀN DẪN
 # ============================================================
 
-elif page == "rq1":
+elif PAGE == "rq1":
 
     hero(
         "RESEARCH QUESTION 01",
-        "RQ1 · <em>Truyền dẫn cú sốc</em>",
-        "Đánh giá chiều hướng và độ lớn mối liên hệ "
-        "giữa các cú sốc vĩ mô và lợi suất BTC, ETH.",
+        "RQ1 · <em>Truyền dẫn tài chính</em>",
+        "Khi VIX, DXY hoặc US2Y thay đổi, lợi suất "
+        "Bitcoin và Ethereum có xu hướng phản ứng "
+        "theo chiều nào trong cùng ngày?",
     )
 
     question("RQ1")
 
-    insight(
-        "PHƯƠNG PHÁP",
-        "Local Projections tại h = 0",
-        "Hệ số h = 0 phản ánh mối liên hệ cùng ngày. "
-        "VIX, DXY và US2Y có đơn vị khác nhau nên "
-        "không so sánh trực tiếp trị tuyệt đối hệ số "
-        "để kết luận cú sốc nào mạnh nhất.",
-        "violet",
+    method_note(
+        "Local Projections · h = 0",
+        "Hệ số LP tại h = 0 đo mối liên hệ cùng ngày "
+        "giữa biến tài chính và lợi suất crypto. "
+        "Kiểm định FDR giúp hạn chế việc kết luận nhầm "
+        "khi thực hiện nhiều kiểm định.",
     )
 
     asset, shock = selectors("rq1")
 
-    lp = (
-        D["lp_fdr"]
-        if not D["lp_fdr"].empty
-        else D["lp"]
+    insight(
+        "BIẾN ĐANG PHÂN TÍCH",
+        SHOCKS[shock],
+        SHOCK_MEANING[shock],
+        "white",
     )
 
-    current = filtered(
-        lp,
-        response=asset,
-        shock=shock,
-        horizon=0,
+    lp = DATA["lp"]
+    lp_fdr = DATA["lp_fdr"]
+
+    current = filter_df(
+        lp, response=asset, shock=shock, horizon=0
+    )
+
+    fdr_current = filter_df(
+        lp_fdr, response=asset, shock=shock, horizon=0
     )
 
     row = first(current)
 
-    if row is not None:
-        beta = row.get("estimate", np.nan)
-        lower = row.get("ci_lower", np.nan)
-        upper = row.get("ci_upper", np.nan)
-        p = row.get("p_value", np.nan)
-        q = row.get("p_value_fdr", np.nan)
+    if row is None:
+        row = first(fdr_current)
 
-        section(
-            "Hệ số truyền dẫn cùng ngày",
-            f"{asset} · {SHOCK_LABELS[shock]}",
-        )
+    if row is not None and not fdr_current.empty:
+        merged_row = row.copy()
 
-        a, b, c = st.columns(3)
+        for name in ["p_value_fdr", "p_value"]:
+            if name in fdr_current.columns:
+                merged_row[name] = fdr_current.iloc[0][name]
 
-        with a:
-            kpi(
-                "Hệ số h = 0",
-                fmt(beta),
-                f"{asset} · {shock}",
-                "coral",
-            )
-
-        with b:
-            kpi(
-                "Cận dưới CI 95%",
-                fmt(lower),
-                "Khoảng tin cậy",
-                "teal",
-            )
-
-        with c:
-            kpi(
-                "Cận trên CI 95%",
-                fmt(upper),
-                "Khoảng tin cậy",
-                "violet",
-            )
-
-        if pd.notna(beta):
-            direction = "giảm" if beta < 0 else "tăng"
-
-            insight(
-                "GIẢI THÍCH KINH TẾ",
-                f"Lợi suất {asset} có mối liên hệ "
-                f"{direction} với cú sốc {shock}.",
-                f"Hệ số ước lượng là {fmt(beta)}. "
-                f"p-value = {fmt(p)}, "
-                f"q-value FDR = {fmt(q)}. "
-                "Cần diễn giải theo đơn vị của biến "
-                "và giả định mô hình; không mặc định "
-                "đây là tác động nhân quả.",
-                "teal",
-            )
-
-        if pd.notna(q):
-            significant = float(q) < 0.05
-
-            insight(
-                "KẾT QUẢ KIỂM ĐỊNH FDR",
-                (
-                    "Có ý nghĩa thống kê sau FDR."
-                    if significant
-                    else "Chưa có ý nghĩa thống kê sau FDR."
-                ),
-                "Điều chỉnh Benjamini–Hochberg giúp "
-                "kiểm soát phát hiện dương tính giả "
-                "khi thực hiện nhiều kiểm định.",
-                "gold",
-            )
-
-    else:
-        st.warning("Không tìm thấy hệ số LP h = 0.")
+        row = merged_row
 
     section(
-        "So sánh BTC và ETH",
-        "Hệ số cùng ngày theo từng biến vĩ mô.",
+        "Kết quả cho lựa chọn hiện tại",
+        f"{ASSETS[asset]} · {SHOCKS[shock]}",
     )
 
-    all_h0 = filtered(lp, horizon=0)
+    guide(
+        f"Khi {shock} tăng, lợi suất {asset} thường tăng hay giảm?",
+        "Hệ số âm biểu thị liên hệ ngược chiều; "
+        "hệ số dương biểu thị liên hệ cùng chiều.",
+        "Đọc hệ số trước, sau đó kiểm tra q-value FDR. "
+        "q < 0,05 mới là bằng chứng có ý nghĩa "
+        "sau điều chỉnh nhiều kiểm định.",
+    )
 
-    if not all_h0.empty:
+    if row is not None:
+        c1, c2, c3 = st.columns(3)
+
+        with c1:
+            kpi(
+                "Hệ số LP", fmt(field(row, "estimate")),
+                "Tại h = 0", "coral",
+            )
+
+        with c2:
+            kpi(
+                "p-value", fmt(field(row, "p_value")),
+                "Kiểm định ban đầu", "violet",
+            )
+
+        with c3:
+            kpi(
+                "q-value FDR",
+                fmt(field(row, "p_value_fdr")),
+                "Sau điều chỉnh nhiều kiểm định",
+                "teal",
+            )
+
+        conclusion(*lp_interpret(asset, shock, row))
+    else:
+        st.info(
+            "Chưa tìm thấy kết quả LP h = 0 "
+            "cho lựa chọn này."
+        )
+
+    section(
+        "So sánh BTC và ETH theo ba biến tài chính",
+        "Biểu đồ giúp nhìn nhanh dấu và độ lớn hệ số.",
+    )
+
+    guide(
+        "Tài sản nào có hệ số cùng chiều hoặc ngược chiều?",
+        "Cột phía dưới đường 0 biểu thị hệ số âm; "
+        "cột phía trên biểu thị hệ số dương.",
+        "Không so sánh trực tiếp độ lớn giữa VIX, "
+        "DXY và US2Y vì đơn vị của các biến khác nhau.",
+    )
+
+    all_h0 = filter_df(lp, horizon=0)
+
+    if (
+        not all_h0.empty
+        and {"response", "shock", "estimate"}.issubset(
+            all_h0.columns
+        )
+    ):
         fig = go.Figure()
 
         for coin, color in [
             ("BTC", C["teal"]),
             ("ETH", C["coral"]),
         ]:
-            part = filtered(all_h0, response=coin)
+            part = filter_df(all_h0, response=coin)
+            part = numeric_frame(part, "estimate")
 
             fig.add_trace(
                 go.Bar(
@@ -1416,221 +1930,270 @@ elif page == "rq1":
                     marker_color=color,
                     text=part["estimate"].round(3),
                     textposition="outside",
+                    textfont=dict(color=C["ink"], size=14),
                 )
             )
 
         fig.update_layout(barmode="group")
-        fig.update_yaxes(title="Hệ số LP h = 0")
+        fig.update_yaxes(title="Hệ số LP · h = 0")
 
-        chart(fig, "rq1_comparison")
+        plot(fig, "rq1_comparison", 450)
 
-    show_table(all_h0, "📋 Hệ số LP cùng ngày")
+        conclusion(
+            "VIX và DXY có hệ số âm cùng ngày "
+            "với BTC và ETH trong mô hình cơ sở.",
+            "Điều này gợi ý bất ổn tài chính và "
+            "sức mạnh USD cao hơn thường gắn với "
+            "lợi suất crypto thấp hơn. "
+            "Theo kết quả nghiên cứu, 8/186 hệ số LP "
+            "còn ý nghĩa sau điều chỉnh BH-FDR 5%.",
+            "Biểu đồ cột chỉ thể hiện hệ số, "
+            "không thể hiện đầy đủ khoảng tin cậy. "
+            "Cần dùng kiểm định để đánh giá độ tin cậy; "
+            "không suy ra nhân quả.",
+        )
+
+    show_table(all_h0, "Hệ số LP cùng ngày")
+
+    answer(
+        "RQ1",
+        "Có bằng chứng về liên hệ âm cùng ngày "
+        "giữa VIX, DXY và lợi suất BTC/ETH.",
+        "Đây là phát hiện nổi bật nhất trong phần "
+        "truyền dẫn. Với US2Y, bằng chứng yếu hơn. "
+        "Mối liên hệ thống kê không đồng nghĩa "
+        "với việc các biến vĩ mô trực tiếp gây ra "
+        "thay đổi giá tiền mã hóa.",
+    )
 
 
 # ============================================================
-# 10. RQ2 — DYNAMIC RESPONSES
+# 10. RQ2 — PHẢN ỨNG ĐỘNG
 # ============================================================
 
-elif page == "rq2":
+elif PAGE == "rq2":
 
     hero(
         "RESEARCH QUESTION 02",
-        "RQ2 · <em>Phản ứng động</em>",
-        "Theo dõi phản ứng lợi suất crypto qua các "
-        "chân trời sau cú sốc tài chính toàn cầu.",
+        "RQ2 · <em>Phản ứng theo thời gian</em>",
+        "Không chỉ quan tâm phản ứng cùng ngày, "
+        "nghiên cứu còn xem hệ số của BTC/ETH "
+        "thay đổi như thế nào ở các chân trời tiếp theo.",
     )
 
     question("RQ2")
 
+    method_note(
+        "Hai phương pháp bổ trợ: LP và VAR",
+        "LP theo dõi hệ số tại từng chân trời ngày lịch. "
+        "VAR(5) xây dựng phản ứng xung lực IRF "
+        "theo phiên có dữ liệu vĩ mô. "
+        "Hai phương pháp không hoàn toàn cùng đơn vị "
+        "cú sốc hoặc đơn vị thời gian.",
+    )
+
     asset, shock = selectors("rq2")
 
     section(
-        "Local Projections",
-        "Đường phản ứng theo ngày lịch.",
+        "Biểu đồ 1 · Local Projections",
+        f"Phản ứng của {asset} trước {shock} theo ngày lịch.",
     )
 
-    lp = filtered(
-        D["lp"],
-        response=asset,
-        shock=shock,
+    guide(
+        "Phản ứng mạnh nhất ở thời điểm nào?",
+        "Đường màu biểu thị hệ số ước lượng. "
+        "Vùng tô mờ, nếu có, là khoảng tin cậy. "
+        "Đường ngang tại 0 là mốc không có phản ứng ước lượng.",
+        "Nếu khoảng tin cậy chứa 0, "
+        "chưa thể kết luận hệ số khác 0 "
+        "theo kiểm định tại chân trời đó.",
     )
 
-    line_chart(
-        lp,
-        "rq2_lp",
-        C["coral"],
-        x_title="Chân trời h · Ngày lịch",
+    lp = filter_df(
+        DATA["lp"], response=asset, shock=shock
     )
 
-    insight(
-        "CÁCH ĐỌC",
-        "Mỗi chân trời là phản ứng lợi suất "
-        "của một ngày riêng biệt.",
-        "LP trong nghiên cứu không trực tiếp "
-        "ước lượng lợi suất tích lũy. "
-        "Vì vậy không cộng các hệ số "
-        "để diễn giải thành tổng lợi suất.",
-        "teal",
-    )
+    if response_chart(
+        lp, "rq2_lp", C["coral"],
+        "Chân trời h · Ngày lịch",
+    ):
+        conclusion(
+            *dynamic_interpret(asset, shock, lp, "LP")
+        )
 
     section(
-        "VAR(5) · Impulse Response",
-        "Hàm phản ứng xung lực theo phiên vĩ mô.",
+        "Biểu đồ 2 · VAR(5) và IRF",
+        "Một cách tiếp cận khác để kiểm tra "
+        "diễn biến phản ứng theo phiên vĩ mô.",
     )
 
-    irf = filtered(
-        D["irf"],
-        response=asset,
-        shock=shock,
+    guide(
+        "Kết quả VAR có cùng chiều với LP không?",
+        "Đọc chiều của đường IRF và xem phản ứng "
+        "có quay về gần 0 ở các chân trời sau không.",
+        "VAR sử dụng thứ tự Cholesky "
+        "VIX → DXY → US2Y → BTC → ETH. "
+        "Không so sánh trực tiếp trị số hệ số với LP.",
     )
 
-    line_chart(
-        irf,
-        "rq2_irf",
-        C["violet"],
-        x_title="Chân trời · Phiên vĩ mô",
+    irf = filter_df(
+        DATA["irf"], response=asset, shock=shock
     )
 
-    insight(
-        "LƯU Ý PHƯƠNG PHÁP",
-        "Không so sánh trực tiếp độ lớn VAR và LP.",
-        "VAR sử dụng cú sốc trực giao hóa Cholesky "
-        "và chân trời phiên vĩ mô; LP sử dụng "
-        "đơn vị cú sốc gốc và chân trời ngày lịch. "
-        "Hai cách ước lượng bổ trợ nhau nhưng "
-        "không có cùng thang đo.",
-        "gold",
-    )
+    if response_chart(
+        irf, "rq2_var", C["violet"],
+        "Chân trời h · Phiên vĩ mô",
+    ):
+        conclusion(
+            *dynamic_interpret(asset, shock, irf, "VAR")
+        )
 
-    show_table(lp, "📋 Dữ liệu LP")
-    show_table(irf, "📋 Dữ liệu VAR IRF")
+    show_table(lp, "Kết quả Local Projections")
+    show_table(irf, "Kết quả VAR / IRF")
+
+    answer(
+        "RQ2",
+        "Phản ứng ước lượng không cố định theo thời gian.",
+        "LP và VAR cho phép quan sát chiều hướng, "
+        "độ lớn và diễn biến phản ứng tại các chân trời. "
+        "Tuy nhiên, không thể dựa vào một đỉnh "
+        "hoặc một đoạn đường phản ứng để khẳng định "
+        "tác động kéo dài có ý nghĩa thống kê. "
+        "Cần xét khoảng tin cậy và kiểm định FDR.",
+    )
 
 
 # ============================================================
-# 11. RQ3 — PRE / POST 2020
+# 11. RQ3 — TRƯỚC / SAU 2020
 # ============================================================
 
-elif page == "rq3":
+elif PAGE == "rq3":
 
     hero(
         "RESEARCH QUESTION 03",
         "RQ3 · <em>Trước và sau 2020</em>",
-        "Kiểm tra sự thay đổi của hệ số truyền dẫn "
-        "giữa hai giai đoạn nghiên cứu.",
+        "Kiểm tra liệu mối liên hệ giữa điều kiện "
+        "tài chính toàn cầu và crypto có thay đổi "
+        "giữa hai giai đoạn hay không.",
     )
 
     question("RQ3")
 
-    asset, shock = selectors("rq3")
-
-    df = filtered(
-        D["rq3"],
-        response=asset,
-        shock=shock,
+    method_note(
+        "So sánh hai giai đoạn",
+        "Giai đoạn trước 2020 là 2018–2019; "
+        "giai đoạn sau 2020 là 2020–2025. "
+        "Nghiên cứu kiểm định trực tiếp chênh lệch "
+        "hệ số và điều chỉnh BH-FDR.",
     )
 
-    row = first(filtered(df, horizon=0))
+    asset, shock = selectors("rq3")
 
-    if row is not None:
-        section(
-            "So sánh hệ số h = 0",
-            f"{asset} · {SHOCK_LABELS[shock]}",
+    section(
+        "Biểu đồ · So sánh hai đường phản ứng",
+        f"{asset} trước biến động {shock}.",
+    )
+
+    guide(
+        "Sau năm 2020, phản ứng của crypto có khác đi không?",
+        "So sánh hai đường hệ số của hai giai đoạn "
+        "ở cùng một chân trời h.",
+        "Hai đường cách xa nhau chưa đủ để "
+        "kết luận khác biệt. Cần xem kiểm định "
+        "chênh lệch sau FDR.",
+    )
+
+    sub = filter_df(
+        DATA["subperiod"], response=asset, shock=shock
+    )
+
+    periods = unique_values(sub, "period")
+
+    datasets = []
+
+    for i, period in enumerate(periods[:4]):
+        color = [
+            C["violet"], C["coral"],
+            C["teal"], C["gold"],
+        ][i]
+
+        datasets.append(
+            (
+                str(period),
+                filter_df(sub, period=period),
+                color,
+            )
         )
 
-        a, b, c = st.columns(3)
+    two_lines(
+        datasets,
+        "rq3_period_lines",
+        "Chân trời h · Ngày lịch",
+        "Hệ số LP",
+    )
 
-        with a:
+    difference = filter_df(
+        DATA["rq3"], response=asset, shock=shock
+    )
+
+    h0 = first(filter_df(difference, horizon=0))
+
+    if h0 is not None:
+        c1, c2, c3 = st.columns(3)
+
+        with c1:
             kpi(
-                "Trước 2020",
-                fmt(row.get("pre_beta")),
-                "2018–2019",
+                "Hệ số trước 2020",
+                fmt(field(h0, "pre_beta")),
+                "Giai đoạn 2018–2019",
                 "violet",
             )
 
-        with b:
+        with c2:
             kpi(
-                "Sau 2020",
-                fmt(row.get("post_beta")),
-                "2020–2025",
+                "Hệ số sau 2020",
+                fmt(field(h0, "post_beta")),
+                "Giai đoạn 2020–2025",
                 "coral",
             )
 
-        with c:
+        with c3:
             kpi(
-                "Chênh lệch",
-                fmt(row.get("difference")),
-                "Sau trừ trước",
+                "q-value FDR",
+                fmt(field(h0, "p_value_fdr")),
+                "Kiểm định chênh lệch",
                 "teal",
             )
 
-        insight(
-            "KIỂM ĐỊNH",
-            "Khác biệt hệ số cần được kiểm định.",
-            "p-value chênh lệch = "
-            f"{fmt(row.get('difference_p_value'))}; "
-            "q-value FDR = "
-            f"{fmt(row.get('p_value_fdr'))}. "
-            "Hệ số thay đổi về độ lớn chưa đủ "
-            "để khẳng định điểm gãy cấu trúc.",
-            "gold",
-        )
-
-    section(
-        "Đường phản ứng theo giai đoạn",
-        "So sánh LP trước và sau 2020.",
-    )
-
-    sub = filtered(
-        D["subperiod"],
-        response=asset,
-        shock=shock,
-    )
-
-    if not sub.empty:
-        fig = go.Figure()
-
-        for period, color in [
-            ("pre_2020", C["violet"]),
-            ("post_2020", C["coral"]),
-        ]:
-            part = filtered(sub, period=period)
-            part = part.sort_values("horizon")
-
-            fig.add_trace(
-                go.Scatter(
-                    x=part["horizon"],
-                    y=part["estimate"],
-                    mode="lines+markers",
-                    name=period,
-                    line=dict(color=color, width=3.5),
-                )
+        conclusion(
+            *difference_interpret(
+                h0,
+                "sau 2020 trừ trước 2020",
+                [
+                    "difference_post_minus_pre",
+                    "difference",
+                    "difference_stress_minus_calm",
+                ],
+                (
+                    f"Đây là kết quả so sánh {asset} "
+                    f"trước biến {shock} tại h = 0."
+                ),
             )
-
-        fig.add_hline(
-            y=0,
-            line_dash="dash",
-            line_color="#9E8A9F",
         )
 
-        fig.update_xaxes(title="Chân trời ngày lịch")
-        fig.update_yaxes(title="Hệ số LP")
+    show_table(difference, "Kiểm định chênh lệch RQ3")
+    show_table(sub, "Hệ số từng giai đoạn")
 
-        chart(fig, "rq3_period_chart")
-
-    insight(
-        "KẾT LUẬN RQ3",
+    answer(
+        "RQ3",
         "Chưa đủ bằng chứng về thay đổi truyền dẫn "
-        "mang tính hệ thống sau năm 2020.",
-        "Không có kiểm định chênh lệch nào "
-        "duy trì ý nghĩa sau điều chỉnh FDR. "
-        "Vì vậy không nên suy luận thay đổi cấu trúc "
-        "chỉ từ việc hai đường hệ số khác nhau.",
-        "teal",
-    )
-
-    show_table(
-        df,
-        "📋 Kiểm định chênh lệch trước/sau 2020",
+        "có hệ thống sau năm 2020.",
+        "Trong 186 kiểm định chênh lệch trước/sau 2020, "
+        "không có kiểm định nào còn ý nghĩa "
+        "sau điều chỉnh BH-FDR 5%. "
+        "Điều này không chứng minh hai giai đoạn "
+        "hoàn toàn giống nhau, mà cho thấy dữ liệu "
+        "chưa cung cấp bằng chứng đủ mạnh về khác biệt.",
     )
 
 
@@ -1638,159 +2201,128 @@ elif page == "rq3":
 # 12. RQ4 — CALM / STRESS
 # ============================================================
 
-elif page == "rq4":
+elif PAGE == "rq4":
 
     hero(
         "RESEARCH QUESTION 04",
-        "RQ4 · <em>Calm vs Stress</em>",
-        "Đánh giá sự khác biệt truyền dẫn cú sốc "
-        "giữa thị trường bình ổn và căng thẳng.",
+        "RQ4 · <em>Calm và Stress</em>",
+        "Liệu thị trường crypto phản ứng khác đi "
+        "khi điều kiện tài chính căng thẳng "
+        "so với khi thị trường bình ổn?",
     )
 
     question("RQ4")
 
+    method_note(
+        "Phân loại trạng thái theo VIX",
+        "Stress khi VIX của phiên vĩ mô trước đó "
+        "từ 30 trở lên; các quan sát còn lại là Calm. "
+        "Việc dùng VIX phiên trước giúp tránh "
+        "dùng thông tin cùng ngày để xác định trạng thái.",
+    )
+
+    c1, c2 = st.columns(2)
+
+    with c1:
+        kpi(
+            "Calm", "1.839",
+            "Quan sát ở trạng thái bình ổn",
+            "teal",
+        )
+
+    with c2:
+        kpi(
+            "Stress", "151",
+            "Quan sát ở trạng thái căng thẳng",
+            "coral",
+        )
+
     insight(
-        "ĐỊNH NGHĨA",
-        "Stress: VIX phiên vĩ mô trước đó ≥ 30.",
-        "Sử dụng trạng thái dựa trên VIX "
-        "phiên trước để hạn chế thông tin đồng thời. "
-        "Calm và Stress được so sánh bằng "
-        "các hệ số tương tác LP.",
-        "violet",
+        "LƯU Ý VỀ CỠ MẪU",
+        "Stress có ít quan sát hơn đáng kể.",
+        "Số quan sát Stress nhỏ khiến hệ số "
+        "có thể kém chính xác và khoảng tin cậy rộng. "
+        "Vì vậy, kết quả không có ý nghĩa thống kê "
+        "cần được diễn giải thận trọng.",
+        "gold",
     )
 
     asset, shock = selectors("rq4")
 
-    regimes = filtered(
-        D["regime"],
-        response=asset,
-        shock=shock,
-    )
-
-    h0 = filtered(regimes, horizon=0)
-
-    calm = first(filtered(h0, regime="Calm"))
-    stress = first(filtered(h0, regime="Stress"))
-
-    if calm is not None and stress is not None:
-        section(
-            "So sánh hệ số cùng ngày",
-            f"{asset} · {SHOCK_LABELS[shock]}",
-        )
-
-        a, b, c = st.columns(3)
-
-        with a:
-            kpi(
-                "Calm",
-                fmt(calm.get("estimate")),
-                "Thị trường bình ổn",
-                "teal",
-            )
-
-        with b:
-            kpi(
-                "Stress",
-                fmt(stress.get("estimate")),
-                "Thị trường căng thẳng",
-                "coral",
-            )
-
-        with c:
-            kpi(
-                "Stress − Calm",
-                fmt(
-                    stress.get(
-                        "difference_stress_minus_calm"
-                    )
-                ),
-                "Chênh lệch hệ số",
-                "violet",
-            )
-
     section(
-        "Phản ứng theo trạng thái",
-        "Đường LP của Calm và Stress.",
+        "Biểu đồ · Phản ứng trong hai trạng thái",
+        f"So sánh {asset} trước {shock}.",
     )
 
-    if not regimes.empty:
-        fig = go.Figure()
+    guide(
+        "Khi thị trường căng thẳng, hệ số có thay đổi không?",
+        "So sánh đường Calm và Stress ở cùng chân trời. "
+        "Đường càng xa 0 thì hệ số ước lượng "
+        "có độ lớn tuyệt đối càng cao.",
+        "Phải kiểm tra chênh lệch Stress − Calm "
+        "bằng kiểm định thống kê, không chỉ nhìn hình.",
+    )
 
-        for name, color in [
-            ("Calm", C["teal"]),
-            ("Stress", C["coral"]),
-        ]:
-            part = filtered(regimes, regime=name)
-            part = part.sort_values("horizon")
+    regime = filter_df(
+        DATA["regime"], response=asset, shock=shock
+    )
 
-            fig.add_trace(
-                go.Scatter(
-                    x=part["horizon"],
-                    y=part["estimate"],
-                    mode="lines+markers",
-                    name=name,
-                    line=dict(color=color, width=3.5),
-                )
+    calm = filter_df(regime, regime="Calm")
+    stress = filter_df(regime, regime="Stress")
+
+    two_lines(
+        [
+            ("Calm", calm, C["teal"]),
+            ("Stress", stress, C["coral"]),
+        ],
+        "rq4_regime_lines",
+        "Chân trời h · Ngày lịch",
+        "Hệ số LP",
+    )
+
+    difference = filter_df(
+        DATA["rq4"], response=asset, shock=shock
+    )
+
+    h0 = first(filter_df(difference, horizon=0))
+
+    if h0 is not None:
+        conclusion(
+            *difference_interpret(
+                h0,
+                "Stress trừ Calm",
+                [
+                    "difference_stress_minus_calm",
+                    "difference",
+                ],
+                (
+                    f"Đây là kiểm định cho {asset} "
+                    f"và {shock} tại h = 0."
+                ),
             )
-
-        fig.add_hline(
-            y=0,
-            line_dash="dash",
-            line_color="#9E8A9F",
+        )
+    else:
+        insight(
+            "KIỂM ĐỊNH",
+            "Chưa có dòng kiểm định tại h = 0.",
+            "Biểu đồ phản ứng không thay thế "
+            "được kiểm định chênh lệch hệ số.",
+            "gold",
         )
 
-        fig.update_xaxes(title="Chân trời ngày lịch")
-        fig.update_yaxes(title="Hệ số LP")
+    show_table(difference, "Kiểm định Calm/Stress")
+    show_table(regime, "Hệ số theo trạng thái")
 
-        chart(fig, "rq4_regime_chart")
-
-    diag = filtered(
-        D["regime_diag"],
-        response=asset,
-        horizon=0,
-    )
-
-    dr = first(diag)
-
-    if dr is not None:
-        a, b = st.columns(2)
-
-        with a:
-            kpi(
-                "Quan sát Calm",
-                fmt(dr.get("n_calm"), 0),
-                "Kích thước mẫu",
-                "teal",
-            )
-
-        with b:
-            kpi(
-                "Quan sát Stress",
-                fmt(dr.get("n_stress"), 0),
-                "Kích thước mẫu",
-                "coral",
-            )
-
-    insight(
-        "KẾT LUẬN RQ4",
+    answer(
+        "RQ4",
         "Chưa xác nhận được khác biệt truyền dẫn "
-        "giữa Calm và Stress.",
-        "Các kiểm định chênh lệch không duy trì "
-        "ý nghĩa thống kê sau FDR. "
-        "Mẫu Stress nhỏ hơn đáng kể, "
-        "khiến độ bất định của ước lượng cao hơn. "
-        "Không có ý nghĩa thống kê không đồng nghĩa "
-        "hai trạng thái hoàn toàn giống nhau.",
-        "teal",
-    )
-
-    show_table(
-        filtered(
-            D["rq4"],
-            response=asset,
-            shock=shock,
-        ),
-        "📋 Kiểm định Calm–Stress",
+        "giữa trạng thái Calm và Stress.",
+        "Trong 186 kiểm định chênh lệch, "
+        "không có kết quả nào còn ý nghĩa "
+        "sau điều chỉnh BH-FDR 5%. "
+        "Đặc biệt, mẫu Stress nhỏ nên "
+        "không thể xem kết quả này là bằng chứng "
+        "hai trạng thái phản ứng hoàn toàn giống nhau.",
     )
 
 
@@ -1798,493 +2330,778 @@ elif page == "rq4":
 # 13. RQ5 — MACHINE LEARNING
 # ============================================================
 
-elif page == "rq5":
+elif PAGE == "rq5":
 
     hero(
         "RESEARCH QUESTION 05",
-        "RQ5 · <em>Dự báo Machine Learning</em>",
-        "Đánh giá giá trị bổ sung của dữ liệu vĩ mô "
-        "trong dự báo độ lớn lợi suất BTC và ETH.",
+        "RQ5 · <em>Machine Learning</em>",
+        "Kiểm tra giá trị thực tế của dữ liệu vĩ mô: "
+        "khi thêm VIX, DXY và US2Y, mô hình "
+        "có dự báo chính xác hơn trên dữ liệu mới không?",
     )
 
     question("RQ5")
 
-    insight(
-        "BIẾN MỤC TIÊU",
-        "Dự báo |r(t+1)| — độ lớn lợi suất ngày kế tiếp.",
-        "Đây là trị tuyệt đối của lợi suất log, "
-        "không phải VaR hay realized volatility. "
-        "Năm 2025 được giữ làm tập kiểm tra ngoài mẫu.",
-        "violet",
+    method_note(
+        "Dự báo độ lớn lợi suất ngày tiếp theo",
+        "Biến mục tiêu là |r(t+1)|, không phải "
+        "dự báo giá hay chiều tăng giảm. "
+        "So sánh Historical30, Elastic Net và XGBoost "
+        "trên tập kiểm tra năm 2025 bằng MAE, RMSE.",
     )
 
     asset = st.selectbox(
-        "🪙 Chọn tài sản",
+        "🪙 Chọn tài sản dự báo",
         ["BTC", "ETH"],
+        format_func=lambda x: ASSETS[x],
         key="rq5_asset",
     )
 
     section(
-        "So sánh sai số dự báo",
-        "MAE và RMSE càng thấp càng tốt.",
+        "Biểu đồ 1 · Mô hình nào sai số thấp nhất?",
+        "Sai số càng thấp, dự báo càng chính xác "
+        "theo chỉ tiêu đang chọn.",
     )
 
-    comparison = filtered(
-        D["comparison"],
-        asset=asset,
+    metric = st.selectbox(
+        "📐 Chọn thước đo sai số",
+        ["MAE", "RMSE"],
+        key="rq5_metric",
     )
 
-    if not comparison.empty:
-        metric = st.selectbox(
-            "📐 Chọn chỉ tiêu",
-            ["MAE", "RMSE"],
-            key="rq5_metric",
+    guide(
+        f"Mô hình nào dự báo {asset} tốt nhất theo {metric}?",
+        (
+            "MAE là sai số tuyệt đối trung bình. "
+            "RMSE phạt mạnh hơn các sai số lớn. "
+            "Với cả hai chỉ tiêu, giá trị thấp hơn là tốt hơn."
+        ),
+        "Quan sát mô hình tốt nhất, rồi so sánh "
+        "Crypto-only với Crypto + Macro trong cùng thuật toán.",
+    )
+
+    comparison = DATA["comparison"].copy()
+
+    if "response" in comparison.columns:
+        comparison = filter_df(
+            comparison, response=asset
+        )
+    elif "asset" in comparison.columns:
+        comparison = filter_df(
+            comparison, asset=asset
         )
 
-        part = filtered(comparison, metric=metric)
+    part = filter_df(comparison, metric=metric)
+
+    if (
+        not part.empty
+        and {"model", "feature_set", "value"}.issubset(
+            part.columns
+        )
+    ):
+        part = numeric_frame(part, "value")
+        part = part.dropna(subset=["value"])
+        part = part.sort_values("value")
 
         if not part.empty:
-            part = part.copy()
-
             part["label"] = (
                 part["model"].astype(str)
                 + " · "
                 + part["feature_set"].astype(str)
             )
 
-            part = part.sort_values("value")
+            colors = [
+                C["teal"]
+                if "crypto_only" in str(x).lower()
+                else C["coral"]
+                for x in part["feature_set"]
+            ]
 
             fig = go.Figure(
                 go.Bar(
                     x=part["value"],
                     y=part["label"],
                     orientation="h",
-                    marker_color=[
-                        C["teal"]
-                        if f == "crypto_only"
-                        else C["coral"]
-                        for f in part["feature_set"]
-                    ],
+                    marker_color=colors,
                     text=part["value"].round(4),
                     textposition="outside",
+                    textfont=dict(
+                        color=C["ink"], size=14
+                    ),
                 )
             )
 
             fig.update_layout(
                 yaxis=dict(autorange="reversed")
             )
-
             fig.update_xaxes(title=metric)
 
-            chart(fig, "rq5_model_comparison", 450)
+            plot(fig, "rq5_comparison", 480)
 
             best = part.iloc[0]
 
-            insight(
-                "MÔ HÌNH TỐT NHẤT THEO CHỈ TIÊU",
-                f"{best['model']} · {best['feature_set']}",
-                f"{metric} = {fmt(best['value'])}. "
-                "Mô hình tốt nhất theo MAE "
-                "không nhất thiết tốt nhất theo RMSE.",
-                "teal",
-            )
-
-    section(
-        "Dự báo và thực tế",
-        "So sánh trên tập kiểm tra năm 2025.",
-    )
-
-    forecast = filtered(
-        D["forecast"],
-        asset=asset,
-        split="test",
-    )
-
-    if not forecast.empty:
-        models = sorted(
-            forecast["model"].dropna().unique().tolist()
-        )
-
-        model = st.selectbox(
-            "🤖 Chọn mô hình",
-            models,
-            key="rq5_model",
-        )
-
-        part = filtered(forecast, model=model)
-
-        feature_sets = sorted(
-            part["feature_set"].dropna().unique().tolist()
-        )
-
-        feature_set = st.selectbox(
-            "🧩 Chọn bộ biến",
-            feature_sets,
-            key="rq5_feature_set",
-        )
-
-        part = filtered(
-            part,
-            feature_set=feature_set,
-        )
-
-        part = part.copy()
-
-        part["date"] = pd.to_datetime(
-            part["date"],
-            errors="coerce",
-        )
-
-        part = part.sort_values("date")
-
-        fig = go.Figure()
-
-        fig.add_trace(
-            go.Scatter(
-                x=part["date"],
-                y=part["actual"],
-                mode="lines",
-                name="Thực tế",
-                line=dict(
-                    color=C["plum"],
-                    width=3,
+            conclusion(
+                (
+                    f"Mô hình có {metric} thấp nhất "
+                    f"là {best['model']} · "
+                    f"{best['feature_set']}."
+                ),
+                (
+                    f"Sai số {metric} = "
+                    f"{fmt(best['value'])}. "
+                    "Mô hình này có sai số thấp nhất "
+                    "trong những cấu hình đang hiển thị."
+                ),
+                (
+                    "Mô hình có sai số thấp nhất "
+                    "chưa đủ để chứng minh thêm dữ liệu vĩ mô "
+                    "là có ích. Cần so sánh hai bộ đặc trưng "
+                    "trong cùng thuật toán và xét kiểm định "
+                    "sai số dự báo."
                 ),
             )
-        )
 
-        fig.add_trace(
-            go.Scatter(
-                x=part["date"],
-                y=part["predicted"],
-                mode="lines",
-                name="Dự báo",
-                line=dict(
-                    color=C["coral"],
-                    width=3,
-                ),
+            section(
+                "Biểu đồ 2 · Thêm Macro có thực sự tốt hơn?",
+                "So sánh trực tiếp hai bộ đặc trưng "
+                "trong từng thuật toán.",
             )
-        )
 
-        fig.update_xaxes(title="Ngày")
-        fig.update_yaxes(title="|Lợi suất log| (%)")
+            guide(
+                "Bổ sung VIX, DXY, US2Y làm sai số giảm hay tăng?",
+                "Lấy sai số Crypto-only trừ sai số Crypto + Macro. "
+                "Kết quả dương nghĩa là thêm Macro giúp giảm sai số; "
+                "âm nghĩa là thêm Macro làm sai số tăng.",
+                "Chỉ so sánh trong cùng thuật toán, "
+                "cùng tài sản và cùng thước đo.",
+            )
 
-        chart(fig, "rq5_forecast", 460)
+            compare_rows = []
 
-    section(
-        "Kiểm định lợi ích của dữ liệu vĩ mô",
-        "Block bootstrap cho chênh lệch MAE.",
-    )
+            for model in unique_values(part, "model"):
+                model_part = filter_df(
+                    part, model=model
+                )
 
-    sig = filtered(
-        D["significance"],
-        asset=asset,
-    )
+                crypto_rows = model_part[
+                    model_part["feature_set"]
+                    .astype(str)
+                    .str.lower()
+                    .str.contains("crypto_only", regex=False)
+                ]
 
-    if not sig.empty:
-        needed = {
-            "candidate_feature_set",
-            "reference_feature_set",
-            "mae_reduction",
-            "candidate_model",
-            "ci95_lower",
-            "ci95_upper",
-        }
+                macro_rows = model_part[
+                    model_part["feature_set"]
+                    .astype(str)
+                    .str.lower()
+                    .str.contains("macro", regex=False)
+                ]
 
-        if needed.issubset(sig.columns):
-            sig = sig[
-                (sig["candidate_feature_set"] == "crypto_macro")
-                & (sig["reference_feature_set"] == "crypto_only")
-            ].copy()
+                if crypto_rows.empty or macro_rows.empty:
+                    continue
 
-            fig = go.Figure()
+                base = num(crypto_rows.iloc[0]["value"])
+                extended = num(macro_rows.iloc[0]["value"])
 
-            for _, r in sig.iterrows():
-                gain = float(r["mae_reduction"])
+                if np.isfinite(base) and np.isfinite(extended):
+                    compare_rows.append(
+                        {
+                            "model": str(model),
+                            "crypto_only": base,
+                            "crypto_macro": extended,
+                            "improvement": base - extended,
+                        }
+                    )
+
+            if compare_rows:
+                compare_df = pd.DataFrame(compare_rows)
+
+                fig = go.Figure()
 
                 fig.add_trace(
-                    go.Scatter(
-                        x=[gain],
-                        y=[str(r["candidate_model"])],
-                        mode="markers",
-                        marker=dict(
-                            size=16,
-                            color=(
-                                C["teal"]
-                                if gain > 0
-                                else C["coral"]
-                            ),
-                        ),
-                        error_x=dict(
-                            type="data",
-                            symmetric=False,
-                            array=[
-                                max(
-                                    0,
-                                    float(r["ci95_upper"]) - gain
-                                )
-                            ],
-                            arrayminus=[
-                                max(
-                                    0,
-                                    gain - float(r["ci95_lower"])
-                                )
-                            ],
-                        ),
-                        showlegend=False,
+                    go.Bar(
+                        x=compare_df["model"],
+                        y=compare_df["crypto_only"],
+                        name="Crypto-only",
+                        marker_color=C["teal"],
                     )
                 )
 
-            fig.add_vline(
-                x=0,
-                line_dash="dash",
-                line_color=C["plum"],
-            )
+                fig.add_trace(
+                    go.Bar(
+                        x=compare_df["model"],
+                        y=compare_df["crypto_macro"],
+                        name="Crypto + Macro",
+                        marker_color=C["coral"],
+                    )
+                )
 
-            fig.update_xaxes(
-                title="Giảm MAE khi thêm biến vĩ mô"
-            )
+                fig.update_layout(barmode="group")
+                fig.update_yaxes(title=metric)
 
-            chart(fig, "rq5_bootstrap", 370)
+                plot(fig, "rq5_feature_comparison", 440)
 
-    insight(
-        "CÁCH ĐỌC",
-        "Giảm MAE dương nghĩa là dữ liệu vĩ mô "
-        "giúp giảm sai số.",
-        "Nếu khoảng tin cậy 95% cắt qua 0, "
-        "chưa đủ bằng chứng về cải thiện. "
-        "Nếu toàn bộ khoảng nằm dưới 0, "
-        "việc thêm macro làm dự báo kém đi "
-        "một cách có ý nghĩa thống kê.",
-        "gold",
-    )
+                for _, item in compare_df.iterrows():
+                    change = item["improvement"]
 
-    insight(
-        "KẾT LUẬN RQ5",
-        "Dữ liệu vĩ mô không cải thiện dự báo "
-        "một cách nhất quán.",
-        "Kết quả ngoài mẫu 2025 không cho thấy "
-        "lợi ích dự báo ổn định từ việc thêm macro. "
-        "Một số mô hình còn có MAE cao hơn "
-        "khi bổ sung các biến tài chính toàn cầu.",
-        "teal",
-    )
+                    if change > 0:
+                        finding = (
+                            f"{item['model']}: thêm Macro "
+                            "giúp giảm sai số."
+                        )
+                    elif change < 0:
+                        finding = (
+                            f"{item['model']}: thêm Macro "
+                            "làm sai số tăng."
+                        )
+                    else:
+                        finding = (
+                            f"{item['model']}: hai bộ biến "
+                            "có sai số bằng nhau."
+                        )
 
-    section(
-        "Feature importance",
-        "Các biến đóng góp nhiều cho mô hình.",
-    )
+                    insight(
+                        "SO SÁNH TRỰC TIẾP",
+                        finding,
+                        (
+                            f"Crypto-only = "
+                            f"{fmt(item['crypto_only'])}; "
+                            f"Crypto + Macro = "
+                            f"{fmt(item['crypto_macro'])}; "
+                            f"mức giảm sai số = "
+                            f"{fmt(change)}. "
+                            "Giá trị dương là cải thiện, "
+                            "giá trị âm là suy giảm."
+                        ),
+                        "teal" if change > 0 else "coral",
+                    )
+            else:
+                st.info(
+                    "Chưa nhận diện được đầy đủ hai bộ "
+                    "Crypto-only và Crypto + Macro "
+                    "để so sánh trực tiếp."
+                )
 
-    imp = filtered(
-        D["importance"],
-        asset=asset,
-    )
-
-    if not imp.empty:
-        models = sorted(
-            imp["model"].dropna().unique().tolist()
-        )
-
-        chosen = st.selectbox(
-            "Chọn mô hình giải thích",
-            models,
-            key="rq5_importance_model",
-        )
-
-        imp = filtered(imp, model=chosen)
-
-        feature_sets = sorted(
-            imp["feature_set"].dropna().unique().tolist()
-        )
-
-        chosen_set = st.selectbox(
-            "Chọn bộ biến giải thích",
-            feature_sets,
-            key="rq5_importance_features",
-        )
-
-        imp = filtered(
-            imp,
-            feature_set=chosen_set,
-        )
-
-        imp = imp.sort_values(
-            "importance",
-            ascending=False,
-        ).head(12)
-
-        fig = go.Figure(
-            go.Bar(
-                x=imp["importance"].iloc[::-1],
-                y=imp["feature"].iloc[::-1],
-                orientation="h",
-                marker_color=C["violet"],
-            )
-        )
-
-        fig.update_xaxes(title="Độ quan trọng")
-
-        chart(fig, "rq5_importance", 510)
-
-        insight(
-            "GIỚI HẠN DIỄN GIẢI",
-            "Không so sánh trực tiếp importance "
-            "của Elastic Net và XGBoost.",
-            "Elastic Net sử dụng độ lớn hệ số "
-            "chuẩn hóa; XGBoost sử dụng gain. "
-            "Hai thước đo không cùng ý nghĩa.",
-            "violet",
-        )
-
-    show_table(comparison, "📋 MAE / RMSE")
-    show_table(sig, "📋 Kiểm định dự báo")
-    show_table(forecast, "📋 Dữ liệu dự báo")
-
-
-# ============================================================
-# 14. DATA & METHODOLOGY
-# ============================================================
-
-elif page == "methods":
-
-    hero(
-        "DATA & RESEARCH DESIGN",
-        "Dữ liệu <em>& Phương pháp</em>",
-        "Trình bày nguồn dữ liệu, cách xử lý, "
-        "các mô hình và giới hạn nghiên cứu.",
-    )
-
-    section(
-        "Nguồn dữ liệu",
-        "Các biến được sử dụng trong nghiên cứu.",
-    )
-
-    a, b, c = st.columns(3)
-
-    with a:
-        insight(
-            "CRYPTO",
-            "Bitcoin và Ethereum",
-            "Lợi suất log được tính theo "
-            "100 × ln(Pt/Pt−1).",
-            "coral",
-        )
-
-    with b:
-        insight(
-            "RỦI RO & USD",
-            "VIX và DXY",
-            "VIX phản ánh bất định thị trường; "
-            "DXY đại diện cho sức mạnh đồng USD.",
-            "teal",
-        )
-
-    with c:
-        insight(
-            "LÃI SUẤT",
-            "US2Y",
-            "Lợi suất trái phiếu Kho bạc Mỹ "
-            "kỳ hạn 2 năm.",
-            "violet",
+    else:
+        st.info(
+            "Chưa tìm thấy bảng model_comparison.csv "
+            "đúng cấu trúc."
         )
 
     section(
-        "Chất lượng dữ liệu",
-        "Tỷ lệ thiếu và cách xử lý.",
+        "Biểu đồ 3 · Dự báo và giá trị thực tế",
+        "Kiểm tra mô hình có theo sát độ lớn "
+        "lợi suất thực tế trong năm 2025 không.",
     )
 
-    quality = D["quality"]
+    forecast = DATA["forecast"].copy()
 
-    if not quality.empty:
-        show_table(
-            quality,
-            "📋 Báo cáo chất lượng dữ liệu",
+    if "response" in forecast.columns:
+        forecast = filter_df(
+            forecast, response=asset
+        )
+    elif "asset" in forecast.columns:
+        forecast = filter_df(
+            forecast, asset=asset
+        )
+
+    model_options = unique_values(forecast, "model")
+
+    if model_options:
+        model = st.selectbox(
+            "Chọn mô hình dự báo",
+            model_options,
+            key="rq5_forecast_model",
+        )
+
+        model_data = filter_df(
+            forecast, model=model
+        )
+
+        features = unique_values(
+            model_data, "feature_set"
+        )
+
+        if features:
+            feature_set = st.selectbox(
+                "Chọn bộ đặc trưng",
+                features,
+                key="rq5_forecast_features",
+            )
+
+            model_data = filter_df(
+                model_data, feature_set=feature_set
+            )
+
+        guide(
+            "Mô hình dự báo có theo kịp những ngày biến động mạnh?",
+            "Đường thực tế thể hiện |r(t+1)| đã xảy ra. "
+            "Đường dự báo thể hiện giá trị mô hình ước tính.",
+            "Quan sát những thời điểm hai đường cách xa nhau, "
+            "đặc biệt khi độ lớn lợi suất thực tế tăng vọt.",
         )
 
         if {
-            "variable",
-            "missing_rate_percent",
-        }.issubset(quality.columns):
-            q = quality.sort_values(
-                "missing_rate_percent",
-                ascending=False,
-            ).head(12)
+            "date", "actual", "predicted"
+        }.issubset(model_data.columns):
 
+            part = model_data.copy()
+            part["date"] = pd.to_datetime(
+                part["date"], errors="coerce"
+            )
+
+            part = numeric_frame(
+                part, "actual", "predicted"
+            )
+
+            part = part.dropna(
+                subset=["date", "actual", "predicted"]
+            ).sort_values("date")
+
+            if not part.empty:
+                fig = go.Figure()
+
+                fig.add_trace(
+                    go.Scatter(
+                        x=part["date"],
+                        y=part["actual"],
+                        mode="lines",
+                        name="Thực tế",
+                        line=dict(
+                            color=C["plum"], width=2.5
+                        ),
+                    )
+                )
+
+                fig.add_trace(
+                    go.Scatter(
+                        x=part["date"],
+                        y=part["predicted"],
+                        mode="lines",
+                        name="Dự báo",
+                        line=dict(
+                            color=C["coral"], width=2.5
+                        ),
+                    )
+                )
+
+                fig.update_yaxes(
+                    title="Độ lớn lợi suất (%)"
+                )
+                fig.update_xaxes(title="Ngày")
+
+                plot(fig, "rq5_forecast_series", 460)
+
+                mae = (
+                    part["actual"] - part["predicted"]
+                ).abs().mean()
+
+                conclusion(
+                    "Đường dự báo và thực tế "
+                    "không trùng nhau hoàn toàn.",
+                    (
+                        f"Với lựa chọn hiện tại, "
+                        f"MAE tính từ các dòng đang hiển thị "
+                        f"là {fmt(mae)} điểm phần trăm. "
+                        "Khoảng cách giữa hai đường "
+                        "phản ánh sai số dự báo từng ngày."
+                    ),
+                    (
+                        "Biểu đồ này mô tả chất lượng dự báo "
+                        "của một cấu hình. "
+                        "Muốn kết luận Macro có giá trị bổ sung "
+                        "phải so sánh hai bộ biến "
+                        "và kiểm định chênh lệch sai số."
+                    ),
+                )
+            else:
+                st.info(
+                    "Không có dòng dự báo hợp lệ."
+                )
+        else:
+            st.info(
+                "Chưa nhận diện được các cột "
+                "date, actual, predicted."
+            )
+    else:
+        st.info(
+            "Chưa có dữ liệu dự báo theo ngày "
+            "trong forecast_results.csv."
+        )
+
+    section(
+        "Bằng chứng thống kê về lợi ích dự báo",
+        "Kiểm tra xem mức cải thiện hoặc suy giảm "
+        "có đáng tin về mặt thống kê hay không.",
+    )
+
+    significance = DATA["significance"].copy()
+
+    if "response" in significance.columns:
+        significance = filter_df(
+            significance, response=asset
+        )
+    elif "asset" in significance.columns:
+        significance = filter_df(
+            significance, asset=asset
+        )
+
+    insight(
+        "CÁCH HIỂU KIỂM ĐỊNH",
+        "Sai số thấp hơn chưa chắc là cải thiện đáng tin.",
+        "Block bootstrap so sánh chênh lệch sai số "
+        "trên các khối 7 ngày, với 2.000 lần lặp. "
+        "Nếu khoảng tin cậy của mức giảm sai số "
+        "chứa 0, chưa thể khẳng định "
+        "một bộ biến dự báo tốt hơn.",
+        "violet",
+    )
+
+    show_table(
+        significance,
+        "Kiểm định khác biệt dự báo",
+    )
+
+    section(
+        "Những biến nào được mô hình sử dụng nhiều?",
+        "Feature importance là công cụ hỗ trợ "
+        "giải thích mô hình, không phải bằng chứng nhân quả.",
+    )
+
+    importance = DATA["importance"].copy()
+
+    if "response" in importance.columns:
+        importance = filter_df(
+            importance, response=asset
+        )
+    elif "asset" in importance.columns:
+        importance = filter_df(
+            importance, asset=asset
+        )
+
+    if (
+        not importance.empty
+        and {"feature", "importance"}.issubset(
+            importance.columns
+        )
+    ):
+        model_values = unique_values(
+            importance, "model"
+        )
+
+        if model_values:
+            chosen_model = st.selectbox(
+                "Chọn mô hình giải thích",
+                model_values,
+                key="rq5_importance_model",
+            )
+
+            importance = filter_df(
+                importance, model=chosen_model
+            )
+
+        feature_values = unique_values(
+            importance, "feature_set"
+        )
+
+        if feature_values:
+            chosen_features = st.selectbox(
+                "Chọn bộ biến giải thích",
+                feature_values,
+                key="rq5_importance_features",
+            )
+
+            importance = filter_df(
+                importance, feature_set=chosen_features
+            )
+
+        importance = numeric_frame(
+            importance, "importance"
+        )
+
+        importance = importance.dropna(
+            subset=["importance"]
+        ).sort_values(
+            "importance", ascending=False
+        ).head(12)
+
+        if not importance.empty:
             fig = go.Figure(
                 go.Bar(
-                    x=q["missing_rate_percent"],
-                    y=q["variable"],
+                    x=importance["importance"].iloc[::-1],
+                    y=importance["feature"].iloc[::-1],
                     orientation="h",
-                    marker_color=C["coral"],
+                    marker_color=C["violet"],
                 )
             )
 
-            fig.update_layout(
-                yaxis=dict(autorange="reversed")
+            fig.update_xaxes(
+                title="Mức độ quan trọng theo mô hình"
             )
 
-            fig.update_xaxes(title="Tỷ lệ thiếu (%)")
+            plot(fig, "rq5_importance", 470)
 
-            chart(fig, "methods_missing", 460)
+            conclusion(
+                "Một số đặc trưng đóng góp nhiều hơn "
+                "vào dự báo của mô hình.",
+                "Biểu đồ xếp hạng các đặc trưng "
+                "theo thước đo importance đã xuất "
+                "từ mô hình.",
+                "Importance không có nghĩa là "
+                "biến đó gây ra thay đổi của BTC/ETH. "
+                "Các thuật toán cũng có thể sử dụng "
+                "những cách tính importance khác nhau.",
+            )
+    else:
+        st.info(
+            "Chưa có dữ liệu feature importance "
+            "đúng cấu trúc."
+        )
+
+    show_table(comparison, "Bảng so sánh mô hình")
+
+    answer(
+        "RQ5",
+        "Bổ sung dữ liệu vĩ mô không cải thiện "
+        "dự báo một cách nhất quán.",
+        "Trên tập ngoài mẫu năm 2025, "
+        "không có bằng chứng ổn định rằng "
+        "Crypto + Macro luôn tốt hơn Crypto-only. "
+        "Một số cấu hình cải thiện rất nhỏ, "
+        "trong khi một số khác có sai số tăng. "
+        "Đặc biệt, với BTC Elastic Net, "
+        "việc thêm Macro làm MAE xấu đi "
+        "và khác biệt này được xác nhận "
+        "trong kiểm định bootstrap của nghiên cứu.",
+    )
+
+
+# ============================================================
+# 14. DỮ LIỆU VÀ CÁCH ĐỌC
+# ============================================================
+
+elif PAGE == "methods":
+
+    hero(
+        "DATA & RESEARCH GUIDE",
+        "Dữ liệu <em>& cách đọc kết quả</em>",
+        "Giải thích các biến, cách chuẩn bị dữ liệu "
+        "và ý nghĩa của những thuật ngữ "
+        "xuất hiện trên dashboard.",
+    )
+
+    section(
+        "Nghiên cứu sử dụng dữ liệu gì?",
+        "Hai tài sản tiền mã hóa và ba biến "
+        "đại diện cho điều kiện tài chính toàn cầu.",
+    )
+
+    variable_info = [
+        (
+            "BTC",
+            "Bitcoin",
+            "Lợi suất log theo ngày, tính bằng phần trăm.",
+            "teal",
+        ),
+        (
+            "ETH",
+            "Ethereum",
+            "Lợi suất log theo ngày, tính bằng phần trăm.",
+            "coral",
+        ),
+        (
+            "VIX",
+            "Bất ổn tài chính",
+            "Thay đổi VIX theo điểm chỉ số.",
+            "violet",
+        ),
+        (
+            "DXY",
+            "Sức mạnh USD",
+            "Thay đổi chỉ số USD.",
+            "gold",
+        ),
+        (
+            "US2Y",
+            "Lợi suất trái phiếu Mỹ 2 năm",
+            "Thay đổi lợi suất theo đơn vị dữ liệu gốc.",
+            "white",
+        ),
+    ]
+
+    for code, title, body, tone in variable_info:
+        insight(code, title, body, tone)
+
+    section(
+        "Vì sao có dữ liệu thiếu?",
+        "Crypto giao dịch liên tục, còn dữ liệu "
+        "tài chính truyền thống theo phiên.",
+    )
 
     insight(
-        "XỬ LÝ DỮ LIỆU",
-        "Không thay giá trị thiếu bằng 0.",
-        "Crypto giao dịch cả cuối tuần, "
-        "trong khi dữ liệu vĩ mô có ngày nghỉ. "
-        "Các quan sát thiếu được xử lý "
-        "phù hợp với từng mô hình, "
-        "không mặc định bằng 0.",
+        "KHÁC BIỆT LỊCH GIAO DỊCH",
+        "Dữ liệu thiếu không nhất thiết là lỗi thu thập.",
+        "BTC và ETH giao dịch 24/7, bao gồm cuối tuần "
+        "và ngày lễ. Trong khi đó VIX, DXY và US2Y "
+        "không có quan sát ở nhiều ngày như vậy. "
+        "Nghiên cứu cần đồng bộ lịch phù hợp "
+        "với từng phương pháp thay vì mặc định "
+        "mọi giá trị thiếu bằng 0.",
         "gold",
     )
 
     section(
-        "Phương pháp nghiên cứu",
-        "Các phương pháp bổ trợ cho nhau.",
-    )
-
-    insight(
-        "VAR",
-        "VAR(5) và IRF Cholesky",
-        "Thứ tự nhận dạng: "
-        "VIX → DXY → US2Y → BTC → ETH.",
-        "violet",
-    )
-
-    insight(
-        "LOCAL PROJECTIONS",
-        "LP theo từng chân trời",
-        "Ước lượng phản ứng lợi suất "
-        "tại các chân trời h = 0 đến 30. "
-        "Sử dụng HAC và điều chỉnh FDR "
-        "cho kiểm định nhiều lần.",
-        "teal",
-    )
-
-    insight(
-        "SO SÁNH TRẠNG THÁI",
-        "Pre/Post 2020 và Calm/Stress",
-        "Kiểm định sự khác biệt hệ số "
-        "bằng các mô hình tương tác.",
-        "coral",
-    )
-
-    insight(
-        "MACHINE LEARNING",
-        "Historical30 · Elastic Net · XGBoost",
-        "Dự báo |r(t+1)|, đánh giá ngoài mẫu "
-        "năm 2025 bằng MAE, RMSE "
-        "và block bootstrap.",
-        "gold",
+        "Kiểm tra chất lượng dữ liệu",
+        "Các bảng đầu ra của bước tiền xử lý.",
     )
 
     show_table(
-        D["descriptive"],
-        "📋 Thống kê mô tả",
+        DATA["quality"],
+        "Báo cáo chất lượng dữ liệu",
     )
 
     show_table(
-        D["var_diag"],
-        "📋 Chẩn đoán VAR",
+        DATA["descriptive"],
+        "Thống kê mô tả",
+    )
+
+    section(
+        "Từ điển thuật ngữ",
+        "Đọc kết quả mà không cần biết "
+        "trước toàn bộ phương pháp kinh tế lượng.",
+    )
+
+    glossary = [
+        (
+            "Hệ số âm và dương",
+            "Hệ số âm cho thấy mối liên hệ ngược chiều; "
+            "hệ số dương cho thấy mối liên hệ cùng chiều. "
+            "Chiều hệ số không tự động chứng minh nhân quả.",
+        ),
+        (
+            "Chân trời h",
+            "h = 0 là cùng thời điểm; h lớn hơn 0 "
+            "là các thời điểm tiếp theo. "
+            "LP và VAR có thể dùng đơn vị thời gian khác nhau.",
+        ),
+        (
+            "Khoảng tin cậy",
+            "Thể hiện mức độ bất định của ước lượng. "
+            "Nếu khoảng tin cậy chứa 0, chưa đủ "
+            "bằng chứng rằng hệ số khác 0 "
+            "theo kiểm định tương ứng.",
+        ),
+        (
+            "p-value",
+            "Dùng để đánh giá bằng chứng thống kê "
+            "trong một kiểm định. "
+            "Không phải xác suất giả thuyết đúng.",
+        ),
+        (
+            "q-value FDR",
+            "Giá trị kiểm định sau điều chỉnh "
+            "nhiều giả thuyết. "
+            "Giúp hạn chế kết luận dương tính giả "
+            "khi kiểm tra nhiều hệ số.",
+        ),
+        (
+            "VAR và IRF",
+            "VAR mô tả tương tác động giữa nhiều biến. "
+            "IRF thể hiện phản ứng ước lượng "
+            "trước một đổi mới trong hệ thống.",
+        ),
+        (
+            "Local Projections",
+            "Ước lượng riêng hệ số tại từng chân trời "
+            "thời gian để mô tả đường phản ứng động.",
+        ),
+        (
+            "Calm và Stress",
+            "Hai trạng thái thị trường được phân loại "
+            "theo VIX phiên trước, với ngưỡng Stress là 30.",
+        ),
+        (
+            "MAE và RMSE",
+            "Hai thước đo sai số dự báo. "
+            "Cả hai càng thấp càng tốt; RMSE "
+            "nhạy hơn với các sai số lớn.",
+        ),
+        (
+            "Block bootstrap",
+            "Phương pháp lấy mẫu lại theo các khối "
+            "thời gian nhằm đánh giá độ bất định "
+            "của chênh lệch sai số dự báo.",
+        ),
+    ]
+
+    for title, description in glossary:
+        insight(
+            "GIẢI THÍCH THUẬT NGỮ",
+            title,
+            description,
+            "white",
+        )
+
+    section(
+        "Các file dữ liệu dashboard đang đọc",
+        "Kiểm tra nhanh file CSV nào đã có "
+        "và file nào đang thiếu.",
+    )
+
+    rows = []
+
+    for key, (filename, folder) in FILES.items():
+        path = folder / filename
+
+        rows.append(
+            {
+                "dataset": key,
+                "filename": filename,
+                "status": (
+                    "Có dữ liệu"
+                    if not DATA[key].empty
+                    else "Thiếu hoặc rỗng"
+                ),
+                "rows": len(DATA[key]),
+                "path": str(path.relative_to(ROOT)),
+            }
+        )
+
+    status_df = pd.DataFrame(rows)
+
+    show_table(
+        status_df,
+        "Tình trạng các file CSV",
+    )
+
+    missing = status_df[
+        status_df["status"] == "Thiếu hoặc rỗng"
+    ]
+
+    if not missing.empty:
+        st.warning(
+            f"Có {len(missing)} file chưa đọc được "
+            "hoặc không có dữ liệu. "
+            "Các biểu đồ phụ thuộc vào chúng "
+            "có thể không hiển thị."
+        )
+    else:
+        st.success(
+            "Tất cả các file CSV được khai báo "
+            "đều đã đọc được."
+        )
+
+    answer(
+        "PHƯƠNG PHÁP",
+        "Dashboard trình bày bằng chứng, "
+        "không tự tạo ra kết quả mô hình mới.",
+        "Các biểu đồ được xây dựng từ CSV "
+        "đã xuất bởi pipeline nghiên cứu. "
+        "Mỗi kết luận cần được đọc cùng với "
+        "đơn vị biến, khoảng tin cậy, kiểm định "
+        "và giới hạn phương pháp. "
+        "Đặc biệt, liên hệ thống kê "
+        "không đồng nghĩa quan hệ nhân quả.",
     )
 
 
@@ -2294,25 +3111,9 @@ elif page == "methods":
 
 st.divider()
 
-st.html(
-    """
-<div style="
-    text-align:center;
-    padding:19px 0 30px;
-    color:#756779;
-    font-size:14px;
-    line-height:2;
-">
-    <strong style="
-        color:#503A55;
-        font-size:15px;
-    ">
-        ✦ MACRO × CRYPTO INTELLIGENCE
-    </strong><br>
-    Research Analytics Dashboard · 2018–2025<br>
-    Nội dung phục vụ nghiên cứu học thuật,
-    không phải khuyến nghị đầu tư.
-</div>
-"""
+st.caption(
+    "MACRO × CRYPTO INTELLIGENCE · 2018–2025 · "
+    "Research Dashboard · "
+    "Kết quả mang mục đích nghiên cứu học thuật, "
+    "không phải khuyến nghị đầu tư."
 )
-
