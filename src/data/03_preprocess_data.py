@@ -33,7 +33,7 @@ from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.enum.table import WD_TABLE_ALIGNMENT, WD_CELL_VERTICAL_ALIGNMENT
 from openpyxl.styles import Font, PatternFill, Alignment
 from openpyxl.utils import get_column_letter
-
+from docx.shared import Pt, RGBColor
 
 
 # ------------------------------------------------------------
@@ -360,24 +360,48 @@ def safe_read_csv(path):
     return pd.read_csv(path) if path.exists() else None
 
 
-def add_table(doc, headers, rows, font_size=8):
+def add_table(doc, headers, rows, font_size=13):
+    from docx.shared import RGBColor
+
     table = doc.add_table(rows=1, cols=len(headers))
     table.style = "Table Grid"
     table.alignment = WD_TABLE_ALIGNMENT.CENTER
-    for i, h in enumerate(headers):
+    table.autofit = True
+
+    # Header
+    for i, header in enumerate(headers):
         cell = table.rows[0].cells[i]
-        cell.text = str(h)
-        for run in cell.paragraphs[0].runs:
-            run.bold = True
-            run.font.size = Pt(font_size)
+        cell.text = str(header)
+        cell.vertical_alignment = WD_CELL_VERTICAL_ALIGNMENT.CENTER
+
+    # Nội dung
     for row in rows:
         cells = table.add_row().cells
-        for i, val in enumerate(row):
-            cells[i].text = "" if pd.isna(val) else str(val)
-            cells[i].vertical_alignment = WD_CELL_VERTICAL_ALIGNMENT.CENTER
-            for p in cells[i].paragraphs:
-                for run in p.runs:
-                    run.font.size = Pt(font_size)
+
+        for i, value in enumerate(row):
+            cells[i].text = (
+                "" if pd.isna(value) else str(value)
+            )
+            cells[i].vertical_alignment = (
+                WD_CELL_VERTICAL_ALIGNMENT.CENTER
+            )
+
+    # Áp dụng định dạng cho toàn bộ ô, bao gồm header
+    for row_idx, row in enumerate(table.rows):
+        for cell in row.cells:
+            for paragraph in cell.paragraphs:
+                paragraph.paragraph_format.line_spacing = 1.5
+                paragraph.paragraph_format.space_before = Pt(0)
+                paragraph.paragraph_format.space_after = Pt(0)
+
+                for run in paragraph.runs:
+                    run.font.name = "Times New Roman"
+                    run.font.size = Pt(13)
+                    run.font.color.rgb = RGBColor(0, 0, 0)
+
+                    if row_idx == 0:
+                        run.bold = True
+
     return table
 
 
@@ -433,91 +457,340 @@ def generate_dictionary(df):
     format_workbook(DICT_PATH)
 
 
+def _fmt_num(value, digits=3):
+    """Format numeric cells consistently with Chapters 3 and 4."""
+    if pd.isna(value):
+        return "—"
+    if isinstance(value, (int, np.integer)) or (isinstance(value, float) and float(value).is_integer()):
+        return f"{int(value):,}"
+    if isinstance(value, (float, np.floating)):
+        return f"{value:,.{digits}f}"
+    return str(value)
+
+
 def generate_report(df, stats, corr):
+    """Generate Chapter 2 using the same definitions and regime rules as Chapters 3–4."""
     REPORT_PATH.parent.mkdir(parents=True, exist_ok=True)
     doc = Document()
+
+    # =========================
+    # THIẾT LẬP TRANG
+    # =========================
     sec = doc.sections[0]
-    sec.top_margin = Inches(0.7); sec.bottom_margin = Inches(0.7)
-    sec.left_margin = Inches(0.8); sec.right_margin = Inches(0.8)
+    sec.top_margin = Inches(1)
+    sec.bottom_margin = Inches(1)
+    sec.left_margin = Inches(1.25)
+    sec.right_margin = Inches(1)
+
+    from docx.shared import RGBColor
+
+    # =========================
+    # ĐỊNH DẠNG TOÀN BỘ VĂN BẢN
+    # =========================
     styles = doc.styles
-    styles["Normal"].font.name = "Times New Roman"
-    styles["Normal"].font.size = Pt(11)
-    for s in ["Heading 1", "Heading 2", "Heading 3"]:
-        styles[s].font.name = "Times New Roman"
-    title = doc.add_heading("CHƯƠNG 2. DỮ LIỆU VÀ PHƯƠNG PHÁP XỬ LÝ", 0)
-    title.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    p = doc.add_paragraph("Global Financial Conditions and Cryptocurrency Markets: Nonlinear Transmission of Monetary, Dollar and Risk Shocks to Bitcoin and Ethereum")
-    p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+
+    for style_name in ["Normal", "Body Text"]:
+        style = styles[style_name]
+        style.font.name = "Times New Roman"
+        style.font.size = Pt(13)
+        style.font.color.rgb = RGBColor(0, 0, 0)
+
+        style.paragraph_format.line_spacing = 1.5
+        style.paragraph_format.space_before = Pt(0)
+        style.paragraph_format.space_after = Pt(6)
+
+    # Định dạng tiêu đề: vẫn phân cấp nhưng chữ đen
+    for style_name in ["Title", "Subtitle",
+                       "Heading 1", "Heading 2", "Heading 3"]:
+        style = styles[style_name]
+        style.font.name = "Times New Roman"
+        style.font.color.rgb = RGBColor(0, 0, 0)
+        style.paragraph_format.line_spacing = 1.5
+
+    styles["Heading 1"].font.size = Pt(13)
+    styles["Heading 1"].font.bold = True
+
+    styles["Heading 2"].font.size = Pt(13)
+    styles["Heading 2"].font.bold = True
+
+    styles["Heading 3"].font.size = Pt(13)
+    styles["Heading 3"].font.bold = True
+
+    title = doc.add_heading("2. DỮ LIỆU VÀ PHƯƠNG PHÁP XỬ LÝ", 0)
+    for run in title.runs:
+        run.bold = True
+        run.font.name = "Times New Roman"
+        run.font.size = Pt(15)
+        run.font.color.rgb = RGBColor(0, 0, 0)
+    title.alignment = WD_ALIGN_PARAGRAPH.LEFT
+
+    p = doc.add_paragraph(
+    "Global Financial Conditions and Cryptocurrency Markets: "
+    "Nonlinear Transmission of Monetary, Dollar and Risk Shocks "
+    "to Bitcoin and Ethereum"
+    )
+    p.alignment = WD_ALIGN_PARAGRAPH.LEFT
     p.runs[0].italic = True
 
+    subtitle = doc.add_paragraph(
+    "Phạm vi mẫu: 2018–2025 | Bộ dữ liệu chuẩn dùng chung cho phân tích kinh tế lượng và học máy"
+    )
+    subtitle.alignment = WD_ALIGN_PARAGRAPH.LEFT
+
     dates = pd.to_datetime(df["date"], errors="coerce") if "date" in df else pd.Series(dtype="datetime64[ns]")
-    start = dates.min().strftime("%Y-%m-%d") if dates.notna().any() else "chưa xác định"
-    end = dates.max().strftime("%Y-%m-%d") if dates.notna().any() else "chưa xác định"
+    start_date = dates.min().strftime("%d/%m/%Y") if dates.notna().any() else "chưa xác định"
+    end_date = dates.max().strftime("%d/%m/%Y") if dates.notna().any() else "chưa xác định"
     nrows, ncols = df.shape
+
     doc.add_heading("2.1. Thiết kế và phạm vi dữ liệu", level=1)
-    doc.add_paragraph(f"Nghiên cứu sử dụng dữ liệu chuỗi thời gian với lịch ngày liên tục trong giai đoạn {start} đến {end}. Tập dữ liệu đã xử lý hiện có {nrows:,} dòng và {ncols} cột. Hai tài sản số được phân tích là Bitcoin (BTC) và Ethereum (ETH); các điều kiện tài chính toàn cầu được đại diện bởi lợi suất Kho bạc Mỹ kỳ hạn 2 năm (US2Y), chỉ số USD proxy (DXY) và chỉ số biến động VIX.")
-    doc.add_paragraph("Phạm vi dữ liệu và biến được mô tả theo đúng cấu trúc dataset hiện có. Các biến bổ sung hoặc quy tắc phân nhóm thị trường cần được xác định thống nhất trong cấu hình nghiên cứu trước khi dùng cho mô hình suy luận.")
+    doc.add_paragraph(
+        f"Nghiên cứu sử dụng dữ liệu chuỗi thời gian theo ngày trong giai đoạn {start_date}–{end_date}. "
+        f"Bộ dữ liệu chuẩn có {nrows:,} ngày lịch và {ncols} cột, bao gồm giá BTC, ETH; ba chỉ báo tài chính toàn cầu US2Y, DXY và VIX; "
+        "các biến lợi suất/thay đổi cùng cờ quan sát và khoảng cách giữa các lần quan sát vĩ mô. Phạm vi này thống nhất với Chương 3 "
+        "(mô hình VAR, phản ứng xung và Local Projections) và Chương 4 (dự báo ngoài mẫu độ lớn lợi suất BTC/ETH)."
+    )
+    doc.add_paragraph(
+        "Đơn vị thời gian của dataset là ngày lịch liên tục, không phải chỉ các ngày thị trường tài chính truyền thống mở cửa. "
+        "Vì vậy, số quan sát thực tế dùng trong từng mô hình có thể khác nhau tùy biến và quy tắc lọc mẫu; không được hiểu số ngày lịch là cỡ mẫu của mọi ước lượng."
+    )
 
     doc.add_heading("2.2. Nguồn dữ liệu", level=1)
-    add_table(doc, ["Biến", "Mã/nguồn", "Ghi chú"], [
-        ["Bitcoin", "Yahoo Finance – BTC-USD", "Giá đóng cửa; tần suất ngày."],
-        ["Ethereum", "Yahoo Finance – ETH-USD", "Giá đóng cửa; tần suất ngày."],
-        ["VIX", "Yahoo Finance – ^VIX", "Chỉ báo biến động kỳ vọng thị trường."],
-        ["USD index proxy", "Yahoo Finance – DX-Y.NYB", "Cần ghi rõ là mã proxy được dùng trong pipeline."],
-        ["US2Y", "FRED – DGS2", "Lợi suất Kho bạc Mỹ kỳ hạn 2 năm; ngày nghỉ/không giao dịch có thể không có quan sát."],
+    add_table(doc, ["Biến", "Nguồn/mã", "Định nghĩa và lưu ý"], [
+        ["BTC", "Yahoo Finance: BTC-USD", "Giá đóng cửa Bitcoin; thị trường giao dịch liên tục."],
+        ["ETH", "Yahoo Finance: ETH-USD", "Giá đóng cửa Ethereum; thị trường giao dịch liên tục."],
+        ["US2Y", "FRED: DGS2", "Lợi suất Kho bạc Mỹ kỳ hạn 2 năm, đơn vị %/năm; không có quan sát cho mọi ngày lịch."],
+        ["DXY", "Yahoo Finance: DX-Y.NYB", "Proxy chỉ số USD theo mã được tải trong pipeline; không gọi là chuỗi chuẩn chính thức nếu chưa xác minh tương đương."],
+        ["VIX", "Yahoo Finance: ^VIX", "Chỉ số biến động kỳ vọng thị trường chứng khoán Mỹ, đơn vị điểm chỉ số."],
     ], 8)
-    doc.add_paragraph("Nhật ký nguồn dữ liệu nằm tại docs/data_source_log.xlsx nếu có trong repository. Nên lưu thời điểm tải, mã chuỗi, khoảng thời gian và số quan sát hợp lệ để tăng khả năng tái lập.")
+    doc.add_paragraph(
+        "Nhật ký nguồn và thông tin truy xuất được lưu trong docs/data_source_log.xlsx. Để tái lập, cần giữ mã chuỗi, nguồn, khoảng thời gian tải, "
+        "thời điểm tải và số quan sát hợp lệ; mọi thay đổi nguồn hoặc mã proxy phải được phản ánh đồng thời trong nhật ký và bản thảo."
+    )
 
     doc.add_heading("2.3. Đồng bộ và làm sạch dữ liệu", level=1)
-    doc.add_paragraph("Các chuỗi được đưa về chỉ mục ngày liên tục để thống nhất mốc thời gian. Dữ liệu vĩ mô không được tự động điền tiến, điền lùi hoặc nội suy trong dataset chuẩn. Do đó, giá trị thiếu phản ánh việc nguồn không có quan sát ở ngày tương ứng; không nên diễn giải chúng như giá trị bằng không.")
-    doc.add_paragraph("Lợi suất log của BTC và ETH được tính trên lịch giá crypto liên tục trước khi phân tích các biến vĩ mô. Với US2Y, DXY và VIX, các biến thay đổi được tính giữa hai lần quan sát hợp lệ liên tiếp; nếu khoảng cách quan sát dài hơn một ngày, biến đổi đó không tương đương với thay đổi một ngày. Các cột observation_gap_days được giữ lại để nhận diện trường hợp này.")
+    doc.add_paragraph(
+        "Dữ liệu thô được chuẩn hóa về ngày UTC, sắp xếp theo thời gian, kiểm tra ngày trùng và chuyển các cột số về dạng số. Dataset được reindex trên lịch ngày liên tục "
+        "từ đầu năm 2018 đến hết năm 2025. Không forward-fill, backfill hoặc nội suy các mức vĩ mô trong dataset chuẩn; giá trị thiếu được giữ là NA và không được diễn giải là 0."
+    )
+    doc.add_paragraph(
+        "Lợi suất BTC/ETH được tính trên chuỗi giá crypto theo ngày lịch trước khi lọc mẫu. Ngược lại, thay đổi US2Y, DXY và VIX chỉ được tính giữa hai lần quan sát hợp lệ liên tiếp của nguồn. "
+        "Nếu hai lần quan sát cách nhau hơn một ngày, biến đổi tương ứng không phải biến động một ngày. Các biến *_observation_gap_days và *_observed được lưu để nhận diện khoảng trống quan sát."
+    )
 
-    doc.add_heading("2.4. Xây dựng biến", level=1)
+    doc.add_heading("2.4. Xây dựng biến và quy ước đo lường", level=1)
     add_table(doc, ["Biến", "Công thức/định nghĩa", "Đơn vị"], [
         ["BTC_log_return_pct", "100 × ln(BTC_t / BTC_(t−1))", "%/ngày"],
         ["ETH_log_return_pct", "100 × ln(ETH_t / ETH_(t−1))", "%/ngày"],
-        ["US2Y_change_pp", "US2Y_t − US2Y_previous_observed", "Điểm phần trăm"],
+        ["US2Y_change_pp", "US2Y_t − US2Y_previous_observed", "Điểm phần trăm giữa hai lần quan sát"],
         ["DXY_log_return_pct", "100 × ln(DXY_t / DXY_previous_observed)", "% giữa hai lần quan sát"],
-        ["VIX_change_points", "VIX_t − VIX_previous_observed", "Điểm VIX"],
-        ["*_observed", "1 nếu nguồn có quan sát ở ngày đó; ngược lại 0", "Nhị phân"],
+        ["VIX_change_points", "VIX_t − VIX_previous_observed", "Điểm VIX giữa hai lần quan sát"],
+        ["*_observed", "1 nếu có mức dữ liệu nguồn tại ngày đó; ngược lại 0", "Nhị phân 0/1"],
+        ["*_observation_gap_days", "Số ngày giữa lần quan sát hiện tại và lần quan sát hợp lệ trước đó", "Ngày"],
     ], 8)
-    doc.add_paragraph("Ký hiệu previous_observed chỉ lần quan sát hợp lệ trước đó, không nhất thiết là ngày lịch liền kề. Vì vậy cần dùng cùng các cột gap để lọc hoặc kiểm tra độ nhạy khi phân tích biến đổi vĩ mô.")
+    doc.add_paragraph(
+        "Ký hiệu previous_observed là lần quan sát hợp lệ trước đó, không nhất thiết là ngày lịch liền kề. Trong Chương 3, các biến thay đổi vĩ mô được dùng để mô tả liên hệ có điều kiện "
+        "trong VAR/LP; US2Y, DXY và VIX không được xem mặc nhiên là cú sốc ngoại sinh đã nhận diện. Trong Chương 4, biến mục tiêu là độ lớn lợi suất ngày kế tiếp, "
+        "y_(t+1) = |r_(t+1)|, đơn vị điểm phần trăm; đây là proxy cho độ lớn biến động ngày, không phải phương sai thực hiện, VaR hay ES."
+    )
 
     doc.add_heading("2.5. Kiểm tra chất lượng dữ liệu", level=1)
     quality_rows = []
-    for c in df.columns:
-        miss = int(df[c].isna().sum())
-        quality_rows.append([c, int(df[c].notna().sum()), miss, f"{miss/nrows*100:.2f}%" if nrows else "-"])
+    for col in df.columns:
+        valid = int(df[col].notna().sum())
+        missing = int(df[col].isna().sum())
+        rate = missing / nrows * 100 if nrows else 0
+        quality_rows.append([col, f"{valid:,}", f"{missing:,}", f"{rate:.2f}%"])
     add_table(doc, ["Biến", "Hợp lệ", "Thiếu", "Tỷ lệ thiếu"], quality_rows, 7)
-    doc.add_paragraph("Bảng chất lượng được tính lại trực tiếp từ model_dataset.csv khi chạy script. Các giá trị thiếu được giữ nguyên để tránh tạo ra quan sát giả. Cờ observed giúp phân biệt ngày không có dữ liệu nguồn với giá trị biến đổi bị thiếu do chưa có quan sát trước đó.")
+    doc.add_paragraph(
+        "Bảng được tính trực tiếp từ dataset chuẩn trong cùng lần chạy pipeline. Cờ observed bằng 0 chỉ ra ngày không có mức dữ liệu nguồn; giá trị thay đổi bị thiếu ở lần quan sát đầu tiên "
+        "còn có thể xuất phát từ việc chưa có quan sát trước đó để tính sai phân. Hai trường hợp này cần được phân biệt khi chọn mẫu cho mô hình."
+    )
 
     doc.add_heading("2.6. Thống kê mô tả và tương quan", level=1)
+    core_stats = ["BTC", "ETH", "US2Y", "DXY", "VIX", "BTC_log_return_pct", "ETH_log_return_pct", "US2Y_change_pp", "DXY_log_return_pct", "VIX_change_points"]
     if stats is not None and not stats.empty:
-        doc.add_paragraph("Bảng thống kê mô tả dưới đây được đọc từ outputs/tables/descriptive_stats.csv nếu file tồn tại. Cần bảo đảm bảng này được tạo lại từ cùng phiên bản dataset trước khi phát hành báo cáo.")
-        add_table(doc, list(stats.columns), stats.head(15).fillna("").astype(str).values.tolist(), 7)
+        stats_view = stats.copy()
+        first_col = stats_view.columns[0]
+        stats_view[first_col] = stats_view[first_col].astype(str)
+
+        if first_col == "Unnamed: 0":
+            stats_view = stats_view.rename(
+                columns={first_col: "Biến"}
+            )
+            first_col = "Biến"
+        stats_view = stats_view[stats_view[first_col].isin(core_stats)]
+        preferred = [c for c in [first_col, "count", "mean", "std", "min", "50%", "max", "missing_rate_pct"] if c in stats_view.columns]
+        stats_view = stats_view[preferred]
+        rows = [[str(v) if j == 0 else _fmt_num(v, 3) for j, v in enumerate(row)] for row in stats_view.itertuples(index=False, name=None)]
+        doc.add_paragraph("Bảng thống kê mô tả được lấy từ outputs/tables/descriptive_stats.csv và trình bày với tối đa ba chữ số thập phân để dễ đọc. Số quan sát hợp lệ thay đổi theo biến do lịch công bố và giao dịch khác nhau.")
+    if rows:
+        add_table(doc, [str(c) for c in stats_view.columns], rows, 8)
+
+        doc.add_paragraph(
+                "Xét các biến giá, BTC và ETH có quy mô giá trung bình khác nhau "
+                "và mức độ phân tán đáng kể trong giai đoạn nghiên cứu. Do giá "
+                "tài sản có xu hướng biến động theo thời gian, các thống kê về "
+                "mức giá được sử dụng chủ yếu để mô tả dữ liệu, không thay thế "
+                "việc phân tích lợi suất."
+            )
+
+        doc.add_paragraph(
+                "Đối với lợi suất log theo ngày, độ lệch chuẩn của ETH cao hơn "
+                "BTC trong mẫu mô tả, cho thấy lợi suất ETH có mức phân tán lớn "
+                "hơn trong giai đoạn được khảo sát. Các biến vĩ mô có số quan sát "
+                "hợp lệ thấp hơn chuỗi giá crypto do lịch giao dịch và công bố "
+                "không bao phủ toàn bộ ngày lịch. Vì vậy, việc so sánh các biến "
+                "cần dựa trên mẫu thực tế được sử dụng trong từng phân tích."
+            )
     else:
-        doc.add_paragraph("Chưa tìm thấy outputs/tables/descriptive_stats.csv. Hãy chạy script thống kê mô tả của dự án trước để bổ sung bảng kết quả vào báo cáo.")
+        doc.add_paragraph("Chưa có outputs/tables/descriptive_stats.csv. Chạy src/data/04_descriptive_stats.py trước khi phát hành bản thảo cuối.")
+
     if corr is not None and not corr.empty:
-        doc.add_paragraph("Ma trận tương quan hiện có được chèn từ outputs/tables/correlation_matrix.csv. Do dữ liệu vĩ mô có thiếu, cỡ mẫu có thể khác nhau giữa từng cặp biến; cần kiểm tra cách tính tương quan (pairwise deletion/listwise deletion) trước khi diễn giải.")
-        add_table(doc, list(corr.columns), corr.head(12).fillna("").astype(str).values.tolist(), 7)
+        corr_view = corr.copy()
+        first_col = corr_view.columns[0]
+        corr_view[first_col] = corr_view[first_col].astype(str)
+
+        if first_col == "Unnamed: 0":
+            corr_view = corr_view.rename(
+                columns={first_col: "Biến"}
+            )
+            first_col = "Biến"
+        corr_view = corr_view[corr_view[first_col].isin(["BTC_log_return_pct", "ETH_log_return_pct", "US2Y_change_pp", "DXY_log_return_pct", "VIX_change_points"])]
+        corr_cols = [c for c in ["BTC_log_return_pct", "ETH_log_return_pct", "US2Y_change_pp", "DXY_log_return_pct", "VIX_change_points"] if c in corr_view.columns]
+        corr_view = corr_view[[first_col] + corr_cols]
+        rows = [[str(v) if j == 0 else _fmt_num(v, 3) for j, v in enumerate(row)] for row in corr_view.itertuples(index=False, name=None)]
+        doc.add_paragraph("Ma trận tương quan dùng cùng nhóm biến lợi suất/thay đổi được phân tích ở Chương 3. Hệ số tương quan mô tả quan hệ tuyến tính không điều kiện; tương quan không xác lập quan hệ nhân quả, và cỡ mẫu có thể khác nhau giữa các cặp biến nếu dùng loại bỏ thiếu theo cặp.")
+        if rows:
+            add_table(doc, [str(c) for c in corr_view.columns], rows, 8)
+
+            doc.add_paragraph(
+                "Ma trận cho thấy lợi suất BTC và ETH có tương quan dương tương "
+                "đối cao (0,825), phản ánh mức độ đồng biến trong mẫu. Thay đổi "
+                "VIX có tương quan âm với lợi suất BTC (-0,326) và ETH (-0,344), "
+                "trong khi lợi suất DXY có tương quan âm với lợi suất của hai "
+                "tài sản ở mức thấp hơn. Thay đổi US2Y có tương quan tuyến tính "
+                "gần bằng không với lợi suất BTC và ETH trong ma trận này."
+            )
+
+            doc.add_paragraph(
+                "Đây là các tương quan tuyến tính không điều kiện, không phản "
+                "ánh đầy đủ quan hệ động, độ trễ hoặc sự khác biệt giữa các "
+                "trạng thái thị trường. Các kết quả này không đủ để kết luận "
+                "về quan hệ nhân quả; những vấn đề đó được xem xét riêng trong "
+                "các mô hình kinh tế lượng ở Chương 3."
+            )
     else:
-        doc.add_paragraph("Chưa tìm thấy outputs/tables/correlation_matrix.csv; chạy script thống kê mô tả để tạo ma trận tương quan.")
-    doc.add_paragraph("Tương quan là thống kê mô tả, không xác lập quan hệ nhân quả. Đặc biệt, tương quan giữa lợi suất crypto và thay đổi US2Y/VIX/DXY không đủ để kết luận rằng biến vĩ mô là cú sốc chính sách ngoại sinh.")
+        doc.add_paragraph("Chưa có outputs/tables/correlation_matrix.csv; chạy src/data/04_descriptive_stats.py để tạo bảng.")
 
     doc.add_heading("2.7. Phân kỳ mẫu và trạng thái thị trường", level=1)
-    doc.add_paragraph("Kế hoạch nghiên cứu có đề cập so sánh giai đoạn trước và sau năm 2020, đồng thời có đề cập ngưỡng VIX hoặc phân vị để xác định trạng thái căng thẳng. Cần chốt một quy tắc nhất quán trong config và báo cáo (ví dụ: VIX ≥ 30 hoặc ngưỡng phân vị được ước lượng trên mẫu huấn luyện). Không nên dùng hai quy tắc thay thế cho nhau mà không giải thích.")
-    doc.add_paragraph("Nếu phân tích dự báo sử dụng năm 2025 làm tập kiểm tra ngoài mẫu, các ngưỡng chuẩn hóa hoặc phân vị phải được xác định chỉ từ dữ liệu huấn luyện để tránh rò rỉ thông tin tương lai.")
+    doc.add_paragraph(
+        "Để thống nhất với Chương 3, phân tích trước/sau năm 2020 chia mẫu thành giai đoạn 2018–2019 và 2020–2025. Khi diễn giải, cần kiểm định trực tiếp chênh lệch hệ số; "
+        "việc một hệ số có ý nghĩa trong một giai đoạn nhưng không có ý nghĩa ở giai đoạn còn lại không tự nó chứng minh hai hệ số khác nhau. Các p-value từ nhiều phép thử được xem xét cùng điều chỉnh Benjamini–Hochberg (FDR 5%) như báo cáo ở Chương 3."
+    )
+    doc.add_paragraph(
+        "Trạng thái thị trường cơ sở được xác định bằng VIX ở phiên quan sát vĩ mô trước đó: Calm nếu VIX trễ < 30 và Stress nếu VIX trễ ≥ 30. Dùng giá trị trễ giúp tránh phân loại trạng thái bằng chính giá trị VIX đương kỳ. "
+        "Các ngưỡng 25 và 35 được sử dụng như kiểm tra độ nhạy, không thay thế tùy ý quy tắc cơ sở. Mẫu Stress nhỏ hơn đáng kể nên các ước lượng ở trạng thái này có thể kém chính xác."
+    )
+    doc.add_paragraph(
+        "Đối với Chương 4, năm 2025 là tập kiểm tra ngoài mẫu gồm 365 ngày dự báo cho mỗi tài sản; giai đoạn đến hết năm 2024 được dùng để huấn luyện và lựa chọn tham số qua xác thực theo thời gian. "
+        "Thông tin chuẩn hóa, điền khuyết và các lựa chọn mô hình không được ước lượng từ tập kiểm tra 2025."
+    )
+    doc.add_paragraph(
+        "Trong bài toán học máy ở Chương 4, biến mục tiêu là độ lớn lợi suất "
+        "log của ngày kế tiếp, được xác định bằng y_(t+1) = |r_(t+1)|. "
+        "Biến mục tiêu được đo bằng điểm phần trăm mỗi ngày và không phải "
+        "thước đo phương sai thực hiện trên một cửa sổ nhiều ngày, VaR hay ES."
+    )
 
-    doc.add_heading("2.8. Khả năng tái lập", level=1)
-    doc.add_paragraph("Các đầu ra tài liệu được sinh bằng src/data/generate_tv2_documentation.py. Script đọc dataset đã xử lý và, nếu có, bảng thống kê mô tả, ma trận tương quan và nhật ký nguồn. Sau khi cập nhật dữ liệu, chạy lại script để đồng bộ data dictionary và bản thảo phương pháp.")
-    doc.add_paragraph("Lệnh chạy từ thư mục gốc repository: python src/data/generate_tv2_documentation.py. Các thư viện cần thiết gồm pandas, openpyxl và python-docx.")
+    doc.add_paragraph(
+        "Nghiên cứu so sánh hai bộ đặc trưng. Bộ Crypto-only gồm 40 đặc trưng "
+        "được xây dựng từ thông tin giá và lợi suất crypto, bao gồm các độ trễ "
+        "của lợi suất, độ lớn lợi suất, thống kê cuộn với cửa sổ 3, 7, 14 và "
+        "30 ngày, cùng các đặc trưng chu kỳ thứ trong tuần. Bộ Crypto+Macro "
+        "bổ sung 12 đặc trưng vĩ mô, gồm mức quan sát gần nhất, thay đổi mới "
+        "được ghi nhận, cờ quan sát mới và số ngày kể từ lần quan sát trước "
+        "cho từng chuỗi US2Y, DXY và VIX."
+    )
+
+    doc.add_paragraph(
+        "Các mô hình dự báo gồm chuẩn đối chiếu là trung bình độ lớn lợi suất "
+        "trong 30 ngày gần nhất, Elastic Net và XGBoost. Hai bộ đặc trưng được "
+        "đánh giá riêng cho BTC và ETH. Dữ liệu được chia theo thời gian: "
+        "các năm 2022–2024 được sử dụng cho quy trình xác thực và lựa chọn "
+        "mô hình, sau đó mô hình được huấn luyện bằng dữ liệu đến hết năm "
+        "2024 và đánh giá trên 365 ngày của năm 2025. Dữ liệu nhãn năm 2025 "
+        "không được sử dụng để huấn luyện hoặc lựa chọn mô hình."
+    )
+
+    doc.add_paragraph(
+        "Các bước điền khuyết và chuẩn hóa được ước lượng từ dữ liệu huấn "
+        "luyện rồi áp dụng cho dữ liệu đánh giá. Đối với đặc trưng vĩ mô, "
+        "thông tin tại ngày t chỉ được sử dụng để dự báo từ ngày t+1 trở đi; "
+        "cờ quan sát mới và biến thay đổi không được lặp lại giả tạo vào "
+        "những ngày không có quan sát mới. Hiệu quả dự báo được đánh giá "
+        "bằng MAE và RMSE. Chênh lệch MAE giữa hai bộ đặc trưng được phân "
+        "tích thêm bằng bootstrap khối thời gian, với độ dài khối 7 ngày "
+        "và 2.000 lần lặp."
+    )
+
+    doc.add_paragraph(
+        "Đối với Elastic Net, mức độ quan trọng của đặc trưng được xem xét "
+        "thông qua trị tuyệt đối của hệ số chuẩn hóa; đối với XGBoost, sử "
+        "dụng thước đo gain. Hai thước đo này khác nhau về bản chất nên "
+        "không được so sánh trực tiếp về độ lớn."
+    )
+
+    doc.add_heading("2.8. Khả năng tái lập và liên kết với các chương kết quả", level=1)
+    doc.add_paragraph(
+        "Bản thảo Chương 2 và data dictionary được tạo từ src/data/03_preprocess_data.py. Bảng thống kê mô tả và tương quan được tạo bởi src/data/04_descriptive_stats.py. "
+        "Sau khi thay đổi dữ liệu hoặc quy tắc xử lý, cần chạy lại pipeline tiền xử lý, chạy thống kê mô tả, rồi kiểm tra các bảng và số liệu trong Chương 3–4 để bảo đảm mọi chương dùng cùng phiên bản dataset."
+    )
+    doc.add_paragraph(
+        "Các bước tái lập từ thư mục gốc repository: python src/data/03_preprocess_data.py; sau đó python src/data/04_descriptive_stats.py. "
+        "Bản thảo này mô tả định nghĩa và quy tắc dữ liệu; kết quả ước lượng, chẩn đoán mô hình và đánh giá dự báo được trình bày riêng trong paper/drafts/03_econometric_results.docx và paper/drafts/04_ml_results.docx."
+    )
 
     doc.add_heading("2.9. Hạn chế dữ liệu", level=1)
-    doc.add_paragraph("(1) Các nguồn có lịch giao dịch và lịch công bố khác nhau; ngày lịch không đồng nghĩa với thời điểm thông tin đã sẵn có cho nhà đầu tư. (2) Dataset hiện lưu ngày quan sát nhưng không thể hiện đầy đủ timestamp công bố/khả dụng của từng giá trị vĩ mô, nên cần thận trọng khi diễn giải theo thời gian thực. (3) DXY dùng mã DX-Y.NYB trong pipeline nên cần mô tả là proxy nếu chưa xác nhận tính tương đương với chỉ số chuẩn. (4) US2Y, DXY và VIX là các chỉ báo riêng biệt; không tự động gọi chúng là một chỉ số tổng hợp hay cú sốc nhân quả. (5) Những biến được tính giữa các lần quan sát hợp lệ có thể bao phủ nhiều ngày, cần xử lý observation gap trong các phân tích tiếp theo.")
+    doc.add_paragraph(
+        "Thứ nhất, ngày quan sát không đồng nghĩa với thời điểm thông tin thực sự sẵn có cho nhà đầu tư; timestamp công bố/khả dụng của dữ liệu vĩ mô chưa được xác minh đầy đủ. "
+        "Thứ hai, DX-Y.NYB là proxy theo mã tải xuống và cần được gọi đúng như vậy. Thứ ba, các biến thay đổi vĩ mô có thể bao phủ nhiều ngày do lịch nghỉ và lịch giao dịch; cần kiểm soát observation gap khi diễn giải. "
+        "Thứ tư, US2Y phản ánh lợi suất thị trường chứ không phải chuỗi bất ngờ chính sách Fed được nhận diện độc lập. Cuối cùng, các liên hệ thống kê và kết quả dự báo không tự thân chứng minh cơ chế nhân quả; đánh giá ngoài mẫu ML hiện chỉ bao phủ năm 2025."
+    )
+
+    # Chuẩn hóa định dạng lần cuối cho mọi đoạn và bảng
+    from docx.shared import RGBColor
+
+    for paragraph in doc.paragraphs:
+        paragraph.paragraph_format.line_spacing = 1.5
+
+        for run in paragraph.runs:
+            run.font.name = "Times New Roman"
+            run.font.size = Pt(13)
+            run.font.color.rgb = RGBColor(0, 0, 0)
+    for paragraph in doc.paragraphs:
+        if paragraph.style.name.startswith("Heading"):
+            for run in paragraph.runs:
+                run.bold = True
+                run.font.name = "Times New Roman"
+                run.font.color.rgb = RGBColor(0, 0, 0)
+
+            if paragraph is title:
+                run.font.size = Pt(15)
+            else:
+                run.font.size = Pt(13)
+
+    for table in doc.tables:
+        for row in table.rows:
+            for cell in row.cells:
+                for paragraph in cell.paragraphs:
+                    paragraph.paragraph_format.line_spacing = 1.5
+
+                    for run in paragraph.runs:
+                        run.font.name = "Times New Roman"
+                        run.font.size = Pt(13)
+                        run.font.color.rgb = RGBColor(0, 0, 0)
 
     doc.save(REPORT_PATH)
-
-
 
 # Tao tai lieu tu bo du lieu vua tien xu ly va cac bang TV2 neu da co.
 # Neu chua chay 04_descriptive_stats.py, bao cao se ghi ro bang nao chua co.
