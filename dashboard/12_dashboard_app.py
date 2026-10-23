@@ -1600,6 +1600,105 @@ def deep_mechanism(shock):
         'US2Y': 'US2Y phản ánh kỳ vọng chính sách tiền tệ và triển vọng kinh tế. Tăng lợi suất có thể làm chi phí cơ hội của tài sản không sinh lãi tăng, nhưng đồng thời có thể phản ánh tin tức tăng trưởng, nên dấu hệ số có thể biến đổi.',
     }.get(shock,'Mối liên hệ có thể chịu ảnh hưởng đồng thời từ tâm lý thị trường, thanh khoản và tin tức vĩ mô.')
 
+
+
+# ============================================================
+# 06C. BỐI CẢNH, HÀM Ý VÀ KIỂM ĐỊNH ĐỘ TIN CẬY
+# Bổ sung trên V5; giữ nguyên CSS và các biểu đồ hiện có.
+# ============================================================
+
+def research_story(title, context, motivation, application, caution):
+    deep_analysis(
+        title,
+        context,
+        motivation,
+        application,
+        caution,
+    )
+
+
+def fdr_count_summary(df, title, asset=None):
+    """Đếm từ CSV thực tế, không coi NA là không có ý nghĩa."""
+    if df.empty or 'p_value_fdr' not in df.columns:
+        st.info('Chưa có q-value FDR để tổng hợp bằng chứng.')
+        return
+    part = filter_df(df, response=asset) if asset else df.copy()
+    q = pd.to_numeric(part['p_value_fdr'], errors='coerce').dropna()
+    if q.empty:
+        st.info('Không có q-value hợp lệ cho lựa chọn này.')
+        return
+    passed = int((q < .05).sum())
+    a, b = st.columns(2)
+    with a:
+        kpi('Kiểm định đạt FDR 5%', f'{passed}/{len(q)}', title, 'teal')
+    with b:
+        kpi('Kiểm định chưa đạt FDR', str(len(q)-passed),
+            'Không đồng nghĩa hệ số bằng 0', 'gold')
+
+
+def forecast_bootstrap_chart(df, asset):
+    """Hiển thị khoảng tin cậy của mức giảm MAE theo file bootstrap."""
+    if df.empty:
+        return
+    part = filter_df(df, asset=asset) if 'asset' in df else filter_df(df, response=asset)
+    required = {'mae_reduction', 'ci95_lower', 'ci95_upper'}
+    if part.empty or not required.issubset(part.columns):
+        return
+    part = numeric_frame(part, 'mae_reduction', 'ci95_lower', 'ci95_upper')
+    part = part.dropna(subset=list(required))
+    if part.empty:
+        return
+    names = []
+    for _, row in part.iterrows():
+        names.append(str(row.get('candidate_model', 'Mô hình')) +
+                     ' · ' + str(row.get('candidate_feature_set', 'Macro')))
+    x = part['mae_reduction'].to_numpy(dtype=float)
+    lo = part['ci95_lower'].to_numpy(dtype=float)
+    hi = part['ci95_upper'].to_numpy(dtype=float)
+    fig = go.Figure(go.Scatter(
+        x=x, y=names, mode='markers',
+        marker=dict(size=13, color=[C['teal'] if a > 0 and b > 0 else
+                                    C['coral'] if a < 0 and b < 0 else
+                                    C['violet'] for a, b in zip(lo, hi)]),
+        error_x=dict(type='data', symmetric=False, array=hi-x, arrayminus=x-lo,
+                     thickness=2, width=7),
+        name='Mức giảm MAE và CI 95%',
+    ))
+    fig.add_vline(x=0, line_dash='dash', line_color='#A995A8')
+    fig.update_xaxes(title='Giảm MAE so với mô hình tham chiếu (dương = tốt hơn)')
+    plot(fig, 'rq5_bootstrap_ci', max(350, 110*len(part)+170))
+    st.caption('Khoảng tin cậy cắt mốc 0: chưa xác nhận chênh lệch ở mức 95%. '
+               'Ý nghĩa của mô hình tham chiếu phụ thuộc từng dòng CSV.')
+
+
+def regime_difference_safe(df, key):
+    """RQ4 xuất difference_stress_minus_calm thay vì difference."""
+    if df.empty:
+        return
+    part = df.copy()
+    if 'difference' not in part and 'difference_stress_minus_calm' in part:
+        part['difference'] = part['difference_stress_minus_calm']
+    paired_difference_chart(part, key, 'Stress − Calm')
+
+
+def significance_by_horizon(df, title):
+    if df.empty or not {'horizon', 'p_value_fdr'}.issubset(df.columns):
+        return
+    part = numeric_frame(df, 'horizon', 'p_value_fdr')
+    part = part.dropna(subset=['horizon', 'p_value_fdr'])
+    if part.empty:
+        return
+    by_h = part.groupby('horizon', as_index=False).agg(
+        tests=('p_value_fdr', 'size'),
+        passes=('p_value_fdr', lambda x: int((x < .05).sum()))
+    )
+    fig = go.Figure(go.Bar(x=by_h['horizon'], y=by_h['passes'],
+                           marker_color=C['teal'], name='Đạt FDR'))
+    fig.update_xaxes(title='Chân trời h')
+    fig.update_yaxes(title='Số kiểm định đạt FDR 5%', dtick=1)
+    plot(fig, 'horizon_significance_' + title, 340)
+
+
 # ============================================================
 # 07. SIDEBAR
 # ============================================================
@@ -1689,6 +1788,16 @@ if PAGE == "overview":
             "Dự báo ngoài mẫu", "2025",
             "365 ngày", "gold",
         )
+
+    section('Bối cảnh thị trường 2018–2025',
+            'Từ thị trường tài sản số tương đối tách biệt đến câu hỏi về mức độ gắn kết với tài chính toàn cầu.',
+            'WHY THIS RESEARCH MATTERS')
+    research_story(
+        'Tại sao nghiên cứu mối liên hệ Macro × Crypto?',
+        'Giai đoạn 2018–2025 bao trùm nhiều trạng thái thị trường: giai đoạn trước đại dịch, cú sốc COVID-19, môi trường thanh khoản và lãi suất thay đổi mạnh, rồi những năm crypto ngày càng được quan tâm như một lớp tài sản đầu tư. Đây là bối cảnh để kiểm tra xem lợi suất BTC/ETH có đồng biến hoặc nghịch biến với điều kiện tài chính toàn cầu hay không.',
+        'VIX đại diện cho mức độ bất ổn và khẩu vị rủi ro; DXY đại diện cho sức mạnh đồng USD; US2Y phản ánh kỳ vọng lãi suất ngắn hạn của Mỹ. Ba biến tương ứng với ba kênh có thể ảnh hưởng đến quyết định phân bổ vốn: rủi ro, đồng tiền định giá và chi phí cơ hội. Các kênh là giả thuyết kinh tế, không mặc nhiên là cú sốc ngoại sinh.',
+        'Năm RQ được sắp xếp theo logic: (1) có liên hệ cùng ngày không, (2) diễn biến động ra sao, (3) có khác trước/sau 2020 không, (4) có phụ thuộc Calm/Stress không, và (5) thông tin vĩ mô có tăng khả năng dự báo ngoài mẫu không. Điều này giúp tách giá trị giải thích khỏi giá trị dự báo.',
+        'Các kết quả là bằng chứng thống kê từ dữ liệu quan sát; không được đọc như tác động nhân quả đã nhận diện hoặc quy tắc giao dịch chắc chắn.')
 
     section(
         "Nghiên cứu này đang trả lời điều gì?",
@@ -1905,6 +2014,13 @@ elif PAGE == "rq1":
         "khi thực hiện nhiều kiểm định.",
     )
 
+    research_story(
+        'Bối cảnh hình thành RQ1: kênh truyền dẫn cùng ngày',
+        'Khi thị trường cổ phiếu Mỹ biến động mạnh, USD lên giá hoặc kỳ vọng lãi suất thay đổi, nhà đầu tư có thể điều chỉnh danh mục tài sản rủi ro, bao gồm BTC và ETH. RQ1 kiểm tra xem sự đồng thời này có xuất hiện trong dữ liệu hay không.',
+        'VIX gắn với risk-off và nhu cầu thanh khoản; DXY gắn với điều kiện đồng USD; US2Y gắn với kỳ vọng chính sách tiền tệ. Vì ba biến đo những khía cạnh khác nhau, một hệ số lớn về trị tuyệt đối không có nghĩa biến đó quan trọng hơn nếu chưa chuẩn hóa đơn vị cú sốc.',
+        'Kết quả có thể hỗ trợ nhà phân tích xây dựng bảng theo dõi rủi ro vĩ mô, đặt giả thuyết cho quản trị danh mục và thiết kế nghiên cứu tiếp theo. Khi theo dõi VIX/DXY, cần đọc cùng khoảng tin cậy và mức ý nghĩa sau BH-FDR.',
+        'LP h=0 cho biết liên hệ có điều kiện trong cùng phiên, không xác định chắc chắn biến nào đi trước về mặt thông tin. Không thể dùng hệ số như hệ số nhân lợi nhuận hoặc dự báo giao dịch.')
+
     asset, shock = selectors("rq1")
 
     insight(
@@ -2048,6 +2164,7 @@ elif PAGE == "rq1":
 
     section('Phân tích bổ sung · Bản đồ ý nghĩa FDR', 'Ô xanh thể hiện kiểm định còn ý nghĩa sau điều chỉnh FDR 5%.')
     fdr_overview(lp_fdr, 'rq1_fdr_heatmap', asset)
+    fdr_count_summary(lp_fdr, 'Tất cả chân trời LP của tài sản đã chọn', asset)
     deep_analysis('Đọc sâu kết quả truyền dẫn',
         f'Với {asset}, các hệ số theo {shock} có thể âm hoặc dương tùy chân trời. Không dùng dấu hệ số một mình để khẳng định tác động.',
         deep_mechanism(shock),
@@ -2090,6 +2207,13 @@ elif PAGE == "rq2":
         "Hai phương pháp không hoàn toàn cùng đơn vị "
         "cú sốc hoặc đơn vị thời gian.",
     )
+
+    research_story(
+        'Bối cảnh RQ2: thị trường có thể hấp thụ thông tin theo nhiều nhịp',
+        'Một biến động vĩ mô có thể được phản ánh ngay trong ngày, tiếp tục điều chỉnh ở những ngày sau hoặc nhanh chóng mất dấu. Vì vậy, kết luận chỉ dựa trên hệ số cùng ngày là chưa đủ để mô tả phản ứng động.',
+        'LP ước lượng riêng lợi suất tại từng chân trời ngày lịch; VAR mô hình hóa tương tác động của cả hệ thống trên các phiên có dữ liệu vĩ mô. IRF trực giao hóa theo thứ tự Cholesky đã định. Hai đường trả lời các câu hỏi liên quan nhưng không hoàn toàn đồng nhất.',
+        'Nếu phản ứng nhanh chóng quay về gần 0, đó là thông tin hữu ích về độ bền của mối liên hệ ước lượng. Nếu dải tin cậy rộng hoặc cắt 0, nhà phân tích không nên diễn giải các đỉnh của đường như một tác động bền vững.',
+        'Không cộng các hệ số LP thành phản ứng tích lũy nếu chưa có đặc tả tích lũy. Không quy đổi trực tiếp một phiên macro thành một ngày lịch hoặc đồng nhất cú sốc VAR với một đơn vị thay đổi trong LP.')
 
     asset, shock = selectors("rq2")
 
@@ -2193,6 +2317,13 @@ elif PAGE == "rq3":
         "hệ số và điều chỉnh BH-FDR.",
     )
 
+    research_story(
+        'Bối cảnh RQ3: giả thuyết thay đổi cấu trúc sau năm 2020',
+        'Mốc năm 2020 gắn với một thay đổi lớn về điều kiện thị trường, chính sách tiền tệ và sự chú ý dành cho tài sản số. Nghiên cứu đặt giả thuyết rằng độ nhạy của BTC/ETH trước VIX, DXY và US2Y có thể khác giữa 2018–2019 và 2020–2025.',
+        'Cần phân biệt hai nhận định: hệ số từng giai đoạn có khác 0 hay không và chênh lệch giữa hai hệ số có khác 0 hay không. Một hệ số có ý nghĩa ở giai đoạn sau nhưng không có ý nghĩa ở giai đoạn trước chưa đủ chứng minh hai giai đoạn khác nhau.',
+        'Kết quả kiểm định chênh lệch hỗ trợ đánh giá giả thuyết về tính ổn định của quan hệ Macro–Crypto. Nếu chưa đạt FDR, cách diễn giải phù hợp là chưa xác nhận đứt gãy hệ số, chứ không phải đã chứng minh thị trường không thay đổi.',
+        'Mẫu trước 2020 ngắn hơn đáng kể; việc chọn mốc 2020 là quyết định thiết kế nghiên cứu, không phải ngày đứt gãy được xác định nội sinh. Khác biệt cỡ mẫu ảnh hưởng độ chính xác của ước lượng.')
+
     asset, shock = selectors("rq3")
 
     section(
@@ -2292,6 +2423,7 @@ elif PAGE == "rq3":
 
     section('Phân tích bổ sung · Chênh lệch hệ số theo chân trời', 'Cột biểu thị Post − Pre; màu không thay thế q-value.')
     paired_difference_chart(DATA['rq3'].pipe(filter_df, response=asset, shock=shock), 'rq3_difference_bars', 'Post − Pre')
+    fdr_count_summary(DATA['rq3'], 'Kiểm định chênh lệch Pre/Post', asset)
     deep_analysis('Vì sao nhìn khác mà chưa kết luận thay đổi?',
         'Các đường Pre/Post có thể cách nhau ở một số chân trời nhưng kiểm định chênh lệch mới là cơ sở kết luận.',
         'Sau 2020, thị trường crypto có thể thay đổi về quy mô và nhà đầu tư, trong khi chính sách tiền tệ trải qua nhiều chế độ. Những thay đổi này làm giả thuyết đứt gãy cấu trúc hợp lý về kinh tế.',
@@ -2361,6 +2493,13 @@ elif PAGE == "rq4":
         "gold",
     )
 
+    research_story(
+        'Bối cảnh RQ4: truyền dẫn có thể phụ thuộc trạng thái rủi ro',
+        'Trong những giai đoạn căng thẳng, nhu cầu nắm giữ tiền mặt, yêu cầu ký quỹ và hoạt động giảm đòn bẩy có thể làm phản ứng của tài sản rủi ro khác so với giai đoạn bình ổn. Đây là động cơ kinh tế của giả thuyết phi tuyến theo trạng thái.',
+        'Nhóm dùng VIX phiên vĩ mô trước đó ≥ 30 để phân loại Stress; những phiên còn lại là Calm. Quy tắc trễ nhằm tránh sử dụng VIX cùng ngày để gắn nhãn trạng thái. Chênh lệch hệ số cần được kiểm định trực tiếp, không chỉ quan sát hai đường.',
+        'Nếu bằng chứng đủ mạnh, phân tích trạng thái có thể hỗ trợ xây dựng các kịch bản stress testing cho danh mục crypto. Nhưng trong dữ liệu hiện tại, kết quả chưa đạt FDR nên chỉ nên coi đây là giả thuyết quản trị rủi ro cần kiểm tra thêm.',
+        'Stress chỉ có 151 quan sát so với 1.839 Calm. Mẫu mất cân đối làm độ bất định cao và hạn chế khả năng phát hiện khác biệt thực sự. Ngưỡng 30 là quy ước nghiên cứu, không phải ranh giới kinh tế tuyệt đối.')
+
     asset, shock = selectors("rq4")
 
     section(
@@ -2428,7 +2567,8 @@ elif PAGE == "rq4":
     show_table(regime, "Hệ số theo trạng thái")
 
     section('Phân tích bổ sung · Chênh lệch Stress − Calm', 'Đọc chênh lệch cùng với quy mô mẫu hai trạng thái.')
-    paired_difference_chart(DATA['rq4'].pipe(filter_df, response=asset, shock=shock), 'rq4_difference_bars', 'Stress − Calm')
+    regime_difference_safe(filter_df(DATA['rq4'], response=asset, shock=shock), 'rq4_difference_bars')
+    fdr_count_summary(DATA['rq4'], 'Kiểm định chênh lệch Calm/Stress', asset)
     deep_analysis('Stress có làm truyền dẫn mạnh hơn không?',
         'Không thể kết luận Stress làm phản ứng mạnh hơn chỉ vì đường Stress cao hoặc thấp hơn Calm.',
         'Trong giai đoạn VIX cao, nhu cầu thanh khoản và giảm đòn bẩy có thể tăng. Crypto có thể trở nên nhạy cảm hơn với cùng một thay đổi vĩ mô, nhưng cơ chế này cần được kiểm định.',
@@ -2471,6 +2611,13 @@ elif PAGE == "rq5":
         "So sánh Historical30, Elastic Net và XGBoost "
         "trên tập kiểm tra năm 2025 bằng MAE, RMSE.",
     )
+
+    research_story(
+        'Bối cảnh RQ5: giải thích được chưa chắc dự báo được',
+        'Một biến vĩ mô có thể có liên hệ thống kê với lợi suất crypto trong mẫu nhưng không giúp giảm sai số trên dữ liệu chưa quan sát. Thông tin có thể đã được phản ánh trong lịch sử giá, hoặc quan hệ thay đổi theo thời gian.',
+        'RQ5 dự báo độ lớn tuyệt đối của lợi suất log ngày tiếp theo, không dự báo dấu tăng/giảm. So sánh Crypto-only với Crypto + Macro trong cùng thuật toán nhằm cô lập phần đóng góp bổ sung của dữ liệu VIX, DXY và US2Y.',
+        'Với quản trị rủi ro, một mô hình dự báo độ lớn biến động có thể giúp dự kiến ngày rủi ro cao, điều chỉnh giới hạn vị thế hoặc chuẩn bị thanh khoản. Nhưng lợi ích thực tiễn chỉ được củng cố khi sai số ngoài mẫu giảm ổn định và có bằng chứng thống kê.',
+        'Không suy ra chiến lược mua/bán từ dự báo |r(t+1)|. Kết quả năm 2025 không bảo đảm lặp lại ở những năm khác; dữ liệu phải được chốt theo thời điểm sẵn có để tránh nhìn trước tương lai.')
 
     asset = st.selectbox(
         "🪙 Chọn tài sản dự báo",
@@ -2984,6 +3131,9 @@ elif PAGE == "rq5":
 
     section('Phân tích bổ sung · Giá trị gia tăng của Macro', 'So sánh chênh lệch sai số giữa hai bộ đặc trưng trong cùng thuật toán.')
     feature_increment_chart(DATA['comparison'], asset, metric, 'rq5_macro_increment')
+    section('Biểu đồ bổ sung · Khoảng tin cậy bootstrap',
+            'Chênh lệch MAE và khoảng tin cậy 95% từ bảng kiểm định của nhóm.')
+    forecast_bootstrap_chart(DATA['significance'], asset)
     deep_analysis('Thêm Macro có tạo giá trị dự báo thực tế?',
         'Giá trị gia tăng của Macro phải được đánh giá qua mức giảm MAE/RMSE ngoài mẫu, không qua độ lớn hệ số hồi quy hay feature importance.',
         'VIX, DXY và US2Y có thể phản ánh rủi ro hệ thống, nhưng thông tin đó có thể đã nằm trong chuỗi crypto. Thêm đặc trưng làm tăng chiều mô hình và có nguy cơ học nhiễu.',
@@ -3020,6 +3170,13 @@ elif PAGE == "methods":
         "xuất hiện trên dashboard.",
     )
 
+    research_story(
+        'Thiết kế nghiên cứu và khả năng tái lập',
+        'Dữ liệu được đồng bộ trên lịch ngày liên tục từ 01/01/2018 đến 31/12/2025, gồm 2.922 ngày. Vì crypto giao dịch cả cuối tuần còn các chuỗi tài chính truyền thống có ngày nghỉ, không phải mọi dòng đều có quan sát vĩ mô hợp lệ.',
+        'BTC và ETH dùng lợi suất log theo phần trăm. VIX dùng thay đổi theo điểm chỉ số; DXY dùng lợi suất log phần trăm; US2Y dùng thay đổi điểm phần trăm. Sự khác nhau về thước đo cần được giữ nguyên khi diễn giải hệ số LP/VAR.',
+        'Các CSV được tạo bởi pipeline nghiên cứu; dashboard chỉ đọc và trình bày kết quả. Khi tái lập, cần giữ nhật ký nguồn, định nghĩa biến, thời điểm công bố dữ liệu, chia mẫu theo thời gian và cùng phiên bản bảng đầu ra.',
+        'Ngày quan sát không nhất thiết là thời điểm nhà đầu tư có thể biết thông tin. Không tự điền 0 vào ngày vĩ mô không giao dịch; cần kiểm tra lịch phiên, khoảng cách giữa các quan sát hợp lệ và nguy cơ rò rỉ thông tin ở bài toán ML.')
+
     section(
         "Nghiên cứu sử dụng dữ liệu gì?",
         "Hai tài sản tiền mã hóa và ba biến "
@@ -3048,13 +3205,13 @@ elif PAGE == "methods":
         (
             "DXY",
             "Sức mạnh USD",
-            "Thay đổi chỉ số USD.",
+            "Lợi suất log DXY theo phần trăm.",
             "gold",
         ),
         (
             "US2Y",
             "Lợi suất trái phiếu Mỹ 2 năm",
-            "Thay đổi lợi suất theo đơn vị dữ liệu gốc.",
+            "Thay đổi lợi suất theo điểm phần trăm.",
             "white",
         ),
     ]
