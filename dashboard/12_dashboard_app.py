@@ -972,12 +972,12 @@ def guide(question_text, how_to_read, focus):
     )
 
 
-def conclusion(finding, meaning, caution):
+def conclusion(finding, meaning, caution, heading="KẾT LUẬN TỪ BIỂU ĐỒ"):
     st.html(
         f"""
         <div class="result">
             <div class="result-header">
-                KẾT LUẬN TỪ BIỂU ĐỒ
+                {esc(heading)}
             </div>
             <div class="result-inner">
                 <div class="result-step">
@@ -1560,19 +1560,37 @@ def fdr_overview(df, key, asset=None):
 
 
 def paired_difference_chart(df, key, label):
-    if df.empty or not {'horizon','difference'}.issubset(df.columns):
+    """Chênh lệch theo chân trời, màu biểu thị ý nghĩa FDR (không phải dấu)."""
+    if df.empty or 'horizon' not in df:
+        st.info('Chưa có dữ liệu chênh lệch theo chân trời.')
         return
-    part=numeric_frame(df,'horizon','difference','difference_p_value','p_value_fdr')
-    part=part.dropna(subset=['horizon','difference']).sort_values('horizon')
-    if part.empty: return
-    qcol='p_value_fdr' if 'p_value_fdr' in part else 'difference_p_value'
-    colors=[C['teal'] if num(q)<0.05 else C['coral'] for q in part.get(qcol,pd.Series([np.nan]*len(part)))]
-    fig=go.Figure(go.Bar(x=part['horizon'],y=part['difference'],marker_color=colors,
-                         text=part['difference'].round(3),textposition='outside'))
-    fig.add_hline(y=0,line_dash='dash',line_color='#A995A8')
+    part = df.copy()
+    if 'difference' not in part and 'difference_stress_minus_calm' in part:
+        part['difference'] = part['difference_stress_minus_calm']
+    if 'difference' not in part:
+        st.info('CSV chưa có cột chênh lệch hệ số.')
+        return
+    part = numeric_frame(part, 'horizon', 'difference', 'p_value_fdr',
+                         'difference_ci_lower', 'difference_ci_upper')
+    part = part.dropna(subset=['horizon', 'difference']).sort_values('horizon')
+    if part.empty:
+        return
+    q = pd.to_numeric(part['p_value_fdr'], errors='coerce') if 'p_value_fdr' in part else pd.Series(np.nan, index=part.index)
+    significant = q.lt(.05) & q.notna()
+    colors = [C['teal'] if ok else C['coral'] for ok in significant]
+    fig = go.Figure(go.Bar(
+        x=part['horizon'], y=part['difference'], marker_color=colors,
+        text=part['difference'].map(lambda x: f'{x:+.3f}'),
+        textposition='outside', name='Chênh lệch ước lượng',
+        customdata=np.column_stack([q.fillna(-1).to_numpy()]),
+        hovertemplate='h=%{x}<br>Chênh lệch=%{y:.4f}<br>q-value=%{customdata[0]:.4f}<extra></extra>',
+    ))
+    fig.add_hline(y=0, line_dash='dash', line_color='#A995A8')
     fig.update_xaxes(title='Chân trời h')
     fig.update_yaxes(title=label)
-    plot(fig,key,410)
+    plot(fig, key, 410)
+    st.caption('Màu xanh: q-value FDR < 0,05; màu coral: chưa đạt FDR hoặc thiếu q-value. '
+               'Chiều âm/dương đọc theo vị trí cột so với đường 0.')
 
 
 def feature_increment_chart(df, asset, metric, key):
@@ -1637,38 +1655,47 @@ def fdr_count_summary(df, title, asset=None):
 
 
 def forecast_bootstrap_chart(df, asset):
-    """Hiển thị khoảng tin cậy của mức giảm MAE theo file bootstrap."""
+    """So sánh ứng viên và tham chiếu theo đúng từng dòng bootstrap CSV."""
     if df.empty:
+        st.info('Chưa có dữ liệu bootstrap.')
         return
     part = filter_df(df, asset=asset) if 'asset' in df else filter_df(df, response=asset)
     required = {'mae_reduction', 'ci95_lower', 'ci95_upper'}
     if part.empty or not required.issubset(part.columns):
+        st.info('Thiếu cột bootstrap cần thiết.')
         return
-    part = numeric_frame(part, 'mae_reduction', 'ci95_lower', 'ci95_upper')
-    part = part.dropna(subset=list(required))
+    part = numeric_frame(part, *required).dropna(subset=list(required)).copy()
     if part.empty:
         return
-    names = []
+    labels = []
     for _, row in part.iterrows():
-        names.append(str(row.get('candidate_model', 'Mô hình')) +
-                     ' · ' + str(row.get('candidate_feature_set', 'Macro')))
+        reference = f"{row.get('reference_model', 'N/A')} · {row.get('reference_feature_set', 'N/A')}"
+        candidate = f"{row.get('candidate_model', 'N/A')} · {row.get('candidate_feature_set', 'N/A')}"
+        labels.append(f'{candidate}  so với  {reference}')
     x = part['mae_reduction'].to_numpy(dtype=float)
     lo = part['ci95_lower'].to_numpy(dtype=float)
     hi = part['ci95_upper'].to_numpy(dtype=float)
-    fig = go.Figure(go.Scatter(
-        x=x, y=names, mode='markers',
-        marker=dict(size=13, color=[C['teal'] if a > 0 and b > 0 else
-                                    C['coral'] if a < 0 and b < 0 else
-                                    C['violet'] for a, b in zip(lo, hi)]),
-        error_x=dict(type='data', symmetric=False, array=hi-x, arrayminus=x-lo,
-                     thickness=2, width=7),
-        name='Mức giảm MAE và CI 95%',
-    ))
+    valid = (lo <= x) & (x <= hi)
+    if not valid.all():
+        st.warning('Có khoảng tin cậy bootstrap không bao chứa ước lượng; kiểm tra CSV.')
+    fig = go.Figure()
+    for i, (estimate, lower, upper, label) in enumerate(zip(x, lo, hi, labels)):
+        if not valid[i]:
+            continue
+        color = C['teal'] if lower > 0 else C['coral'] if upper < 0 else C['violet']
+        fig.add_trace(go.Scatter(
+            x=[estimate], y=[label], mode='markers', showlegend=False,
+            marker=dict(size=13, color=color),
+            error_x=dict(type='data', symmetric=False,
+                         array=[upper-estimate], arrayminus=[estimate-lower],
+                         thickness=2, width=7),
+            hovertemplate=f'Mức giảm MAE: {estimate:.4f}<br>CI 95%: [{lower:.4f}; {upper:.4f}]<extra></extra>',
+        ))
     fig.add_vline(x=0, line_dash='dash', line_color='#A995A8')
     fig.update_xaxes(title='Giảm MAE so với mô hình tham chiếu (dương = tốt hơn)')
-    plot(fig, 'rq5_bootstrap_ci', max(350, 110*len(part)+170))
-    st.caption('Khoảng tin cậy cắt mốc 0: chưa xác nhận chênh lệch ở mức 95%. '
-               'Ý nghĩa của mô hình tham chiếu phụ thuộc từng dòng CSV.')
+    plot(fig, 'rq5_bootstrap_ci', max(360, 95*len(part)+170))
+    st.caption('Mỗi dòng ghi rõ mô hình ứng viên so với mô hình tham chiếu. '
+               'Khoảng tin cậy cắt 0: chưa xác nhận chênh lệch ở mức 95%.')
 
 
 def regime_difference_safe(df, key):
@@ -2092,6 +2119,33 @@ elif PAGE == "rq1":
                 "teal",
             )
 
+        # Biểu đồ riêng cho cặp tài sản–biến vĩ mô được chọn, ngay sau KPI.
+        section(
+            'Biểu đồ · Hệ số LP cùng ngày cho lựa chọn hiện tại',
+            f'{ASSETS[asset]} trước {SHOCKS[shock]} · h = 0',
+            'LOCAL PROJECTIONS · SELECTED PAIR',
+        )
+        beta = num(field(row, 'estimate'))
+        lower = num(field(row, 'ci_lower'))
+        upper = num(field(row, 'ci_upper'))
+        if np.isfinite(beta):
+            err = None
+            if np.isfinite(lower) and np.isfinite(upper) and lower <= beta <= upper:
+                err = dict(type='data', symmetric=False,
+                           array=[upper-beta], arrayminus=[beta-lower],
+                           visible=True, color=C['plum'], thickness=2, width=8)
+            fig = go.Figure(go.Bar(
+                x=[f'{asset} · {shock}'], y=[beta], width=.35,
+                marker_color=C['coral'] if beta < 0 else C['teal'],
+                text=[fmt(beta)], textposition='outside',
+                error_y=err, name='Hệ số LP tại h = 0',
+            ))
+            fig.add_hline(y=0, line_dash='dash', line_color=C['muted'])
+            fig.update_yaxes(title='Hệ số LP · h = 0')
+            fig.update_layout(showlegend=False)
+            plot(fig, f'rq1_selected_{asset}_{shock}', 400)
+            st.caption('Thanh sai số (nếu có) là khoảng tin cậy từ CSV; '
+                       'ý nghĩa thống kê cần đối chiếu p-value và q-value FDR.')
         conclusion(*lp_interpret(asset, shock, row))
     else:
         st.info(
@@ -2274,6 +2328,13 @@ elif PAGE == "rq2":
     show_table(lp, "Kết quả Local Projections")
     show_table(irf, "Kết quả VAR / IRF")
 
+    rq2_fdr = filter_df(DATA['lp_fdr'], response=asset, shock=shock)
+    if not rq2_fdr.empty and 'p_value_fdr' in rq2_fdr:
+        section('Bằng chứng FDR theo chân trời',
+                'Đối chiếu trực tiếp các chân trời LP với q-value sau điều chỉnh nhiều kiểm định.')
+        fdr_overview(rq2_fdr, 'rq2_selected_fdr')
+        show_table(rq2_fdr, 'q-value FDR của các chân trời đã chọn')
+
     section('Phân tích bổ sung · Cơ chế và mức độ bền vững', 'Phân biệt dấu, độ lớn và độ tin cậy thống kê.')
     deep_analysis('Vì sao đường phản ứng thay đổi theo chân trời?',
         f'Đường LP và VAR/IRF của {asset} trước {shock} cho thấy diễn biến hệ số theo thời gian; đỉnh tuyệt đối không nhất thiết là tác động có ý nghĩa.',
@@ -2415,7 +2476,8 @@ elif PAGE == "rq3":
                     f"Đây là kết quả so sánh {asset} "
                     f"trước biến {shock} tại h = 0."
                 ),
-            )
+            ),
+            heading='DIỄN GIẢI KIỂM ĐỊNH CHÊNH LỆCH',
         )
 
     show_table(difference, "Kiểm định chênh lệch RQ3")
@@ -2552,7 +2614,8 @@ elif PAGE == "rq4":
                     f"Đây là kiểm định cho {asset} "
                     f"và {shock} tại h = 0."
                 ),
-            )
+            ),
+            heading='DIỄN GIẢI KIỂM ĐỊNH CHÊNH LỆCH',
         )
     else:
         insight(
@@ -2565,6 +2628,21 @@ elif PAGE == "rq4":
 
     show_table(difference, "Kiểm định Calm/Stress")
     show_table(regime, "Hệ số theo trạng thái")
+
+    rq4_all = DATA['rq4']
+    if not rq4_all.empty:
+        raw_col = col(rq4_all, 'difference_p_value', 'p_value')
+        fdr_col = col(rq4_all, 'p_value_fdr')
+        if raw_col and fdr_col:
+            raw = pd.to_numeric(rq4_all[raw_col], errors='coerce')
+            adjusted = pd.to_numeric(rq4_all[fdr_col], errors='coerce')
+            c_raw, c_fdr = st.columns(2)
+            with c_raw:
+                kpi('Đạt kiểm định ban đầu', f'{int(raw.lt(.05).sum())}/{int(raw.notna().sum())}',
+                    'p-value < 0,05 · toàn bộ RQ4', 'violet')
+            with c_fdr:
+                kpi('Đạt sau BH-FDR', f'{int(adjusted.lt(.05).sum())}/{int(adjusted.notna().sum())}',
+                    'q-value < 0,05 · toàn bộ RQ4', 'teal')
 
     section('Phân tích bổ sung · Chênh lệch Stress − Calm', 'Đọc chênh lệch cùng với quy mô mẫu hai trạng thái.')
     regime_difference_safe(filter_df(DATA['rq4'], response=asset, shock=shock), 'rq4_difference_bars')
