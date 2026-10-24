@@ -526,8 +526,8 @@ def generate_report(df, stats, corr):
 
     p = doc.add_paragraph(
     "Global Financial Conditions and Cryptocurrency Markets: "
-    "Nonlinear Transmission of Monetary, Dollar and Risk Shocks "
-    "to Bitcoin and Ethereum"
+    "Dynamic and Regime-Dependent Transmission of Interest Rate, "
+    "Dollar, and Risk Movements to Bitcoin and Ethereum"
     )
     p.alignment = WD_ALIGN_PARAGRAPH.LEFT
     p.runs[0].italic = True
@@ -607,24 +607,77 @@ def generate_report(df, stats, corr):
     )
 
     doc.add_heading("2.6. Thống kê mô tả và tương quan", level=1)
-    core_stats = ["BTC", "ETH", "US2Y", "DXY", "VIX", "BTC_log_return_pct", "ETH_log_return_pct", "US2Y_change_pp", "DXY_log_return_pct", "VIX_change_points"]
+    
+    core_stats = [
+        "BTC", "ETH", "US2Y", "DXY", "VIX",
+        "BTC_log_return_pct", "ETH_log_return_pct",
+        "US2Y_change_pp", "DXY_log_return_pct",
+        "VIX_change_points"
+    ]
+
+    rows = []
+    stats_view = None
+
     if stats is not None and not stats.empty:
         stats_view = stats.copy()
         first_col = stats_view.columns[0]
-        stats_view[first_col] = stats_view[first_col].astype(str)
 
-        if first_col == "Unnamed: 0":
-            stats_view = stats_view.rename(
-                columns={first_col: "Biến"}
-            )
-            first_col = "Biến"
-        stats_view = stats_view[stats_view[first_col].isin(core_stats)]
-        preferred = [c for c in [first_col, "count", "mean", "std", "min", "50%", "max", "missing_rate_pct"] if c in stats_view.columns]
-        stats_view = stats_view[preferred]
-        rows = [[str(v) if j == 0 else _fmt_num(v, 3) for j, v in enumerate(row)] for row in stats_view.itertuples(index=False, name=None)]
-        doc.add_paragraph("Bảng thống kê mô tả được lấy từ outputs/tables/descriptive_stats.csv và trình bày với tối đa ba chữ số thập phân để dễ đọc. Số quan sát hợp lệ thay đổi theo biến do lịch công bố và giao dịch khác nhau.")
+        # Loại bỏ index thừa và đặt tên cột biến
+        stats_view[first_col] = stats_view[first_col].astype(str)
+        stats_view = stats_view.rename(columns={first_col: "Biến"})
+        stats_view = stats_view[
+            stats_view["Biến"].isin(core_stats)
+        ]
+
+        # Đổi tên các chỉ tiêu theo cách trình bày học thuật
+        column_names = {
+            "count": "N",
+            "mean": "Mean",
+            "std": "Std. Dev.",
+            "min": "Min",
+            "50%": "Median",
+            "max": "Max",
+            "missing_rate_pct": "Missing (%)"
+        }
+        stats_view = stats_view.rename(columns=column_names)
+
+        preferred = [
+            "Biến", "N", "Mean", "Std. Dev.",
+            "Min", "Median", "Max", "Missing (%)"
+        ]
+        stats_view = stats_view[
+            [c for c in preferred if c in stats_view.columns]
+        ]
+
+        # Định dạng số và số quan sát
+        for record in stats_view.itertuples(index=False, name=None):
+            formatted = []
+            for j, value in enumerate(record):
+                if j == 0:
+                    formatted.append(str(value))
+                elif stats_view.columns[j] == "N":
+                    formatted.append(
+                        f"{int(float(value)):,}"
+                        if pd.notna(value) else ""
+                    )
+                else:
+                    formatted.append(_fmt_num(value, 3))
+            rows.append(formatted)
+
+        doc.add_paragraph(
+            "Bảng thống kê mô tả các biến chính trong giai đoạn "
+            "2018–2025. N là số quan sát hợp lệ; Mean là giá trị "
+            "trung bình; Std. Dev. là độ lệch chuẩn; Median là "
+            "trung vị. Missing (%) thể hiện tỷ lệ dữ liệu thiếu."
+        )
+
     if rows:
-        add_table(doc, [str(c) for c in stats_view.columns], rows, 8)
+        add_table(
+            doc,
+            [str(c) for c in stats_view.columns],
+            rows,
+            9
+        )
 
         doc.add_paragraph(
                 "Xét các biến giá, BTC và ETH có quy mô giá trung bình khác nhau "
