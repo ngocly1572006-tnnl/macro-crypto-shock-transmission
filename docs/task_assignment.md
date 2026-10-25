@@ -1,580 +1,310 @@
 
-# KẾ HOẠCH TRIỂN KHAI & PHÂN CÔNG CÔNG VIỆC
+# PHÂN CÔNG CÔNG VIỆC & BÀN GIAO DỰ ÁN
 
-**Dự án:** Global Financial Conditions and Cryptocurrency Markets: Nonlinear Transmission of Monetary, Dollar and Risk Shocks to Bitcoin and Ethereum
-
-**Thời gian thực hiện:** 16/10/2026 – 25/10/2026  
-**Nhóm:** 06 thành viên  
+**Dự án:** Global Financial Conditions and Cryptocurrency Markets — nghiên cứu mối liên hệ động giữa US2Y, DXY, VIX và lợi suất Bitcoin/Ethereum.  
+**Nhóm:** 6 thành viên | **Thời gian triển khai:** 16–25/10/2026  
+**Giai đoạn dữ liệu:** 01/01/2018–31/12/2025  
 **Repository:** `macro-crypto-shock-transmission`  
-**Giai đoạn nghiên cứu:** 01/01/2018 – 31/12/2025
+**Tài liệu này:** Cập nhật theo cấu trúc repository bàn giao ngày 25/10/2026.
+
+> **Quy ước trạng thái:** “Có trong repo” chỉ xác nhận file hiện diện trong ZIP được đối chiếu, **không đồng nghĩa** script đã chạy lại thành công hoặc kết quả đã qua kiểm thử độc lập. Những hạng mục cần kiểm tra tiếp được ghi rõ.
 
 ---
 
-## 1. MỤC TIÊU NGHIÊN CỨU
+## 1. Mục tiêu và luồng triển khai
 
-Nghiên cứu phân tích sự truyền dẫn của điều kiện tài chính toàn cầu đến thị trường tiền mã hóa, tập trung vào Bitcoin (BTC) và Ethereum (ETH), thông qua ba chỉ báo: lợi suất trái phiếu Kho bạc Mỹ kỳ hạn 2 năm (US2Y), chỉ số sức mạnh đồng USD (DXY hoặc proxy phù hợp) và chỉ số biến động VIX.
+Dự án sử dụng dữ liệu BTC, ETH, US2Y, DXY (proxy) và VIX để trả lời 5 câu hỏi nghiên cứu:
 
-### 1.1. Câu hỏi nghiên cứu đã thống nhất
-
-- **RQ1:** Biến động lợi suất trái phiếu Kho bạc Mỹ kỳ hạn 2 năm có liên hệ với phản ứng lợi suất BTC/ETH như thế nào?
-- **RQ2:** Biến động USD và VIX truyền dẫn đến BTC/ETH với độ lớn và thời gian phản ứng ra sao?
-- **RQ3:** Mức độ nhạy cảm của BTC/ETH có thay đổi giữa giai đoạn trước năm 2020 và từ năm 2020 trở đi không?
-- **RQ4:** Sự truyền dẫn có khác biệt giữa trạng thái thị trường bình thường (Calm) và căng thẳng (Stress) không?
-- **RQ5:** Các biến tài chính toàn cầu có cải thiện khả năng dự báo biến động BTC/ETH ngoài mẫu so với mô hình benchmark hay không?
-
-**Lưu ý:** RQ1–RQ5 đã được nhóm thống nhất. Các thành viên không tự ý thay đổi câu hỏi nghiên cứu.
-
-### 1.2. Phạm vi dữ liệu
-
-| Nội dung | Quy định |
-|---|---|
-| Thời gian | 01/01/2018 – 31/12/2025 |
-| Tần suất | Dữ liệu ngày (Daily) |
-| Tài sản | BTC, ETH |
-| Biến tài chính | VIX, DXY hoặc USD proxy, US2Y |
-| Pre-2020 | 2018–2019 |
-| Post-2020 | 2020–2025 |
-| ML Train/Validation | 2018–2024 |
-| ML Test | 2025 |
-| Ngôn ngữ lập trình | Python |
-| Dashboard | Streamlit |
-| Quản lý mã nguồn | GitHub |
-
-US2Y là lợi suất trái phiếu Kho bạc Mỹ **kỳ hạn 2 năm**, không phải dữ liệu chỉ thu thập trong 2 năm.
-
-Hai giai đoạn Pre/Post-2020 không cân bằng về số quan sát. Khi phân tích, cần báo cáo quy mô mẫu và thực hiện kiểm tra độ nhạy phù hợp.
-
-### 1.3. Phương pháp nghiên cứu
-
-- Thống kê mô tả và phân tích tương quan.
-- Vector Autoregression (VAR) và Impulse Response Function (IRF).
-- Local Projection (LP).
-- Phân tích Calm/Stress.
-- So sánh Pre/Post-2020.
-- Rolling Regression và Robustness.
-- Machine Learning: Elastic Net và mô hình benchmark.
-- Đánh giá dự báo ngoài mẫu bằng MAE và RMSE.
-
-Không mặc định biến động US2Y hoặc VAR innovation là cú sốc chính sách tiền tệ có quan hệ nhân quả.
-
----
-
-## 2. BẢNG TỔNG HỢP PHÂN CÔNG
-
-| Thành viên | Vai trò | Công việc chính | Số file |
-|---|---|---|---:|
-| Yến Nhi | Research & Academic Review | Cơ sở lý thuyết, Literature Review, giả thuyết H1–H5, Research Config, kiểm tra học thuật | 6 |
-| Hoài Nhi | Data Engineering & Statistics | Thu thập, làm sạch dữ liệu 2018–2025, thống kê mô tả, Data Dictionary | 12 |
-| Hải Bình | Econometric Modeling | VAR/IRF, LP, Calm/Stress, Pre/Post-2020, Rolling, Robustness | 17 |
-| Mai Phương | ML & Forecasting | ML Features, Elastic Net, Benchmark, đánh giá dự báo ngoài mẫu | 9 |
-| Lam Kiều | Paper & Research Synthesis | Discussion, Conclusion, tổng hợp và hoàn thiện báo cáo | 3 |
-| Ngọc Ly | Dashboard, Pipeline & QA | Streamlit Dashboard, Pipeline, Tests, GitHub, nghiệm thu | 9 |
-| **Tổng** | | | **56** |
-
----
-
-## 3. PHÂN CÔNG CHI TIẾT
-
-### TV1 – YẾN NHI
-**Research & Academic Review**
-
-**Nhiệm vụ:**
-
-1. Tổng quan các nghiên cứu về ảnh hưởng của điều kiện tài chính toàn cầu đến BTC/ETH.
-2. Xây dựng khung lý thuyết về cơ chế truyền dẫn của US2Y, USD và VIX.
-3. Xây dựng giả thuyết H1–H5 tương ứng RQ1–RQ5 đã chốt.
-4. Giải thích cơ sở lựa chọn dữ liệu 2018–2025 và phân kỳ 2020.
-5. Xác định định nghĩa biến, đơn vị đo lường và cách xây dựng bộ chỉ báo tài chính toàn cầu.
-6. Thiết lập cấu hình nghiên cứu thống nhất.
-7. Lập Literature Matrix và tài liệu tham khảo.
-8. Phối hợp TV6 kiểm tra nội dung học thuật của báo cáo.
-
-**File bàn giao:**
-
-| File | Deadline |
-|---|---|
-| `config/research_config.json` | 17/10 |
-| `src/research/01_research_config.py` | 17/10 |
-| `paper/references/references.bib` | 17/10 |
-| `docs/literature_matrix.xlsx` | 19/10 |
-| `paper/drafts/01_introduction_literature.docx` | 19/10 |
-| `docs/academic_review_checklist.md` | 23/10 |
-
-**Tiêu chí nghiệm thu:**
-
-- Literature Review có nguồn nghiên cứu thật.
-- Giả thuyết phù hợp RQ1–RQ5.
-- Cấu hình xác định rõ giai đoạn 2018–2025.
-- Định nghĩa biến và bộ chỉ báo thống nhất với TV2–TV4.
-- Trích dẫn và tài liệu tham khảo nhất quán.
-
----
-
-### TV2 – HOÀI NHI
-**Data Engineering & Descriptive Statistics**
-
-**Nhiệm vụ:**
-
-1. Thu thập dữ liệu BTC, ETH, VIX, DXY hoặc USD proxy, US2Y từ 2018–2025.
-2. Ghi rõ nguồn, đơn vị và thời điểm truy xuất dữ liệu.
-3. Đồng bộ lịch giao dịch crypto 24/7 với lịch thị trường tài chính Mỹ.
-4. Xử lý dữ liệu thiếu, dữ liệu trùng lặp và sai định dạng.
-5. Tính lợi suất log BTC/ETH và các biến đổi tài chính cần thiết.
-6. Tạo bộ dữ liệu chính cho TV3, TV4 và TV6.
-7. Thống kê mô tả, tương quan và trực quan hóa dữ liệu.
-8. Viết phần Data & Methodology liên quan đến dữ liệu.
-
-**File bàn giao:**
-
-| File | Deadline |
-|---|---|
-| `src/data/02_download_data.py` | 17/10 |
-| `data/raw/crypto_macro_raw.csv` | 17/10 |
-| `docs/data_source_log.xlsx` | 17/10 |
-| `src/data/03_preprocess_data.py` | 18/10 |
-| `data/processed/model_dataset.csv` | 18/10 |
-| `docs/data_dictionary.xlsx` | 18/10 |
-| `src/data/04_descriptive_stats.py` | 19/10 |
-| `outputs/tables/descriptive_stats.csv` | 19/10 |
-| `outputs/tables/correlation_matrix.csv` | 19/10 |
-| `outputs/figures/crypto_price_trends.png` | 19/10 |
-| `outputs/figures/correlation_heatmap.png` | 19/10 |
-| `paper/drafts/02_data_methodology.docx` | 19/10 |
-
-**Tiêu chí nghiệm thu:**
-
-- Dữ liệu bao phủ 2018–2025 theo nguồn thực tế.
-- Có Data Dictionary và Source Log.
-- Có báo cáo số quan sát và dữ liệu thiếu.
-- Dataset có ngày duy nhất, được sắp xếp đúng.
-- Không dùng dữ liệu tương lai để lấp dữ liệu quá khứ.
-- TV3, TV4 và TV6 đọc được dataset mà không phải tự sửa tên cột.
-
----
-
-### TV3 – HẢI BÌNH
-**Econometric Modeling**
-
-**Nhiệm vụ:**
-
-1. Xây dựng và ước lượng mô hình VAR.
-2. Tính và trực quan hóa IRF cho BTC và ETH.
-3. Thực hiện Local Projection.
-4. So sánh phản ứng theo trạng thái Calm/Stress.
-5. So sánh giai đoạn 2018–2019 với 2020–2025.
-6. Thực hiện Rolling Regression để đánh giá độ nhạy thay đổi theo thời gian.
-7. Kiểm tra Robustness và độ nhạy kết quả.
-8. Xuất bảng kết quả, khoảng tin cậy và hình.
-9. Viết phần Econometric Results.
-
-**File bàn giao:**
-
-| File | Deadline |
-|---|---|
-| `src/econometrics/05_var_irf.py` | 19/10 |
-| `outputs/model_results/var_results.csv` | 19/10 |
-| `outputs/model_results/irf_results.csv` | 19/10 |
-| `outputs/figures/irf_btc.png` | 19/10 |
-| `outputs/figures/irf_eth.png` | 19/10 |
-| `src/econometrics/06_local_projection.py` | 20/10 |
-| `src/econometrics/07_regime_analysis.py` | 20/10 |
-| `outputs/model_results/lp_results.csv` | 20/10 |
-| `outputs/model_results/regime_results.csv` | 20/10 |
-| `outputs/figures/lp_responses.png` | 20/10 |
-| `outputs/figures/regime_comparison.png` | 20/10 |
-| `src/econometrics/08_robustness.py` | 21/10 |
-| `src/econometrics/08_rolling_sensitivity.py` | 21/10 |
-| `outputs/model_results/subperiod_results.csv` | 21/10 |
-| `outputs/model_results/rolling_sensitivity.csv` | 21/10 |
-| `outputs/model_results/robustness_results.csv` | 21/10 |
-| `paper/drafts/03_econometric_results.docx` | 21/10 |
-
-**Tiêu chí nghiệm thu:**
-
-- Có kết quả VAR/IRF và LP.
-- Có phân tích Calm/Stress và Pre/Post-2020.
-- Có kết quả Rolling và Robustness.
-- CSV thể hiện được biến phản ứng, biến tác động, horizon, estimate và CI khi được ước lượng.
-- Có giải thích mô hình, số quan sát và giới hạn nhận diện.
-- Kết quả CSV và hình PNG nhất quán.
-
----
-
-### TV4 – MAI PHƯƠNG
-**Machine Learning & Forecasting**
-
-**Nhiệm vụ:**
-
-1. Xây dựng đặc trưng ML từ dữ liệu đã xử lý.
-2. Tạo các biến có độ trễ để tránh Data Leakage.
-3. Xác định biến mục tiêu là proxy biến động BTC/ETH ngày tiếp theo.
-4. Chia Train/Validation theo thời gian trong giai đoạn 2018–2024.
-5. Sử dụng năm 2025 làm tập Test ngoài mẫu.
-6. Xây dựng Elastic Net và mô hình Benchmark.
-7. Đánh giá bằng MAE và RMSE.
-8. Phân tích mức độ đóng góp của các biến tài chính toàn cầu.
-9. Xuất kết quả dự báo, bảng so sánh và biểu đồ.
-10. Viết phần ML Results.
-
-**File bàn giao:**
-
-| File | Deadline |
-|---|---|
-| `src/ml/09_ml_features.py` | 19/10 |
-| `data/processed/ml_dataset.csv` | 19/10 |
-| `src/ml/10_ml_forecast.py` | 20/10 |
-| `outputs/model_results/forecast_results.csv` | 20/10 |
-| `src/ml/11_model_evaluation.py` | 21/10 |
-| `outputs/model_results/model_comparison.csv` | 21/10 |
-| `outputs/model_results/feature_importance.csv` | 21/10 |
-| `outputs/figures/forecast_comparison.png` | 21/10 |
-| `paper/drafts/04_ml_results.docx` | 21/10 |
-
-**Tiêu chí nghiệm thu:**
-
-- Dự báo proxy biến động ngày kế tiếp cho BTC/ETH.
-- Không sử dụng thông tin tương lai trong đặc trưng.
-- Có Train/Validation và Test theo thời gian.
-- Có kết quả Elastic Net và Benchmark trên cùng tập Test.
-- Có Actual, Predicted, MAE và RMSE.
-- Có kết quả CSV để TV6 trực quan hóa.
-
----
-
-### TV5 – LAM KIỀU
-**Paper & Research Synthesis**
-
-**Nhiệm vụ:**
-
-1. Tổng hợp kết quả nghiên cứu từ TV1–TV4.
-2. Viết Discussion và giải thích ý nghĩa kinh tế của kết quả.
-3. Trả lời lần lượt RQ1–RQ5 bằng kết quả thực nghiệm.
-4. Viết Limitations và Conclusion.
-5. Ghép các bản thảo thành báo cáo hoàn chỉnh.
-6. Chuẩn hóa bảng, hình, trích dẫn và tài liệu tham khảo.
-7. Xuất báo cáo Word và PDF.
-8. Sửa lỗi theo phản hồi của TV1 và TV6.
-
-**File bàn giao:**
-
-| File | Deadline |
-|---|---|
-| `paper/drafts/05_discussion_conclusion.docx` | 23/10 |
-| `paper/final/research_paper_final.docx` | 24/10 |
-| `paper/final/research_paper_final.pdf` | 24/10 |
-
-**Tiêu chí nghiệm thu:**
-
-- Paper trả lời RQ1–RQ5.
-- Không tự tạo hoặc suy diễn kết quả không có trong dữ liệu.
-- Bảng, hình và số liệu khớp với kết quả Python.
-- Có giới hạn nghiên cứu và kết luận rõ ràng.
-- TV1 kiểm tra học thuật, TV6 nghiệm thu cuối.
-
----
-
-### TV6 – NGỌC LY
-**Dashboard, Pipeline & Quality Control**
-
-**Nhiệm vụ:**
-
-1. Quản lý cấu trúc repository và quy trình GitHub.
-2. Xây dựng dashboard bằng Streamlit.
-3. Tích hợp dữ liệu và kết quả của TV2–TV4.
-4. Xây dựng pipeline chạy các bước nghiên cứu.
-5. Xây dựng các bài kiểm thử.
-6. Kiểm tra schema CSV, đường dẫn và dữ liệu thiếu.
-7. Kiểm tra dashboard trên dữ liệu thật.
-8. Kiểm tra tính nhất quán giữa dashboard và báo cáo.
-9. Phản hồi lỗi cho thành viên phụ trách sửa.
-10. Nghiệm thu repository trước khi nộp.
-
-**File bàn giao:**
-
-| File | Deadline |
-|---|---|
-| `README.md` | 18/10 |
-| `requirements.txt` | 18/10 |
-| `.gitignore` | 18/10 |
-| `docs/task_assignment.md` | 18/10 |
-| `dashboard/12_dashboard_app.py` | 22/10 |
-| `dashboard/13_dashboard_utils.py` | 22/10 |
-| `src/pipeline/14_run_pipeline.py` | 22/10 |
-| `tests/test_pipeline.py` | 22/10 |
-| `docs/integration_qa_checklist.md` | 24/10 |
-
-**Tiêu chí nghiệm thu:**
-
-- Dashboard chạy được bằng Streamlit.
-- Có đủ 4 tab và các biểu đồ dựa trên dữ liệu thật.
-- Bộ lọc hoạt động đúng với kết quả được bàn giao.
-- Pipeline chạy được theo hướng dẫn README.
-- Tests kiểm tra được dữ liệu, schema và các đầu ra quan trọng.
-- Không có dữ liệu giả hoặc kết quả mô hình tự tạo.
-- Dashboard và báo cáo thống nhất.
-
----
-
-## 4. THIẾT KẾ DASHBOARD ĐẦU RA
-
-Dashboard gồm 4 tab chính.
-
-### Tab 1 – Overview
-
-**Mục tiêu:** Tổng quan điều kiện tài chính toàn cầu và thị trường crypto.
-
-**Nội dung:**
-
-- Thời gian nghiên cứu và số quan sát.
-- Biểu đồ giá BTC/ETH.
-- Diễn biến VIX, USD Index và US2Y.
-- Thống kê mô tả.
-- Ma trận tương quan.
-- Bộ lọc tài sản và thời gian nếu dữ liệu hỗ trợ.
-
-**Nguồn dữ liệu:**
-
-- `data/processed/model_dataset.csv`
-- `outputs/tables/descriptive_stats.csv`
-- `outputs/tables/correlation_matrix.csv`
-
-### Tab 2 – Econometrics
-
-**Mục tiêu:** Trực quan hóa phản ứng động của BTC/ETH trước các biến tài chính.
-
-**Nội dung:**
-
-- VAR/IRF.
-- Local Projection.
-- Đường phản ứng theo Horizon.
-- Khoảng tin cậy khi có kết quả ước lượng.
-- Bộ lọc Asset, Shock, Model và Horizon.
-
-**Nguồn dữ liệu:**
-
-- `outputs/model_results/var_results.csv`
-- `outputs/model_results/irf_results.csv`
-- `outputs/model_results/lp_results.csv`
-
-### Tab 3 – Regime
-
-**Mục tiêu:** Đánh giá tính phi tuyến và sự thay đổi độ nhạy.
-
-**Nội dung:**
-
-- So sánh Calm/Stress.
-- So sánh Pre/Post-2020.
-- Rolling Sensitivity.
-- Biểu đồ so sánh hệ số và khoảng tin cậy.
-- Bộ lọc Asset, Shock, Regime và Horizon.
-
-**Nguồn dữ liệu:**
-
-- `outputs/model_results/regime_results.csv`
-- `outputs/model_results/subperiod_results.csv`
-- `outputs/model_results/rolling_sensitivity.csv`
-
-### Tab 4 – Forecast
-
-**Mục tiêu:** Đánh giá khả năng cải thiện dự báo rủi ro crypto.
-
-**Nội dung:**
-
-- Dự báo biến động BTC/ETH.
-- Biểu đồ Actual vs Predicted.
-- So sánh Elastic Net và Benchmark.
-- MAE và RMSE ngoài mẫu.
-- Feature Importance hoặc hệ số đặc trưng.
-- Bộ lọc Asset và Model.
-
-**Nguồn dữ liệu:**
-
-- `outputs/model_results/forecast_results.csv`
-- `outputs/model_results/model_comparison.csv`
-- `outputs/model_results/feature_importance.csv`
-
-**Nguyên tắc:** Dashboard sử dụng CSV kết quả thật làm nguồn dữ liệu chính. PNG phục vụ báo cáo hoặc hiển thị phụ trợ, không thay thế CSV khi cần tương tác.
-
----
-
-## 5. QUY ƯỚC DỮ LIỆU CHUNG
-
-### 5.1. Dataset chính
-
-File: `data/processed/model_dataset.csv`
-
-Các cột đề xuất:
-
-| Cột | Nội dung |
-|---|---|
-| `date` | Ngày quan sát |
-| `btc_close` | Giá đóng cửa BTC |
-| `eth_close` | Giá đóng cửa ETH |
-| `btc_log_return` | Lợi suất log BTC |
-| `eth_log_return` | Lợi suất log ETH |
-| `vix` | Chỉ số VIX |
-| `usd_index` | Chỉ số USD |
-| `us2y` | Lợi suất TPCP Mỹ kỳ hạn 2 năm |
-| `period` | pre_2020 hoặc post_2020 |
-
-Các biến biến đổi, độ trễ và quy tắc xử lý dữ liệu phải được mô tả trong Data Dictionary.
-
-### 5.2. Kết quả IRF/LP
-
-File:
-
-- `irf_results.csv`
-- `lp_results.csv`
-
-Các cột tối thiểu:
-
-`response, shock, horizon, estimate, ci_lower, ci_upper, specification`
-
-### 5.3. Kết quả Regime
-
-File: `regime_results.csv`
-
-Các cột tối thiểu:
-
-`response, shock, regime, horizon, estimate, ci_lower, ci_upper`
-
-### 5.4. Kết quả Pre/Post-2020
-
-File: `subperiod_results.csv`
-
-Các cột tối thiểu:
-
-`response, shock, period, horizon, estimate, ci_lower, ci_upper`
-
-Giá trị `period`:
-
-- `pre_2020`
-- `post_2020`
-
-### 5.5. Rolling Sensitivity
-
-File: `rolling_sensitivity.csv`
-
-Các cột tối thiểu:
-
-`date, asset, shock, rolling_beta, window, specification`
-
-### 5.6. Kết quả ML
-
-File: `forecast_results.csv`
-
-Các cột tối thiểu:
-
-`date, asset, target, actual, predicted, benchmark, split, model`
-
-File: `model_comparison.csv`
-
-Các cột tối thiểu:
-
-`asset, model, metric, value, sample_period`
-
-**Lưu ý:** TV2, TV3, TV4 và TV6 phải thống nhất schema trước khi triển khai chính thức. Nếu thay đổi tên cột, cần thông báo các thành viên liên quan.
-
----
-
-## 6. TIẾN ĐỘ TRIỂN KHAI
-
-| Ngày | Công việc | Phụ trách |
+| RQ | Câu hỏi chính | Nhóm phụ trách |
 |---|---|---|
-| **16/10** | Chốt phạm vi 2018–2025, phân công, cấu trúc repo và quy ước đầu ra | Cả nhóm |
-| **17/10** | Research Config, dữ liệu raw, source log; chuẩn bị khung mô hình | TV1, TV2, TV3, TV4 |
-| **18/10** | Khóa `model_dataset.csv` V1, Data Dictionary và schema dùng chung | TV2, TV3, TV4, TV6 |
-| **19/10** | Literature/Data draft, VAR/IRF V1, ML Dataset | TV1–TV4 |
-| **20/10** | LP, Calm/Stress, Pre/Post-2020, ML Forecast và Benchmark | TV3, TV4 |
-| **21/10** | Khóa kết quả mô hình V1, CSV/PNG và bản thảo chuyên môn | TV3, TV4 |
-| **22/10** | Hoàn thành Dashboard/Pipeline V1 và chạy Tests | TV6 |
-| **23/10** | Review học thuật, kiểm tra kỹ thuật, ghép Paper, sửa lỗi | TV1, TV5, TV6 |
-| **24/10** | Kiểm thử tổng thể, xuất DOCX/PDF, nghiệm thu | Cả nhóm |
-| **25/10** | Dự phòng, hoàn thiện repository và nộp | TV6 phối hợp cả nhóm |
+| **RQ1** | US2Y liên hệ như thế nào với lợi suất BTC/ETH? | TV1, TV3 |
+| **RQ2** | DXY và VIX liên hệ như thế nào với phản ứng lợi suất BTC/ETH theo các khoảng thời gian? | TV1, TV3 |
+| **RQ3** | Mối liên hệ có khác biệt giữa **2018–2019** và **2020–2025** không? | TV3 |
+| **RQ4** | Mối liên hệ có khác biệt giữa **Calm** và **Stress** không? | TV3 |
+| **RQ5** | Biến vĩ mô có cải thiện dự báo ngoài mẫu **độ lớn lợi suất log ngày kế tiếp** không? | TV4 |
+
+**Luồng dữ liệu và báo cáo:**
+
+```text
+TV1: Research Config + Literature Review
+                   |
+TV2: Raw Data → model_dataset.csv → Thống kê mô tả
+                   |
+             +-----+-----+
+             |           |
+       TV3: RQ1–RQ4  TV4: RQ5
+       Kinh tế lượng  Machine Learning
+             |           |
+             +-----+-----+
+                   |
+        TV5: Discussion + Paper 01→05
+                   |
+        TV6: Dashboard + QA + GitHub
+```
+
+**Nguyên tắc:** `model_dataset.csv` do TV2 tạo là dữ liệu chuẩn dùng chung; TV3 tự chọn mẫu hợp lệ theo mô hình, TV4 tạo `ml_dataset.csv` nhưng không ghi đè dữ liệu chuẩn. Không xem tương quan/IRF Cholesky là bằng chứng nhân quả đã được nhận diện.
 
 ---
 
-## 7. QUY TRÌNH LÀM VIỆC TRÊN GITHUB
+## 2. Tổng hợp phân công
 
-1. Mỗi thành viên phụ trách đúng các file đã được phân công.
-2. Trước khi chỉnh sửa cần cập nhật phiên bản mới nhất từ repository.
-3. Commit rõ nội dung công việc.
-4. Không tự ý thay đổi cấu trúc thư mục hoặc tên file đã thống nhất.
-5. Thay đổi liên quan đến dữ liệu và schema phải thông báo TV2, TV3, TV4 và TV6.
-6. Không sử dụng `git push --force`.
-7. Không push `.venv`, API key, secrets hoặc dữ liệu giả.
-8. TV6 kiểm tra kết quả sau mỗi mốc bàn giao.
-9. Thành viên phụ trách phải tự sửa lỗi thuộc phần công việc của mình.
-
----
-
-## 8. CHECKLIST NGHIỆM THU
-
-### Dữ liệu
-
-- [ ] Dữ liệu bao phủ giai đoạn 2018–2025 theo nguồn thực tế.
-- [ ] Có Data Dictionary và Source Log.
-- [ ] Dataset có schema thống nhất.
-- [ ] Có thống kê mô tả và ma trận tương quan.
-- [ ] Không có dữ liệu giả hoặc dữ liệu tương lai bị sử dụng sai.
-
-### Kinh tế lượng
-
-- [ ] Có kết quả VAR/IRF.
-- [ ] Có kết quả Local Projection.
-- [ ] Có phân tích Calm/Stress.
-- [ ] Có so sánh Pre/Post-2020.
-- [ ] Có Rolling Sensitivity và Robustness.
-- [ ] Có bảng kết quả và khoảng tin cậy khi được ước lượng.
-
-### Machine Learning
-
-- [ ] Có ML Dataset.
-- [ ] Có Elastic Net và Benchmark.
-- [ ] Có Train/Validation/Test theo thời gian.
-- [ ] Test ngoài mẫu năm 2025.
-- [ ] Có MAE/RMSE.
-- [ ] Không Data Leakage.
-
-### Dashboard
-
-- [ ] Streamlit chạy thành công.
-- [ ] Tab Overview hiển thị đúng.
-- [ ] Tab Econometrics hiển thị đúng.
-- [ ] Tab Regime hiển thị đúng.
-- [ ] Tab Forecast hiển thị đúng.
-- [ ] Bộ lọc hoạt động với dữ liệu thật.
-- [ ] Không lỗi thiếu file hoặc thiếu cột.
-- [ ] Dashboard đọc được CSV do TV2–TV4 bàn giao.
-
-### Báo cáo
-
-- [ ] Có đầy đủ các bản thảo chuyên môn.
-- [ ] Paper trả lời RQ1–RQ5.
-- [ ] Số liệu paper khớp kết quả Python.
-- [ ] Trích dẫn và tài liệu tham khảo đầy đủ.
-- [ ] Có bản DOCX và PDF cuối.
-
-### Tích hợp
-
-- [ ] `requirements.txt` cài đặt thành công.
-- [ ] Pipeline chạy được.
-- [ ] Tests pass.
-- [ ] README hướng dẫn chạy chính xác.
-- [ ] Clone repository trên máy khác có thể tái lập kết quả.
-- [ ] TV1 hoàn thành Academic Review.
-- [ ] TV6 hoàn thành Integration QA.
+| Thành viên | Vai trò | Trách nhiệm chính |
+|---|---|---|
+| **TV1 – Yến Nhi** | Research & Academic Review | Lý thuyết, RQ/giả thuyết, config, tài liệu tham khảo, rà soát học thuật |
+| **TV2 – Hoài Nhi** | Data Engineering & Statistics | Thu thập, xử lý dữ liệu, thống kê mô tả, data dictionary, Chương 02 |
+| **TV3 – Hải Bình** | Econometric Modeling | VAR/IRF, LP, Pre/Post, Calm/Stress, FDR, rolling, robustness, Chương 03 |
+| **TV4 – Mai Phương** | ML & Forecasting | ML dataset, Elastic Net, XGBoost, benchmark, đánh giá 2025, Chương 04 |
+| **TV5 – Lam Kiều** | Paper & Research Synthesis | Chương 05, tổng hợp paper, trích dẫn, DOCX/PDF final |
+| **TV6 – Ngọc Ly** | Dashboard, Integration & QA | Streamlit, tích hợp outputs, pipeline kiểm tra, README, GitHub, QA |
 
 ---
 
-## 9. NGUYÊN TẮC CHUNG
+## 3. Chi tiết bàn giao theo thành viên
 
-- RQ1–RQ5 đã chốt, không tự ý thay đổi.
-- Giai đoạn nghiên cứu thống nhất là 2018–2025.
-- Tất cả mô hình sử dụng dữ liệu có nguồn và có thể tái lập.
-- Không diễn giải tương quan thống kê thành quan hệ nhân quả khi chưa có phương pháp nhận diện phù hợp.
-- Không tạo CSV, PNG hoặc kết quả mô hình giả để hoàn thiện dashboard.
-- Không thay đổi schema sau khi đã khóa nếu chưa thống nhất với các thành viên liên quan.
-- Các phương pháp mở rộng như SVAR, Event Study, TVP-VAR, XGBoost hoặc LightGBM chỉ triển khai nếu còn thời gian và không ảnh hưởng tiến độ chính.
+### TV1 – Yến Nhi | Research & Academic Review
 
-**Mốc quan trọng:** 18/10 khóa dataset và schema; 21/10 khóa kết quả mô hình V1; 22/10 dashboard V1; 24/10 nghiệm thu; 25/10 nộp sản phẩm.
+**Công việc:** Xây dựng cơ sở lý thuyết và câu hỏi nghiên cứu, tổng hợp nghiên cứu trước, định nghĩa biến, quy tắc phân kỳ, cấu hình nghiên cứu; kiểm tra sự nhất quán học thuật giữa các chương.
+
+**File đã có trong repo:**
+
+```text
+config/research_config.json
+src/research/01_research_config.py
+docs/literature_matrix.xlsx
+docs/academic_review_checklist.md
+paper/references/references.bib
+paper/drafts/01_introduction_literature.docx
+```
+
+**Điểm cần đối chiếu cuối:** Câu chữ RQ2/RQ4 không hàm ý nhân quả hoặc mặc định Stress mạnh hơn; RQ5 phải nói đúng mục tiêu `|r(t+1)|`; tên đề tài và cách trích dẫn thống nhất trong config, paper, README và dashboard.
+
+### TV2 – Hoài Nhi | Data Engineering & Statistics
+
+**Công việc:** Thu thập dữ liệu 2018–2025; xử lý lịch crypto 7 ngày/tuần và lịch vĩ mô; tính lợi suất log và biến đổi vĩ mô; ghi nguồn dữ liệu; xuất dataset chuẩn, bảng thống kê và hình.
+
+**File đã có trong repo:**
+
+```text
+src/data/02_download_data.py
+src/data/03_preprocess_data.py
+src/data/04_descriptive_stats.py
+data/raw/crypto_macro_raw.csv
+data/raw/crypto_macro_raw.xlsx
+data/processed/model_dataset.csv
+docs/data_source_log.xlsx
+docs/data_dictionary.xlsx
+outputs/tables/descriptive_stats.csv
+outputs/tables/correlation_matrix.csv
+outputs/tables/preprocessing_quality_report.csv
+outputs/figures/crypto_price_trends.png
+outputs/figures/correlation_heatmap.png
+paper/drafts/02_data_methodology.docx
+```
+
+**Quy tắc bàn giao:** Không tự điền dữ liệu vĩ mô thiếu bằng 0 hoặc dữ liệu tương lai; giữ `NA` trong dữ liệu chuẩn; lợi suất crypto tính trước khi TV3 lọc mẫu; không ghi đè `model_dataset.csv` từ script TV3/TV4.
+
+### TV3 – Hải Bình | Econometric Modeling
+
+**Công việc:** Phân tích RQ1–RQ4 bằng VAR/IRF, LP, kiểm định khác biệt giai đoạn và trạng thái; BH-FDR; kiểm tra độ nhạy HAC, VAR, ngưỡng VIX 25/30/35; rolling sensitivity; viết Chương 03.
+
+**Script đã có trong repo:**
+
+```text
+src/econometrics/05_var_irf.py
+src/econometrics/05_var_lag_diagnostics.py
+src/econometrics/06_local_projection.py
+src/econometrics/07_regime_analysis.py
+src/econometrics/08_hac_sensitivity.py
+src/econometrics/08_multiple_testing.py
+src/econometrics/08_robustness.py
+src/econometrics/08_rolling_sensitivity.py
+src/econometrics/08_subperiod_difference.py
+src/econometrics/08_var_sensitivity.py
+```
+
+**Kết quả đã có trong repo:**
+
+```text
+outputs/model_results/var_results.csv
+outputs/model_results/var_lag_diagnostics.csv
+outputs/model_results/var_sensitivity_results.csv
+outputs/model_results/irf_results.csv
+outputs/model_results/lp_results.csv
+outputs/model_results/lp_fdr.csv
+outputs/model_results/lp_var_h0_comparison.csv
+outputs/model_results/subperiod_results.csv
+outputs/model_results/subperiod_difference_tests.csv
+outputs/model_results/subperiod_difference_fdr.csv
+outputs/model_results/regime_results.csv
+outputs/model_results/regime_diagnostics.csv
+outputs/model_results/regime_difference_fdr.csv
+outputs/model_results/threshold_difference_fdr.csv
+outputs/model_results/hac_sensitivity_results.csv
+outputs/model_results/multiple_testing_summary.csv
+outputs/model_results/robustness_results.csv
+outputs/model_results/rolling_sensitivity.csv
+outputs/figures/irf_btc.png
+outputs/figures/irf_eth.png
+outputs/figures/lp_responses.png
+outputs/figures/regime_comparison.png
+outputs/figures/rolling_sensitivity.png
+paper/drafts/03_econometric_results.docx
+```
+
+**Quy tắc nghiệm thu:** Phân biệt rõ 2018–2025 (năm lịch) với `h=0…30` (khoảng thời gian phản ứng); khoảng tin cậy riêng cho từng ước lượng; kiểm định chênh lệch dựa trên kết quả kiểm định trực tiếp, không suy từ hai hệ số nhìn khác nhau; báo cáo p-value và q-value FDR đúng họ kiểm định.
+
+### TV4 – Mai Phương | ML & Forecasting
+
+**Công việc:** Tạo đặc trưng từ dữ liệu TV2; dự báo `|r(t+1)|` cho BTC/ETH; so sánh Crypto-only và Crypto + Macro; benchmark Historical30, Elastic Net, XGBoost; đánh giá ngoài mẫu năm 2025 và kiểm định chênh lệch sai số.
+
+**File đã có trong repo:**
+
+```text
+src/ml/09_ml_features.py
+src/ml/10_ml_forecast.py
+src/ml/11_model_evaluation.py
+src/ml/ml_common.py
+data/processed/ml_dataset.csv
+outputs/model_results/cv_tuning_results.csv
+outputs/model_results/forecast_results.csv
+outputs/model_results/forecast_significance.csv
+outputs/model_results/model_comparison.csv
+outputs/model_results/feature_importance.csv
+outputs/figures/forecast_comparison.png
+paper/drafts/04_ml_results.docx
+```
+
+**Quy tắc nghiệm thu:** Giữ năm 2025 làm test ngoài mẫu; không dùng thông tin 2025 để chọn siêu tham số; so sánh mô hình trên cùng tập ngày và cùng biến mục tiêu; không gọi `|r(t+1)|` là VaR/Expected Shortfall.
+
+### TV5 – Lam Kiều | Paper & Research Synthesis
+
+**Công việc:** Tổng hợp các chương 01–04, trả lời RQ1–RQ5, viết Discussion/Limitations/Conclusion, hoàn thiện danh mục trích dẫn, chuẩn hóa tiêu đề và đánh số bảng/hình, xuất bản báo cáo cuối.
+
+**File đã có trong repo:**
+
+```text
+paper/drafts/05_discussion_conclusion_formatted_revised.docx
+paper/final/research_paper_final.docx
+paper/final/research_paper_final.pdf
+paper/references/references.bib
+```
+
+**Quy tắc nghiệm thu:** Số liệu và kết luận phải khớp output TV3–TV4; diễn giải “chưa đủ bằng chứng sau FDR” thay vì “không có khác biệt”; thống nhất References; kiểm tra mục lục, đánh số mục và trích dẫn trước khi nộp.
+
+### TV6 – Ngọc Ly | Dashboard, Integration & QA
+
+**Công việc:** Quản lý repo, tích hợp outputs, phát triển Streamlit dashboard, viết README và tài liệu bàn giao, kiểm tra schema/đường dẫn/biểu đồ, đối chiếu paper với dashboard, hướng dẫn nhóm chạy dự án.
+
+**File đã có trong repo:**
+
+```text
+README.md
+requirements.txt
+.gitignore
+.streamlit/config.toml
+dashboard/12_dashboard_app.py
+dashboard/13_dashboard_utils.py
+src/pipeline/14_run_pipeline.py
+tests/test_pipeline.py
+docs/integration_qa_checklist.md
+docs/task_assignment.md
+```
+
+**Lưu ý tình trạng:** Dashboard trong ZIP đối chiếu có **7 mục điều hướng** (Tổng quan, RQ1–RQ5, Dữ liệu & cách đọc); tab **Kết luận & ứng dụng** của phiên bản chỉnh sửa sau chưa nằm trong ZIP này. `tests/test_pipeline.py` hiện là file rỗng; **chưa được đánh dấu kiểm thử tự động hoàn tất**. Script pipeline cần được mô tả đúng theo hành vi thực tế, không mặc định là chạy lại toàn bộ mô hình.
+
+---
+
+## 4. Chuẩn đầu ra dashboard
+
+| Mục | Nội dung | Nguồn chính |
+|---|---|---|
+| Tổng quan | Xu hướng BTC/ETH, thống kê, tương quan | `model_dataset.csv`, `outputs/tables/`, `outputs/figures/` |
+| RQ1 | LP, hệ số và khoảng tin cậy | `lp_results.csv`, `lp_fdr.csv` |
+| RQ2 | Phản ứng động LP/VAR/IRF | `irf_results.csv`, `lp_results.csv` |
+| RQ3 | 2018–2019 vs 2020–2025, rolling sensitivity | `subperiod_results.csv`, `subperiod_difference_fdr.csv`, `rolling_sensitivity.csv` |
+| RQ4 | Calm/Stress, ngưỡng VIX | `regime_results.csv`, `regime_difference_fdr.csv` |
+| RQ5 | Dự báo năm 2025, MAE/RMSE | `forecast_results.csv`, `model_comparison.csv`, `forecast_significance.csv` |
+| Dữ liệu & cách đọc | Giải thích biến, phương pháp, giới hạn | Config và các bảng dữ liệu |
+| Kết luận & ứng dụng | Tổng hợp 5 RQ, quy trình nhóm, hàm ý | Chương 05 và output thực tế; **chưa có trong bản ZIP đối chiếu** |
+
+**Nguyên tắc giao diện:** Giữ nguyên phong cách Streamlit hiện tại khi sửa lỗi; các ô chọn phải hiển thị rõ; biểu đồ và KPI dùng cùng bộ lọc; không vẽ lại sai giá trị hoặc thay hệ số từ CSV. Trục năm chỉ áp dụng cho chuỗi thời gian; LP/IRF giữ trục số ngày phản ứng.
+
+---
+
+## 5. Quy ước dữ liệu và tích hợp
+
+1. **Dữ liệu nguồn chuẩn:** `data/processed/model_dataset.csv` do TV2 phụ trách.
+2. **Dữ liệu ML:** `data/processed/ml_dataset.csv` do TV4 tạo từ dữ liệu chuẩn.
+3. **Kết quả kinh tế lượng:** `outputs/model_results/` do TV3 xuất; các CSV kiểm định FDR và robustness được giữ riêng.
+4. **Kết quả ML:** `outputs/model_results/` do TV4 xuất; ghi rõ mô hình, tập đặc trưng, tài sản và tập đánh giá.
+5. **Hình gốc:** `outputs/figures/`; dashboard có thể hiển thị cùng CSV tương tác, nhưng phải giữ nhất quán với kết quả gốc.
+6. **Paper:** `paper/drafts/01…05` và `paper/final/` phải dùng cùng số liệu, tên biến, đơn vị và cách diễn giải.
+7. **Thay đổi schema:** Thành viên sửa file đầu ra phải thông báo TV6 và cập nhật các thành phần phụ thuộc; không tự ý đổi tên cột hoặc ghi đè kết quả của người khác.
+
+---
+
+## 6. Mốc tiến độ đã phân công
+
+| Mốc | Công việc | Phụ trách |
+|---|---|---|
+| **16–18/10** | Chốt RQ, config, nguồn dữ liệu, schema | TV1, TV2, cả nhóm |
+| **19–21/10** | Chương 01–04, ước lượng VAR/LP, kiểm định, ML | TV1–TV4 |
+| **22/10** | Tích hợp dashboard và pipeline phiên bản đầu | TV6 |
+| **23–24/10** | Chương 05, ghép paper, rà soát học thuật/QA | TV1, TV5, TV6 |
+| **25/10** | Hoàn thiện README, tài liệu phân công, kiểm tra nộp | Cả nhóm |
+
+Các mốc trên là **kế hoạch phân công**, không tự động xác nhận toàn bộ hạng mục đã nghiệm thu.
+
+---
+
+## 7. Checklist nghiệm thu cuối
+
+### Dữ liệu — TV2
+- [x] Có raw data, `model_dataset.csv`, Data Dictionary và Source Log.
+- [x] Có thống kê mô tả, tương quan và hình cơ sở.
+- [ ] Kiểm tra lại khả năng tái lập khi tải dữ liệu mới và vấn đề timestamp.
+
+### Kinh tế lượng — TV3
+- [x] Có script và output VAR/IRF, LP, Pre/Post, Calm/Stress.
+- [x] Có file FDR, rolling và robustness/sensitivity.
+- [ ] Kiểm tra tự động CSV–hình–số liệu trong paper khớp từng lựa chọn.
+
+### Machine Learning — TV4
+- [x] Có Elastic Net, XGBoost, benchmark và output dự báo 2025.
+- [x] Có so sánh mô hình và kiểm định sai số.
+- [ ] Xác nhận tái lập toàn bộ quy trình tuning và đánh giá từ đầu.
+
+### Paper — TV1, TV5
+- [x] Có bản thảo 01–05 và bản final DOCX/PDF.
+- [x] Có file `references.bib`.
+- [ ] Rà soát lần cuối mục lục, số mục, trích dẫn và các tuyên bố thống kê.
+
+### Dashboard & tích hợp — TV6
+- [x] Có mã nguồn dashboard, utils, config giao diện và README.
+- [x] Có script pipeline và checklist tích hợp.
+- [ ] Kiểm thử thực tế tất cả bộ lọc/biểu đồ, đặc biệt hệ số–KPI–q-value RQ3.
+- [ ] Bổ sung/đồng bộ tab Kết luận nếu dùng phiên bản 8 tab.
+- [ ] Bổ sung test thực sự vào `tests/test_pipeline.py` (file hiện rỗng).
+- [ ] Xác minh chạy được từ bản clone sạch trên máy khác.
+
+**Ý nghĩa dấu kiểm:** `[x]` = đã xác nhận **có file/đầu ra trong ZIP**, `[ ]` = còn cần kiểm tra hoặc hoàn thiện. Không dùng `[x]` để tuyên bố đã pass test khi chưa chạy.
+
+---
+
+## 8. Quy tắc làm việc trên GitHub
+
+- Mỗi thành viên chịu trách nhiệm các file đã phân công; ưu tiên pull trước khi sửa.
+- Commit theo nội dung cụ thể, ví dụ `docs: update task assignment`, `fix: align RQ3 chart and KPI`.
+- Không commit `.venv/`, API key, secret, dữ liệu giả hoặc file tạm.
+- Không `git push --force` lên nhánh chung.
+- Khi thay đổi dữ liệu/schema, thông báo TV2, TV3, TV4 và TV6.
+- TV6 chịu trách nhiệm tích hợp; TV1 và TV5 đối chiếu nội dung học thuật trước khi chốt báo cáo.
+- Không sửa số liệu hoặc kết luận chỉ để làm dashboard đẹp hơn.
+
+---
+
+## 9. Tiêu chí chốt sản phẩm
+
+Dự án sẵn sàng bàn giao khi: (1) các file nguồn và output hiện diện; (2) dashboard chạy được với dữ liệu thật; (3) các bộ lọc, hệ số, CI, p/q-value và biểu đồ thống nhất; (4) paper và dashboard diễn giải cùng kết quả; (5) README hướng dẫn đúng lệnh chạy; và (6) các hạn chế về nhận diện nhân quả, FDR và thời điểm thông tin vĩ mô được công bố rõ.
+
+**Trạng thái tại lần đối chiếu ZIP:** Đã có phần lớn thành phần nghiên cứu và báo cáo; **chưa xác nhận toàn bộ kiểm thử runtime và tái lập từ đầu**.
