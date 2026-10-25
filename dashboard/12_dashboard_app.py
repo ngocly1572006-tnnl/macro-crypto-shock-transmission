@@ -665,6 +665,20 @@ li[aria-selected="true"] {
     color:#503A57!important;
 }
 
+/* FIX: research figures stay within their own content block. */
+[data-testid="stMain"] [data-testid="stImage"] {
+    width: 100%;
+    max-width: 100%;
+    overflow: hidden;
+}
+[data-testid="stMain"] [data-testid="stImage"] img {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+    object-fit: contain;
+}
+
 /* Bảng màu */
 
 .table-wrap {
@@ -1713,8 +1727,10 @@ def original_figure(filename, caption):
     """Use the original research output, not a reconstructed plot."""
     path = FIGURES / filename
     if path.is_file():
-        st.image(str(path), use_container_width=True)
-        st.caption(caption)
+        # Constrain research PNGs to the content column; preserve original style.
+        with st.container():
+            st.image(str(path), use_container_width=True)
+            st.caption(caption)
     else:
         st.info(f"Chưa tìm thấy outputs/figures/{filename}. "
                 "Đặt nguyên thư mục figures từ ZIP vào outputs/figures của dự án.")
@@ -1990,9 +2006,6 @@ if PAGE == "overview":
             "365 ngày", "gold",
         )
 
-    section("Diễn biến giá BTC và ETH theo năm", "Biểu đồ gốc từ pipeline nghiên cứu, chuẩn hóa giá tại thời điểm đầu = 100.")
-    original_figure("crypto_price_trends.png", "Trục ngang là năm thực tế 2018–2025; chỉ số giá chuẩn hóa, không phải lợi suất ngày.")
-
     section('Bối cảnh thị trường 2018–2025',
             'Từ thị trường tài sản số tương đối tách biệt đến câu hỏi về mức độ gắn kết với tài chính toàn cầu.',
             'WHY THIS RESEARCH MATTERS')
@@ -2002,6 +2015,9 @@ if PAGE == "overview":
         'VIX đại diện cho mức độ bất ổn và khẩu vị rủi ro; DXY đại diện cho sức mạnh đồng USD; US2Y phản ánh kỳ vọng lãi suất ngắn hạn của Mỹ. Ba biến tương ứng với ba kênh có thể ảnh hưởng đến quyết định phân bổ vốn: rủi ro, đồng tiền định giá và chi phí cơ hội. Các kênh là giả thuyết kinh tế, không mặc nhiên là cú sốc ngoại sinh.',
         'Năm RQ được sắp xếp theo logic: (1) có liên hệ cùng ngày không, (2) diễn biến động ra sao, (3) có khác trước/sau 2020 không, (4) có phụ thuộc Calm/Stress không, và (5) thông tin vĩ mô có tăng khả năng dự báo ngoài mẫu không. Điều này giúp tách giá trị giải thích khỏi giá trị dự báo.',
         'Các kết quả là bằng chứng thống kê từ dữ liệu quan sát; không được đọc như tác động nhân quả đã nhận diện hoặc quy tắc giao dịch chắc chắn.')
+
+    section("Diễn biến giá BTC và ETH theo năm", "Biểu đồ gốc từ pipeline nghiên cứu, chuẩn hóa giá tại thời điểm đầu = 100.")
+    original_figure("crypto_price_trends.png", "Trục ngang là năm thực tế 2018–2025; chỉ số giá chuẩn hóa, không phải lợi suất ngày.")
 
     section(
         "Nghiên cứu này đang trả lời điều gì?",
@@ -2203,9 +2219,6 @@ if PAGE == "overview":
 
 elif PAGE == "rq1":
 
-    section("Bức tranh LP của BTC và ETH", "Đồ thị gốc: phản ứng tại ngày 0–30 và khoảng tin cậy HAC 95%.")
-    original_figure("lp_responses.png", "Trục 0–30 là số ngày sau biến động vĩ mô, KHÔNG phải năm lịch.")
-
     hero(
         "RESEARCH QUESTION 01",
         "RQ1 · <em>Truyền dẫn tài chính</em>",
@@ -2230,6 +2243,9 @@ elif PAGE == "rq1":
         'VIX gắn với risk-off và nhu cầu thanh khoản; DXY gắn với điều kiện đồng USD; US2Y gắn với kỳ vọng chính sách tiền tệ. Vì ba biến đo những khía cạnh khác nhau, một hệ số lớn về trị tuyệt đối không có nghĩa biến đó quan trọng hơn nếu chưa chuẩn hóa đơn vị cú sốc.',
         'Kết quả có thể hỗ trợ nhà phân tích xây dựng bảng theo dõi rủi ro vĩ mô, đặt giả thuyết cho quản trị danh mục và thiết kế nghiên cứu tiếp theo. Khi theo dõi VIX/DXY, cần đọc cùng khoảng tin cậy và mức ý nghĩa sau BH-FDR.',
         'LP h=0 cho biết liên hệ có điều kiện trong cùng phiên, không xác định chắc chắn biến nào đi trước về mặt thông tin. Không thể dùng hệ số như hệ số nhân lợi nhuận hoặc dự báo giao dịch.')
+
+    section("Minh họa mở rộng · LP từ ngày 0 đến 30", "Đồ thị tổng hợp cho BTC và ETH; RQ1 tập trung kết quả h = 0, các chân trời tiếp theo được phân tích ở RQ2.")
+    original_figure("lp_responses.png", "Trục ngang là ngày lịch 0–30, không phải năm. Để trả lời RQ1, tập trung tại h = 0.")
 
     asset, shock = selectors("rq1")
 
@@ -2427,11 +2443,6 @@ elif PAGE == "rq1":
 
 elif PAGE == "rq2":
 
-    section("Phản ứng động VAR(5) – BTC", "Kết quả IRF gốc và khoảng tin cậy 95%.")
-    original_figure("irf_btc.png", "Trục ngang là phiên phản ứng 0–30, không phải năm.")
-    section("Phản ứng động VAR(5) – ETH", "Cùng cách đọc với BTC.")
-    original_figure("irf_eth.png", "IRF Cholesky phụ thuộc thứ tự biến, không phải cú sốc nhân quả đã nhận diện.")
-
     hero(
         "RESEARCH QUESTION 02",
         "RQ2 · <em>Phản ứng theo thời gian</em>",
@@ -2457,6 +2468,11 @@ elif PAGE == "rq2":
         'LP ước lượng riêng lợi suất tại từng chân trời ngày lịch; VAR mô hình hóa tương tác động của cả hệ thống trên các phiên có dữ liệu vĩ mô. IRF trực giao hóa theo thứ tự Cholesky đã định. Hai đường trả lời các câu hỏi liên quan nhưng không hoàn toàn đồng nhất.',
         'Nếu phản ứng nhanh chóng quay về gần 0, đó là thông tin hữu ích về độ bền của mối liên hệ ước lượng. Nếu dải tin cậy rộng hoặc cắt 0, nhà phân tích không nên diễn giải các đỉnh của đường như một tác động bền vững.',
         'Không cộng các hệ số LP thành phản ứng tích lũy nếu chưa có đặc tả tích lũy. Không quy đổi trực tiếp một phiên macro thành một ngày lịch hoặc đồng nhất cú sốc VAR với một đơn vị thay đổi trong LP.')
+
+    section("Phản ứng động VAR(5) – BTC", "Kết quả IRF gốc và khoảng tin cậy 95%.")
+    original_figure("irf_btc.png", "Trục ngang là phiên phản ứng 0–30, không phải năm.")
+    section("Phản ứng động VAR(5) – ETH", "Cùng cách đọc với BTC.")
+    original_figure("irf_eth.png", "IRF Cholesky phụ thuộc thứ tự biến, không phải cú sốc nhân quả đã nhận diện.")
 
     asset, shock = selectors("rq2")
 
@@ -2689,9 +2705,6 @@ elif PAGE == "rq3":
 
 elif PAGE == "rq4":
 
-    section("Calm và Stress – toàn bộ BTC/ETH", "Biểu đồ gốc từ mô hình Local Projections có điều kiện.")
-    original_figure("regime_comparison.png", "Trục ngang là số ngày phản ứng; vùng màu là khoảng tin cậy của từng trạng thái.")
-
     hero(
         "RESEARCH QUESTION 04",
         "RQ4 · <em>Calm và Stress</em>",
@@ -2742,6 +2755,9 @@ elif PAGE == "rq4":
         'Nhóm dùng VIX phiên vĩ mô trước đó ≥ 30 để phân loại Stress; những phiên còn lại là Calm. Quy tắc trễ nhằm tránh sử dụng VIX cùng ngày để gắn nhãn trạng thái. Chênh lệch hệ số cần được kiểm định trực tiếp, không chỉ quan sát hai đường.',
         'Nếu bằng chứng đủ mạnh, phân tích trạng thái có thể hỗ trợ xây dựng các kịch bản stress testing cho danh mục crypto. Nhưng trong dữ liệu hiện tại, kết quả chưa đạt FDR nên chỉ nên coi đây là giả thuyết quản trị rủi ro cần kiểm tra thêm.',
         'Stress chỉ có 151 quan sát so với 1.839 Calm. Mẫu mất cân đối làm độ bất định cao và hạn chế khả năng phát hiện khác biệt thực sự. Ngưỡng 30 là quy ước nghiên cứu, không phải ranh giới kinh tế tuyệt đối.')
+
+    section("Calm và Stress – toàn bộ BTC/ETH", "Biểu đồ gốc từ mô hình Local Projections có điều kiện.")
+    original_figure("regime_comparison.png", "Trục ngang là số ngày phản ứng; vùng màu là khoảng tin cậy của từng trạng thái.")
 
     asset, shock = selectors("rq4")
 
@@ -2852,9 +2868,6 @@ elif PAGE == "rq4":
 # ============================================================
 
 elif PAGE == "rq5":
-
-    section("Dự báo so với thực tế trong năm 2025", "Biểu đồ gốc 365 ngày của cả BTC và ETH.")
-    original_figure("forecast_comparison.png", "Đường xám là độ lớn lợi suất thực tế, các đường còn lại là dự báo; trục ngang hiển thị tháng năm 2025.")
 
     hero(
         "RESEARCH QUESTION 05",
@@ -3124,6 +3137,9 @@ elif PAGE == "rq5":
         "Kiểm tra mô hình có theo sát độ lớn "
         "lợi suất thực tế trong năm 2025 không.",
     )
+
+    section("Tổng quan dự báo BTC và ETH năm 2025", "Biểu đồ gốc 365 ngày của cả hai tài sản, bổ sung cho biểu đồ dự báo tương tác phía dưới.")
+    original_figure("forecast_comparison.png", "Đường xám là độ lớn lợi suất thực tế; các đường màu là dự báo. Trục ngang thể hiện năm 2025.")
 
     forecast = DATA["forecast"].copy()
 
